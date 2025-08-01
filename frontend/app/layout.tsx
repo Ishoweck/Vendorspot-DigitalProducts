@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     siteName: "Vendorspot",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "Vendorspot Digital Marketplace - Buy and Sell Digital Products",
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     title: "Vendorspot - Nigeria's Most Secure Digital Marketplace",
     description:
       "Discover trusted vendors, shop a wide range of digital products, and enjoy instant delivery with secure payment options.",
-    images: ["/og-image.jpg"],
+    images: ["/og-image.png"],
     creator: "@vendorspot",
     site: "@vendorspot",
   },
