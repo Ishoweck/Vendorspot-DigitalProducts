@@ -1,0 +1,16 @@
+{
+  "name": "vendorspot-infrastructure",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy:staging": "terraform -chdir=terraform/staging apply",
+    "deploy:production": "terraform -chdir=terraform/production apply",
+    "plan:staging": "terraform -chdir=terraform/staging plan",
+    "plan:production": "terraform -chdir=terraform/production plan",
+    "destroy:staging": "terraform -chdir=terraform/staging destroy",
+    "destroy:production": "terraform -chdir=terraform/production destroy"
+  },
+  "devDependencies": {
+    "terraform": "^1.0.0"
+  }
+}

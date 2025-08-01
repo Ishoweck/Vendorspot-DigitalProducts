@@ -1,0 +1,64 @@
+{
+  "name": "vendorspot-digital-products",
+  "version": "1.0.0",
+  "description": "Nigeria's most secure online marketplace for digital products",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared"
+  ],
+  "scripts": {
+    "install:all": "pnpm install && pnpm run install:frontend && pnpm run install:backend",
+    "install:frontend": "cd frontend && pnpm install",
+    "install:backend": "cd backend && pnpm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && pnpm run dev",
+    "dev:backend": "cd backend && pnpm run dev",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && pnpm run build",
+    "build:backend": "cd backend && pnpm run build",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && pnpm run test",
+    "test:backend": "cd backend && pnpm run test",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "lint:frontend": "cd frontend && pnpm run lint",
+    "lint:backend": "cd backend && pnpm run lint",
+    "deploy:staging": "cd infrastructure && npm run deploy:staging",
+    "deploy:production": "cd infrastructure && npm run deploy:production",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "db:migrate": "cd backend && pnpm run db:migrate",
+    "db:seed": "cd backend && pnpm run db:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "ecommerce",
+    "digital-products",
+    "marketplace",
+    "nigeria",
+    "vendorspot",
+    "react",
+    "nodejs",
+    "typescript"
+  ],
+  "author": "Vendorspot Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vendorspot/digital-products.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vendorspot/digital-products/issues"
+  },
+  "homepage": "https://digital.vendorspot.com"
+}
