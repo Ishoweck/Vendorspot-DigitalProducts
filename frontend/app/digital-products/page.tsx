@@ -1,6 +1,7 @@
 import HeroSection from "@/components/home/HeroSection";
 import DigitalProductsSection from "@/components/home/DigitalProductsSection";
 import FeaturedProductsSection from "@/components/home/FeaturedProductsSection";
+import FeaturedShopsSection from "@/components/home/FeaturedShopsSection";
 import CTASection from "@/components/home/CTASection";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 
@@ -18,8 +19,9 @@ export default function DigitalProductsPage() {
           <FeaturedProductsSection />
         </SectionWrapper>
         <SectionWrapper>
-          <CTASection />
+          <FeaturedShopsSection />
         </SectionWrapper>
+        <CTASection />
       </div>
     </div>
   );

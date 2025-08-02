@@ -42,7 +42,7 @@ export default function FeaturedProductsSection() {
   ];
 
   return (
-    <section className="pt-11 pb-8 sm:pb-12 md:pb-16">
+    <section className="pt-11">
       <div
         className="bg-[#FF7300] border-2 border-neutral-50 rounded-[10px] p-4 sm:p-6 mb-8 sm:mb-10 md:mb-12"
         style={{ height: "71px" }}
