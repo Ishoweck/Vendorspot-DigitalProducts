@@ -1,27 +1,54 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
 export default function HeroSection() {
   return (
-    <section className="bg-gradient-to-br from-primary-50 to-primary-100 py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-neutral-900 font-display mb-6">
-            Nigeria's Most Secure
-            <span className="block text-primary-500">Digital Marketplace</span>
-          </h1>
-          <p className="text-xl text-neutral-600 mb-8 max-w-3xl mx-auto">
-            Discover trusted vendors, shop a wide range of digital products, and
-            enjoy instant delivery with secure payment options.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/products" className="btn-primary text-lg px-8 py-3">
-              Browse Products
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
-            <Link href="/vendors" className="btn-outline text-lg px-8 py-3">
-              Become a Vendor
-            </Link>
+    <section className="bg-white rounded-t-lg min-h-screen">
+      <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+        <div className="flex flex-col lg:flex-row items-center justify-between py-8 sm:py-12 md:py-16 lg:py-20 gap-6 sm:gap-8 lg:gap-12">
+          <div className="flex-1 w-full lg:max-w-none">
+            <h1 className="text-black font-semibold text-[1.5rem] md:text-[1.875rem] lg:text-[2.125rem] xl:text-[2.5rem] leading-[1.2] font-inter mb-4 sm:mb-6">
+              <div className="whitespace-nowrap">
+                Smart Tools. Bigger Impact.
+              </div>
+              <div className="whitespace-nowrap">
+                Built for Business Owners.
+              </div>
+            </h1>
+
+            <p className="text-black font-normal text-base sm:text-lg md:text-xl lg:text-xl leading-relaxed font-inter mb-6 sm:mb-8 max-w-none lg:max-w-2xl">
+              Access digital tools to plan your goals, grow your business,
+              promote online, and run effective ads, all in one trusted spot.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Link
+                href="/digital-products"
+                className="bg-[#D7195B] text-white px-6 sm:px-8 py-3 rounded-lg font-medium hover:bg-[#B01548] transition-colors duration-200 text-center text-sm sm:text-base"
+              >
+                Explore Tools
+              </Link>
+
+              <Link
+                href="/register?vendor=true"
+                className="bg-white text-[#D7195B] border border-[#D7195B] px-6 sm:px-8 py-3 rounded-lg font-medium hover:bg-[#D7195B] hover:text-white transition-colors duration-200 text-center text-sm sm:text-base"
+              >
+                Become a Vendor
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex-1 w-full flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl">
+              <Image
+                src="/images/hero-img.svg"
+                alt="Digital Tools for Business"
+                width={500}
+                height={400}
+                className="w-full h-auto object-contain"
+                priority
+              />
+            </div>
           </div>
         </div>
       </div>

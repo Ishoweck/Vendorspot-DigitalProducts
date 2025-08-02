@@ -107,7 +107,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <QueryProvider>
           <Header />
-          <main className="min-h-screen">{children}</main>
+          <main>{children}</main>
           <Footer />
           <Toaster
             position="top-right"

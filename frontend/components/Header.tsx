@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, X, Phone, Mail, Users, ChevronDown } from "lucide-react";
@@ -12,7 +13,7 @@ export default function Header() {
   const [advertState, setAdvertState] = useState<
     "expanded" | "compact" | "hidden"
   >("expanded");
-  const [activeNavItem, setActiveNavItem] = useState("");
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,26 +63,31 @@ export default function Header() {
                 <span>support@vendorspotng.com</span>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="icon icon-tabler icons-tabler-outline icon-tabler-user-question"
-              >
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                <path d="M6 21v-2a4 4 0 0 1 4 -4h3.5" />
-                <path d="M19 22v.01" />
-                <path d="M19 19a2.003 2.003 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
-              </svg>
-              <span className="hidden sm:inline">Vendor FAQ's</span>
+            <div className="flex items-center space-x-4">
+              <Link href="/our-policy" className="text-sm hover:underline">
+                Our Policy
+              </Link>
+              <div className="flex items-center space-x-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="icon icon-tabler icons-tabler-outline icon-tabler-user-question"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+                  <path d="M6 21v-2a4 4 0 0 1 4 -4h3.5" />
+                  <path d="M19 22v.01" />
+                  <path d="M19 19a2.003 2.003 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
+                </svg>
+                <span className="hidden sm:inline">Vendor FAQ's</span>
+              </div>
             </div>
           </div>
         </div>
@@ -130,7 +136,7 @@ export default function Header() {
                 className="hidden lg:flex items-center space-x-2 text-black hover:text-primary-500 transition-colors group"
               >
                 <Users className="w-5 h-5 group-hover:text-primary-500 transition-colors" />
-                <span className="font-medium">Login / Sign Up</span>
+                <span className="font-medium">Login</span>
               </Link>
 
               <Link
@@ -181,20 +187,25 @@ export default function Header() {
             </button>
 
             <nav className="hidden lg:flex items-center space-x-8">
-              {["Sell On Spot", "Our Policy", "Products", "Shops"].map(
-                (item) => (
-                  <Link
-                    key={item}
-                    href={`/${item.toLowerCase().replace(/\s+/g, "-")}`}
-                    onClick={() => setActiveNavItem(item)}
-                    className={`font-medium transition-colors hover:text-secondary-500 ${
-                      activeNavItem === item ? "text-secondary-500" : ""
-                    }`}
-                  >
-                    {item}
-                  </Link>
-                )
-              )}
+              {[
+                "Sell On Spot",
+                "Products",
+                "Digital Products",
+                "Shops",
+                "Delivery",
+              ].map((item) => (
+                <Link
+                  key={item}
+                  href={`/${item.toLowerCase().replace(/\s+/g, "-")}`}
+                  className={`font-medium transition-colors hover:text-secondary-500 ${
+                    pathname === `/${item.toLowerCase().replace(/\s+/g, "-")}`
+                      ? "text-secondary-500"
+                      : ""
+                  }`}
+                >
+                  {item}
+                </Link>
+              ))}
             </nav>
           </div>
         </div>
