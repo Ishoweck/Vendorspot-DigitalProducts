@@ -28,7 +28,7 @@ export default function DigitalProductsSection() {
           {digitalProducts.map((product) => (
             <div
               key={product.id}
-              className="w-full bg-white rounded-[5px] overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200"
+              className="w-full bg-white rounded-[5px] overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200 h-80 sm:h-96 md:h-[420px]"
               style={{ aspectRatio: "255/374" }}
             >
               <div

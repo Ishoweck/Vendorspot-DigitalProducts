@@ -1,154 +1,136 @@
-import Link from "next/link";
+"use client";
+import React, { useState } from "react";
 import Image from "next/image";
-import { ArrowRight, Star, Download, Heart } from "lucide-react";
+import { Heart, Store } from "lucide-react";
 
 export default function FeaturedProductsSection() {
-  // Mock featured products data
+  const [likedProducts, setLikedProducts] = useState<number[]>([]);
+
+  const toggleLike = (productId: number) => {
+    setLikedProducts((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
   const featuredProducts = [
     {
       id: 1,
-      name: "Premium WordPress Theme",
-      vendor: "TechVendor",
-      price: 29.99,
-      originalPrice: 49.99,
-      rating: 4.8,
-      reviews: 124,
-      downloads: 1200,
-      image:
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop",
-      category: "Web Templates",
+      name: "Product Name",
+      shopName: "Shop Name",
+      location: "Location",
     },
     {
       id: 2,
-      name: "Digital Marketing Course",
-      vendor: "EduPro",
-      price: 99.99,
-      originalPrice: 199.99,
-      rating: 4.9,
-      reviews: 89,
-      downloads: 567,
-      image:
-        "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop",
-      category: "Courses",
+      name: "Product Name",
+      shopName: "Shop Name",
+      location: "Location",
     },
     {
       id: 3,
-      name: "Mobile App UI Kit",
-      vendor: "DesignHub",
-      price: 19.99,
-      originalPrice: 39.99,
-      rating: 4.7,
-      reviews: 203,
-      downloads: 890,
-      image:
-        "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=300&fit=crop",
-      category: "Design Resources",
+      name: "Product Name",
+      shopName: "Shop Name",
+      location: "Location",
     },
     {
       id: 4,
-      name: "Business Plan Template",
-      vendor: "BizTools",
-      price: 19.99,
-      originalPrice: 39.99,
-      rating: 4.6,
-      reviews: 156,
-      downloads: 445,
-      image:
-        "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=300&fit=crop",
-      category: "Business",
+      name: "Product Name",
+      shopName: "Shop Name",
+      location: "Location",
     },
   ];
 
   return (
-    <section className="py-16 bg-neutral-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-12">
-          <div>
-            <h2 className="text-3xl font-bold text-neutral-900 font-display mb-2">
-              Featured Products
-            </h2>
-            <p className="text-neutral-600">
-              Handpicked digital products from our top vendors
-            </p>
-          </div>
-          <Link href="/products" className="btn-outline">
-            View All
-            <ArrowRight className="ml-2 w-4 h-4" />
-          </Link>
+    <section className="pt-11 pb-8 sm:pb-12 md:pb-16">
+      <div
+        className="bg-[#FF7300] border-2 border-neutral-50 rounded-[10px] p-4 sm:p-6 mb-8 sm:mb-10 md:mb-12"
+        style={{ height: "71px" }}
+      >
+        <div className="flex items-center h-full">
+          <Store className="w-6 h-6 text-white mr-2" />
+          <span className="text-white font-semibold text-lg sm:text-xl">
+            Sponsored Products
+          </span>
         </div>
+      </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
-            <div
-              key={product.id}
-              className="card group hover:shadow-medium transition-shadow duration-200"
-            >
-              <div className="relative">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={400}
-                  height={300}
-                  className="w-full h-48 object-cover rounded-t-xl"
-                />
-                <div className="absolute top-3 right-3">
-                  <button className="p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors duration-200">
-                    <Heart className="w-4 h-4 text-neutral-600" />
-                  </button>
-                </div>
-                <div className="absolute bottom-3 left-3">
-                  <span className="px-2 py-1 bg-primary-500 text-white text-xs rounded-full">
-                    {product.category}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-4">
-                <h3 className="font-semibold text-neutral-900 mb-1 group-hover:text-primary-500 transition-colors duration-200">
-                  {product.name}
-                </h3>
-                <p className="text-sm text-neutral-500 mb-2">
-                  by {product.vendor}
-                </p>
-
-                <div className="flex items-center mb-3">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < Math.floor(product.rating)
-                            ? "text-secondary-400 fill-current"
-                            : "text-neutral-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm text-neutral-500 ml-2">
-                    ({product.reviews})
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg font-bold text-neutral-900">
-                      ₦{product.price.toLocaleString()}
-                    </span>
-                    <span className="text-sm text-neutral-500 line-through">
-                      ₦{product.originalPrice.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-sm text-neutral-500">
-                    <Download className="w-4 h-4 mr-1" />
-                    {product.downloads}
-                  </div>
-                </div>
-
-                <button className="w-full btn-primary">Add to Cart</button>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+        {featuredProducts.map((product) => (
+          <div
+            key={product.id}
+            className="h-80 sm:h-96 md:h-[380px] shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-[#9D9C9C]"
+            style={{ width: "306px", maxWidth: "100%" }}
+          >
+            <div className="relative">
+              <Image
+                src="/images/product.png"
+                alt={product.name}
+                width={400}
+                height={300}
+                className="w-full object-cover h-48 sm:h-56 md:h-60"
+              />
+              <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
+                <button
+                  onClick={() => toggleLike(product.id)}
+                  className="p-1.5 sm:p-2 transition-colors duration-200"
+                >
+                  <Heart
+                    className={`w-4 h-4 sm:w-5 sm:h-5 ${likedProducts.includes(product.id)
+                      ? "text-red-500 fill-current"
+                      : "text-neutral-600"
+                      }`}
+                  />
+                </button>
               </div>
             </div>
-          ))}
-        </div>
+
+            <div className="p-3 sm:p-4 flex flex-col space-y-2 h-32 sm:h-40 md:h-[140px]">
+              <div>
+                <h3 className="font-semibold text-neutral-900 text-sm sm:text-base">
+                  {product.name}
+                </h3>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-base sm:text-lg font-bold text-neutral-900">
+                      ₦20,000
+                    </span>
+                    <span className="text-sm text-neutral-500 line-through">
+                      ₦20,000
+                    </span>
+                  </div>
+                  <div className="bg-[#D7195B33] rounded px-2 py-1 text-xs">
+                    <span className="text-[#D7195B] font-medium">-73%</span>
+                  </div>
+                </div>
+
+                <p className="text-sm text-neutral-600">
+                  {product.shopName} - {product.location}
+                </p>
+              </div>
+
+              <div className="flex items-center">
+                {[...Array(5)].map((_, i) => (
+                  <svg
+                    key={i}
+                    className="w-3 h-3 sm:w-4 sm:h-4 text-[#FC5991] mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1}
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
+                  </svg>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );
