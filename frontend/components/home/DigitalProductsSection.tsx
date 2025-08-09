@@ -96,7 +96,7 @@ export default function DigitalProductsSection() {
 
       <div className="text-center">
         <Link
-          href="/products"
+          href="/view-products"
           className="inline-block bg-transparent text-white border-2 border-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-medium hover:bg-white hover:text-[#D7195B] transition-colors duration-200 text-sm sm:text-base"
         >
           View More
