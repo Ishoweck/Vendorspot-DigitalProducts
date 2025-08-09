@@ -26,7 +26,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/terms"
+                  href="https://www.vendorspotng.com/terms"
                   className="text-neutral-400 hover:text-primary-500 transition-colors text-sm"
                 >
                   Terms & Conditions
@@ -34,7 +34,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/privacy"
+                  href="https://www.vendorspotng.com/privacy-policy"
                   className="text-neutral-400 hover:text-primary-500 transition-colors text-sm"
                 >
                   Privacy Policy
@@ -64,7 +64,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/how-to-buy"
+                  href="https://www.vendorspotng.com/how-to-buy"
                   className="text-neutral-400 hover:text-primary-500 transition-colors text-sm"
                 >
                   How to Buy
@@ -72,7 +72,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/returns-refunds"
+                  href="https://www.vendorspotng.com/return-policy"
                   className="text-neutral-400 hover:text-primary-500 transition-colors text-sm"
                 >
                   Returns & Refunds

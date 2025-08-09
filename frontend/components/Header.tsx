@@ -64,10 +64,16 @@ export default function Header() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/our-policy" className="text-sm hover:underline">
+              <Link
+                href="https://www.vendorspotng.com/privacy-policy"
+                className="text-sm hover:underline"
+              >
                 Our Policy
               </Link>
-              <div className="flex items-center space-x-2">
+              <Link
+                href="https://www.vendorspotng.com/faq"
+                className="flex items-center space-x-2 hover:underline"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -87,7 +93,7 @@ export default function Header() {
                   <path d="M19 19a2.003 2.003 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" />
                 </svg>
                 <span className="hidden sm:inline">Vendor FAQ's</span>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -187,25 +193,36 @@ export default function Header() {
             </button>
 
             <nav className="hidden lg:flex items-center space-x-8">
-              {[
-                "Sell On Spot",
-                "Products",
-                "Digital Products",
-                "Shops",
-                "Delivery",
-              ].map((item) => (
-                <Link
-                  key={item}
-                  href={`/${item.toLowerCase().replace(/\s+/g, "-")}`}
-                  className={`font-medium transition-colors hover:text-secondary-500 ${
-                    pathname === `/${item.toLowerCase().replace(/\s+/g, "-")}`
-                      ? "text-secondary-500"
-                      : ""
-                  }`}
-                >
-                  {item}
-                </Link>
-              ))}
+              <Link
+                href="https://www.vendorspotng.com/sell-on-spot"
+                className="font-medium transition-colors hover:text-secondary-500"
+              >
+                Sell On Spot
+              </Link>
+              <Link
+                href="https://www.vendorspotng.com/products"
+                className="font-medium transition-colors hover:text-secondary-500"
+              >
+                Products
+              </Link>
+              <Link
+                href="/digital-products"
+                className={`font-medium transition-colors hover:text-secondary-500 ${pathname === "/digital-products" ? "text-secondary-500" : ""}`}
+              >
+                Digital Products
+              </Link>
+              <Link
+                href="https://www.vendorspotng.com/shops"
+                className="font-medium transition-colors hover:text-secondary-500"
+              >
+                Shops
+              </Link>
+              <Link
+                href="/delivery"
+                className={`font-medium transition-colors hover:text-secondary-500 ${pathname === "/delivery" ? "text-secondary-500" : ""}`}
+              >
+                Delivery
+              </Link>
             </nav>
           </div>
         </div>
