@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ProductsView() {
@@ -57,9 +58,10 @@ export default function ProductsView() {
         <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
             {digitalProducts.map((product) => (
-              <div
+              <Link
                 key={product.id}
-                className="w-full bg-white rounded-[5px] overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200 h-80 sm:h-96 md:h-[420px]"
+                href={`/products/${product.id}`}
+                className="w-full bg-white rounded-[5px] overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200 h-80 sm:h-96 md:h-[420px] block"
                 style={{ aspectRatio: "255/374" }}
               >
                 <div
@@ -120,7 +122,7 @@ export default function ProductsView() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
