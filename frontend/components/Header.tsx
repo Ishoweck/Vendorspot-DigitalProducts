@@ -1,19 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, X, Phone, Mail, Users, ChevronDown, Menu } from "lucide-react";
-import { IconCategory2 } from "@tabler/icons-react";
+import { Search, X, Users, Menu } from "lucide-react";
+import MobileSidebar from "./MobileSidebar";
 
 export default function Header() {
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [advertState, setAdvertState] = useState<
     "expanded" | "compact" | "hidden"
   >("expanded");
-  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,24 +37,25 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50">
       <div
-        className={`bg-advert-bg text-black text-center px-4 text-sm flex items-center justify-center transition-all duration-300 ease-out overflow-hidden ${advertState === "expanded"
-          ? "h-[60px]"
-          : advertState === "compact"
-            ? "h-[40px]"
-            : "h-0"
-          }`}
+        className={`bg-[#FC5991] text-white text-center px-4 text-sm flex items-center justify-center transition-all duration-300 ease-out overflow-hidden ${
+          advertState === "expanded"
+            ? "h-[60px]"
+            : advertState === "compact"
+              ? "h-[40px]"
+              : "h-0"
+        }`}
       >
         <p className="font-medium whitespace-nowrap">Advert Banner</p>
       </div>
-
-
 
       <div className="bg-main-bg">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between py-3">
             <div className="flex items-center">
-              {/* Mobile hamburger menu */}
-              <button className="lg:hidden mr-3">
+              <button
+                className="lg:hidden mr-3"
+                onClick={() => setIsMobileSidebarOpen(true)}
+              >
                 <Menu className="w-6 h-6 text-black" />
               </button>
 
@@ -148,30 +147,10 @@ export default function Header() {
         </div>
       </div>
 
-      {isCategoriesOpen && (
-        <div className="absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-40">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {[
-                "Web Templates",
-                "Digital Courses",
-                "Design Resources",
-                "Business Tools",
-                "Mobile Apps",
-                "Graphics",
-              ].map((category) => (
-                <Link
-                  key={category}
-                  href={`/categories/${category.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="text-gray-700 hover:text-primary-500 font-medium"
-                >
-                  {category}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <MobileSidebar
+        isOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
+      />
     </header>
   );
 }
