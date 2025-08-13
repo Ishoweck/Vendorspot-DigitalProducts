@@ -1,124 +1,163 @@
+// User Types
 export interface User {
-  id: string;
+  _id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: "CUSTOMER" | "VENDOR" | "ADMIN";
+  role: "CUSTOMER" | "VENDOR" | "ADMIN" | "MODERATOR";
+  status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "BANNED";
   isEmailVerified: boolean;
+  isPhoneVerified: boolean;
   avatar?: string;
-  isVendor: boolean;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country: string;
   createdAt: string;
   updatedAt: string;
 }
 
+// Product Types
 export interface Product {
-  id: string;
+  _id: string;
+  vendorId: string;
+  categoryId: string;
   name: string;
   slug: string;
   description: string;
+  shortDescription?: string;
   price: number;
   originalPrice?: number;
   discountPercentage?: number;
-  thumbnail?: string;
-  images: string[];
-  category: Category;
-  vendor: Vendor;
-  vendorId: string;
-  rating: number;
-  reviewCount: number;
-  reviews: number;
-  downloads: number;
   isDigital: boolean;
   fileUrl?: string;
   fileSize?: number;
   fileType?: string;
+  previewUrl?: string;
+  thumbnail?: string;
+  images: string[];
+  tags: string[];
+  features: string[];
+  requirements?: string;
+  instructions?: string;
+  licenseType?:
+    | "SINGLE_USE"
+    | "MULTIPLE_USE"
+    | "UNLIMITED"
+    | "TIME_LIMITED"
+    | "SUBSCRIPTION";
+  licenseDuration?: number;
   downloadLimit?: number;
-  status: "active" | "inactive" | "pending";
+  isActive: boolean;
+  isFeatured: boolean;
+  isApproved: boolean;
+  approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
+  rejectionReason?: string;
+  viewCount: number;
+  downloadCount: number;
+  rating: number;
+  reviewCount: number;
   createdAt: string;
   updatedAt: string;
 }
 
+// Category Types
 export interface Category {
-  id: string;
+  _id: string;
   name: string;
   slug: string;
   description?: string;
   image?: string;
-  icon?: string;
-  productCount: number;
-}
-
-export interface Vendor {
-  id: string;
-  businessName: string;
-  businessDescription?: string;
-  logo?: string;
-  userId: string;
-  user: User;
-  rating: number;
-  totalSales: number;
-  totalProducts: number;
-  verificationStatus: "PENDING" | "APPROVED" | "REJECTED";
-  status: "active" | "inactive" | "pending";
+  parentId?: string;
+  isActive: boolean;
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Order {
-  id: string;
-  orderNumber: string;
-  status: "PENDING" | "CONFIRMED" | "PROCESSING" | "DELIVERED" | "CANCELLED";
-  total: number;
-  currency: string;
-  paymentStatus: "PENDING" | "PAID" | "FAILED";
-  items: OrderItem[];
-  createdAt: string;
-}
-
-export interface OrderItem {
-  id: string;
-  product: Product;
-  quantity: number;
-  price: number;
-  total: number;
-  downloadUrl?: string;
-  downloadExpiry?: string;
-}
-
-export interface CartItem {
-  id: string;
-  product: Product;
-  quantity: number;
-}
-
-export interface Review {
-  id: string;
+// Vendor Types
+export interface Vendor {
+  _id: string;
+  userId: string;
+  businessName: string;
+  businessDescription?: string;
+  businessAddress?: string;
+  businessPhone?: string;
+  businessEmail?: string;
+  website?: string;
+  logo?: string;
+  banner?: string;
+  verificationStatus: "PENDING" | "APPROVED" | "REJECTED";
+  verificationDocuments: string[];
   rating: number;
-  title?: string;
-  comment?: string;
-  user: User;
+  totalSales: number;
+  totalProducts: number;
+  commissionRate: number;
+  isActive: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
-export interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
-  isRead: boolean;
+// Cart Types
+export interface CartItem {
+  _id: string;
+  userId: string;
+  productId: string;
+  quantity: number;
   createdAt: string;
+  updatedAt: string;
 }
 
+// API Response Types
 export interface ApiResponse<T> {
-  data: T;
-  message?: string;
   success: boolean;
+  message?: string;
+  data?: T;
+  error?: string;
 }
 
 export interface PaginatedResponse<T> {
+  success: boolean;
   data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+// Auth Types
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+  refreshToken: string;
+}
+
+// Product Query Types
+export interface ProductQuery {
+  page?: number;
+  limit?: number;
+  category?: string;
+  search?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sortBy?: "createdAt" | "price" | "rating" | "downloads";
+  sortOrder?: "asc" | "desc";
+  isActive?: boolean;
+  isFeatured?: boolean;
 }

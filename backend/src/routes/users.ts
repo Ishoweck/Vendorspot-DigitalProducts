@@ -2,12 +2,36 @@ import { Router } from "express";
 
 const router = Router();
 
-router.get("/profile", (req, res) => {
-  res.json({ message: "Get user profile" });
+// Get user profile
+router.get("/profile", async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: "Profile retrieved successfully",
+      data: { message: "Get user profile - MongoDB implementation needed" },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to get profile",
+    });
+  }
 });
 
-router.put("/profile", (req, res) => {
-  res.json({ message: "Update user profile" });
+// Update user profile
+router.put("/profile", async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: { message: "Update user profile - MongoDB implementation needed" },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update profile",
+    });
+  }
 });
 
 export default router;

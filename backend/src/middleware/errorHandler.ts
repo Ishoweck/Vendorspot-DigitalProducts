@@ -1,37 +1,81 @@
 import { Request, Response, NextFunction } from "express";
-import { logger } from "@/utils/logger";
+import { logger } from "../services/logger";
+import { config } from "../config/config";
 
 export interface AppError extends Error {
   statusCode?: number;
+  status?: string;
   isOperational?: boolean;
 }
 
 export const errorHandler = (
-  err: AppError,
+  error: AppError,
   req: Request,
   res: Response,
   next: NextFunction
-): void => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
+) => {
+  let statusCode = error.statusCode || 500;
+  let message = error.message || "Internal Server Error";
 
-  logger.error({
-    error: err.message,
-    stack: err.stack,
+  // Log error
+  logger.error("Error occurred:", {
+    error: error.message,
+    stack: error.stack,
     url: req.url,
     method: req.method,
     ip: req.ip,
     userAgent: req.get("User-Agent"),
   });
 
+  // Mongoose validation error
+  if (error.name === "ValidationError") {
+    statusCode = 400;
+    message = "Validation Error";
+  }
+
+  // Mongoose duplicate key error
+  if (error.name === "MongoServerError" && (error as any).code === 11000) {
+    statusCode = 400;
+    message = "Duplicate field value entered";
+  }
+
+  // Mongoose cast error
+  if (error.name === "CastError") {
+    statusCode = 400;
+    message = "Invalid ID format";
+  }
+
+  // JWT errors
+  if (error.name === "JsonWebTokenError") {
+    statusCode = 401;
+    message = "Invalid token";
+  }
+
+  if (error.name === "TokenExpiredError") {
+    statusCode = 401;
+    message = "Token expired";
+  }
+
   res.status(statusCode).json({
     success: false,
-    error: {
-      code: statusCode,
-      message:
-        process.env.NODE_ENV === "production"
-          ? "Internal Server Error"
-          : message,
-    },
+    message,
+    ...(config.nodeEnv === "development" && {
+      stack: error.stack,
+      error: error,
+    }),
   });
+};
+
+// Async error handler wrapper
+export const asyncHandler =
+  (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+
+// Create custom error
+export const createError = (message: string, statusCode: number): AppError => {
+  const error: AppError = new Error(message);
+  error.statusCode = statusCode;
+  error.isOperational = true;
+  return error;
 };

@@ -2,24 +2,83 @@ import { Router } from "express";
 
 const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({ message: "Get all products" });
+// Get all products
+router.get("/", async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: "Products retrieved successfully",
+      data: { message: "Get products - MongoDB implementation needed" },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to get products",
+    });
+  }
 });
 
-router.get("/:id", (req, res) => {
-  res.json({ message: `Get product ${req.params.id}` });
+// Get product by ID
+router.get("/:id", async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: "Product retrieved successfully",
+      data: { message: "Get product by ID - MongoDB implementation needed" },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to get product",
+    });
+  }
 });
 
-router.post("/", (req, res) => {
-  res.json({ message: "Create product" });
+// Create new product
+router.post("/", async (req, res) => {
+  try {
+    res.status(201).json({
+      success: true,
+      message: "Product created successfully",
+      data: { message: "Create product - MongoDB implementation needed" },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to create product",
+    });
+  }
 });
 
-router.put("/:id", (req, res) => {
-  res.json({ message: `Update product ${req.params.id}` });
+// Update product
+router.put("/:id", async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      data: { message: "Update product - MongoDB implementation needed" },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update product",
+    });
+  }
 });
 
-router.delete("/:id", (req, res) => {
-  res.json({ message: `Delete product ${req.params.id}` });
+// Delete product
+router.delete("/:id", async (req, res) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: "Product deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete product",
+    });
+  }
 });
 
 export default router;

@@ -7,29 +7,27 @@ Nigeria's most secure online marketplace for digital products. Discover trusted 
 - **Secure Digital Product Marketplace**: Safe, stress-free buying and selling of digital products
 - **Trusted Vendor System**: Verified vendors with reputation scoring
 - **Instant Digital Delivery**: Immediate access to purchased digital products
-- **Secure Payment Processing**: Multiple payment options with escrow protection
+- **Secure Payment Processing**: Paystack integration for secure transactions
 - **User Protection**: Anti-scam measures for both buyers and sellers
-- **Real-time Notifications**: Order updates and delivery confirmations
+- **Responsive Design**: Mobile-first design with excellent user experience
 
 ## Tech Stack
 
-- **Frontend**: React.js with TypeScript
-- **Backend**: Node.js with Express.js
-- **Database**: PostgreSQL with Redis for caching
+- **Frontend**: Next.js 14 with TypeScript (deployed on **Vercel**)
+- **Backend**: Node.js with Express.js and TypeScript (deployed on **Render**)
+- **Database**: MongoDB with Mongoose ODM
 - **Authentication**: JWT with refresh tokens
-- **File Storage**: AWS S3 for digital products
+- **File Storage**: Cloudinary for digital products and images
 - **Payment Processing**: Paystack integration
-- **Deployment**: AWS EC2 with Docker
-- **Monitoring**: AWS CloudWatch
+- **Styling**: Tailwind CSS with responsive design
 
 ## Project Structure
 
 ```
 vendorspot-digital-products/
-├── frontend/                 # React.js frontend application
+├── frontend/                 # Next.js frontend application
 ├── backend/                  # Node.js/Express.js API server
 ├── shared/                   # Shared types and utilities
-├── infrastructure/           # AWS infrastructure as code
 ├── docs/                    # Documentation
 └── scripts/                 # Deployment and utility scripts
 ```
@@ -39,9 +37,8 @@ vendorspot-digital-products/
 ### Prerequisites
 
 - Node.js 18+
-- PostgreSQL 14+
-- Redis 6+
-- Docker & Docker Compose
+- MongoDB (local installation or MongoDB Atlas account)
+- pnpm (recommended) or npm
 
 ### Development Setup
 
@@ -51,53 +48,63 @@ git clone <repository-url>
 cd vendorspot-digital-products
 
 # Install dependencies
+pnpm install
+# or
 npm run install:all
 
+# Set up environment variables
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+
+# Configure MongoDB URI in backend/.env
 # Start development environment
 npm run dev
 ```
 
 ### Production Deployment
 
-```bash
-# Deploy to AWS EC2
-npm run deploy:production
-```
+#### Backend (Render)
 
-## Environment Variables
+1. Connect GitHub repository to Render
+2. Create new Web Service
+3. Set build command: `cd backend && npm install && npm run build`
+4. Set start command: `cd backend && npm start`
+5. Add environment variables
 
-Create `.env` files in both `frontend/` and `backend/` directories:
+#### Frontend (Vercel)
+
+1. Connect GitHub repository to Vercel
+2. Set framework preset to "Next.js"
+3. Set root directory to "frontend"
+4. Add environment variables
 
 ### Backend (.env)
 
 ```
 NODE_ENV=development
 PORT=5000
-DATABASE_URL=postgresql://user:password@localhost:5432/vendorspot
-REDIS_URL=redis://localhost:6379
+MONGODB_URI=mongodb://localhost:27017/vendorspot
 JWT_SECRET=your-jwt-secret
 PAYSTACK_SECRET_KEY=your-paystack-secret
-AWS_ACCESS_KEY_ID=your-aws-access-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret-key
-AWS_REGION=us-east-1
-S3_BUCKET_NAME=vendorspot-digital-products
+PAYSTACK_PUBLIC_KEY=your-paystack-public-key
+CLOUDINARY_URL=your-cloudinary-url
+CORS_ORIGINS=http://localhost:3000,https://your-frontend-domain.vercel.app
 ```
 
 ### Frontend (.env)
 
 ```
-REACT_APP_API_URL=http://localhost:5000/api
-REACT_APP_PAYSTACK_PUBLIC_KEY=your-paystack-public-key
-REACT_APP_S3_BUCKET=vendorspot-digital-products
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=your-paystack-public-key
 ```
 
 ## Available Scripts
 
-- `npm run dev` - Start development environment
-- `npm run build` - Build for production
-- `npm run test` - Run tests
-- `npm run deploy:staging` - Deploy to staging
-- `npm run deploy:production` - Deploy to production
+- `npm run dev` - Start both frontend and backend development servers
+- `npm run dev:frontend` - Start only frontend development server
+- `npm run dev:backend` - Start only backend development server
+- `npm run build` - Build all packages for production
+- `npm run lint` - Lint all packages
 
 ## Documentation
 

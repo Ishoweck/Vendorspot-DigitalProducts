@@ -45,19 +45,8 @@ if [ ! -f "frontend/.env" ]; then
   fi
 fi
 
-# Generate Prisma client
-echo "Setting up database..."
-cd backend
-if [ -f "prisma/schema.prisma" ]; then
-  pnpm prisma generate
-  echo "Prisma client generated successfully"
-else
-  echo "Error: Prisma schema not found at backend/prisma/schema.prisma"
-fi
-cd ..
-
 echo "Setup complete! Next steps:"
 echo "1. Configure environment variables in backend/.env and frontend/.env"
-echo "2. Start PostgreSQL and Redis"
-echo "3. Run: npm run db:migrate"
+echo "2. Set up MongoDB (local installation or MongoDB Atlas)"
+echo "3. Update MONGODB_URI in backend/.env"
 echo "4. Run: npm run dev" 

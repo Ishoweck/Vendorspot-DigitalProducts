@@ -1,40 +1,23 @@
-import "reflect-metadata";
-import "express-async-errors";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
-import slowDown from "express-slow-down";
-
-import hpp from "hpp";
+import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { createServer } from "http";
 import { Server } from "socket.io";
+import { config } from "./config/config";
+import authRoutes from "./routes/auth";
+import userRoutes from "./routes/users";
+import productRoutes from "./routes/products";
+import categoryRoutes from "./routes/categories";
+import adminRoutes from "./routes/admin";
 
-// Import configurations
-import { config } from "@/config/config";
-import { logger } from "@/utils/logger";
-import { errorHandler } from "@/middleware/errorHandler";
-import { notFoundHandler } from "@/middleware/notFoundHandler";
+import { errorHandler } from "./middleware/errorHandler";
+import { notFoundHandler } from "./middleware/notFoundHandler";
 
-// Import routes
-import authRoutes from "@/routes/auth";
-import userRoutes from "@/routes/users";
-import productRoutes from "@/routes/products";
-import orderRoutes from "@/routes/orders";
-import paymentRoutes from "@/routes/payments";
-import vendorRoutes from "@/routes/vendors";
-import categoryRoutes from "@/routes/categories";
-import reviewRoutes from "@/routes/reviews";
-import notificationRoutes from "@/routes/notifications";
-import adminRoutes from "@/routes/admin";
-import webhookRoutes from "@/routes/webhooks";
-
-// Import services
-import { DatabaseService } from "@/services/DatabaseService";
-import { RedisService } from "@/services/RedisService";
+import { logger } from "./services/logger";
 import { SocketService } from "@/services/SocketService";
 
 // Load environment variables
@@ -42,39 +25,29 @@ dotenv.config();
 
 class App {
   public app: express.Application;
-  public server: any;
-  public io: Server;
 
   constructor() {
     this.app = express();
-    this.server = createServer(this.app);
-    this.io = new Server(this.server, {
-      cors: {
-        origin: config.corsOrigins,
-        methods: ["GET", "POST"],
-      },
-    });
-
+    this.connectDatabase();
     this.initializeMiddlewares();
     this.initializeRoutes();
     this.initializeErrorHandling();
     this.initializeServices();
   }
 
+  private async connectDatabase(): Promise<void> {
+    try {
+      await mongoose.connect(config.mongodbUri);
+      console.log("✅ MongoDB connected successfully");
+    } catch (error) {
+      console.error("❌ MongoDB connection failed:", error);
+      process.exit(1);
+    }
+  }
+
   private initializeMiddlewares(): void {
     // Security middleware
-    this.app.use(
-      helmet({
-        contentSecurityPolicy: {
-          directives: {
-            defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
-            scriptSrc: ["'self'"],
-            imgSrc: ["'self'", "data:", "https:"],
-          },
-        },
-      })
-    );
+    this.app.use(helmet());
 
     // CORS
     this.app.use(
@@ -88,21 +61,14 @@ class App {
 
     // Rate limiting
     const limiter = rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100, // limit each IP to 100 requests per windowMs
+      windowMs: 15 * 60 * 1000,
+      max: 100,
       message: "Too many requests from this IP, please try again later.",
       standardHeaders: true,
       legacyHeaders: false,
     });
 
-    const speedLimiter = slowDown({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      delayAfter: 50, // allow 50 requests per 15 minutes, then...
-      delayMs: 500, // begin adding 500ms of delay per request above 50
-    });
-
     this.app.use("/api/", limiter);
-    this.app.use("/api/", speedLimiter);
 
     // Body parsing middleware
     this.app.use(express.json({ limit: "10mb" }));
@@ -112,19 +78,17 @@ class App {
     this.app.use(compression());
 
     // Logging
-    this.app.use(
-      morgan("combined", {
-        stream: {
-          write: (message: string) => logger.info(message.trim()),
-        },
-      })
-    );
+    if (config.nodeEnv !== "test") {
+      this.app.use(
+        morgan("combined", {
+          stream: {
+            write: (message: string) => logger.info(message.trim()),
+          },
+        })
+      );
+    }
 
-    // Security middleware
-    // XSS protection handled by helmet
-    this.app.use(hpp());
-
-    // Trust proxy
+    // Trust proxy for Render deployment
     this.app.set("trust proxy", 1);
   }
 
@@ -152,14 +116,6 @@ class App {
     this.app.use("/api/admin", adminRoutes);
     this.app.use("/api/webhooks", webhookRoutes);
 
-    // Swagger documentation
-    if (config.nodeEnv === "development") {
-      const swaggerUi = require("swagger-ui-express");
-      const swaggerSpec = require("./swagger");
-      this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-    }
-  }
-
   private initializeErrorHandling(): void {
     // 404 handler
     this.app.use(notFoundHandler);
@@ -168,15 +124,8 @@ class App {
     this.app.use(errorHandler);
   }
 
-  private async initializeServices(): Promise<void> {
+    private async initializeServices(): Promise<void> {
     try {
-      // Initialize database
-      await DatabaseService.initialize();
-      logger.info("Database connected successfully");
-
-      // Initialize Redis
-      await RedisService.initialize();
-      logger.info("Redis connected successfully");
 
       // Initialize Socket.IO
       SocketService.initialize(this.io);
@@ -187,46 +136,37 @@ class App {
     }
   }
 
-  public async start(): Promise<void> {
-    try {
-      const port = config.port;
+  public start(): void {
+    const port = config.port;
 
-      this.server.listen(port, () => {
-        logger.info(
-          `🚀 Server running on port ${port} in ${config.nodeEnv} mode`
-        );
-        logger.info(`📚 API Documentation: http://localhost:${port}/api-docs`);
-        logger.info(`🏥 Health Check: http://localhost:${port}/health`);
-      });
+    this.app.listen(port, () => {
+      console.log(
+        `🚀 Server running on port ${port} in ${config.nodeEnv} mode`
+      );
+      console.log(`🏥 Health Check: http://localhost:${port}/health`);
+    });
 
-      // Graceful shutdown
-      process.on("SIGTERM", () => {
-        logger.info("SIGTERM received, shutting down gracefully");
-        this.server.close(() => {
-          logger.info("Process terminated");
-          process.exit(0);
-        });
+    // Graceful shutdown
+    process.on("SIGTERM", () => {
+      console.log("SIGTERM received, shutting down gracefully");
+      mongoose.connection.close(() => {
+        console.log("MongoDB connection closed");
+        process.exit(0);
       });
+    });
 
-      process.on("SIGINT", () => {
-        logger.info("SIGINT received, shutting down gracefully");
-        this.server.close(() => {
-          logger.info("Process terminated");
-          process.exit(0);
-        });
+    process.on("SIGINT", () => {
+      console.log("SIGINT received, shutting down gracefully");
+      mongoose.connection.close(() => {
+        console.log("MongoDB connection closed");
+        process.exit(0);
       });
-    } catch (error) {
-      logger.error("Failed to start server:", error);
-      process.exit(1);
-    }
+    });
   }
 }
 
 // Start the application
 const app = new App();
-app.start().catch((error) => {
-  logger.error("Failed to start application:", error);
-  process.exit(1);
-});
+app.start();
 
 export default app;
