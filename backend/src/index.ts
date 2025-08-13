@@ -10,8 +10,8 @@ import { Server } from "socket.io";
 import { config } from "./config/config";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/users";
-import productRoutes from "./routes/products";
-import categoryRoutes from "./routes/categories";
+// import productRoutes from "./routes/products";
+// import categoryRoutes from "./routes/categories";
 import adminRoutes from "./routes/admin";
 
 import { errorHandler } from "./middleware/errorHandler";

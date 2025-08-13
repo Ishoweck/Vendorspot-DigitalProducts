@@ -1,17 +1,17 @@
-import { Router } from "express";
+// import { Router } from "express";
 
-const router = Router();
+// const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({ message: "Get user orders" });
-});
+// router.get("/", (req, res) => {
+//   res.json({ message: "Get user orders" });
+// });
 
-router.post("/", (req, res) => {
-  res.json({ message: "Create order" });
-});
+// router.post("/", (req, res) => {
+//   res.json({ message: "Create order" });
+// });
 
-router.get("/:id", (req, res) => {
-  res.json({ message: `Get order ${req.params.id}` });
-});
+// router.get("/:id", (req, res) => {
+//   res.json({ message: `Get order ${req.params.id}` });
+// });
 
-export default router;
+// export default router;

@@ -1,13 +1,13 @@
-import { Router } from "express";
+// import { Router } from "express";
 
-const router = Router();
+// const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({ message: "Get reviews" });
-});
+// router.get("/", (req, res) => {
+//   res.json({ message: "Get reviews" });
+// });
 
-router.post("/", (req, res) => {
-  res.json({ message: "Create review" });
-});
+// router.post("/", (req, res) => {
+//   res.json({ message: "Create review" });
+// });
 
-export default router;
+// export default router;
