@@ -106,9 +106,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <QueryProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
+          {children}
           <Toaster
             position="top-right"
             toastOptions={{

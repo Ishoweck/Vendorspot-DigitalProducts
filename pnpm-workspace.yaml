@@ -2,16 +2,7 @@ packages:
   - frontend
   - backend
   - shared
-  - infrastructure
 
 onlyBuiltDependencies:
-  - '@prisma/client'
-  - '@prisma/engines'
-  - '@scarf/scarf'
-  - aws-sdk
-  - esbuild
-  - ffmpeg-static
-  - msgpackr-extract
-  - prisma
-  - sharp
+  - core-js
   - unrs-resolver
