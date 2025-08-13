@@ -10,17 +10,20 @@ interface MobileSidebarProps {
 }
 
 export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
-  if (!isOpen) return null;
-
   return (
     <>
-      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
+        className={`fixed inset-0 bg-black transition-opacity duration-300 z-50 lg:hidden ${
+          isOpen ? "bg-opacity-50" : "bg-opacity-0 pointer-events-none"
+        }`}
         onClick={onClose}
       />
 
-      <div className="fixed top-0 left-0 h-full w-80 bg-white shadow-lg z-50 lg:hidden transform transition-transform duration-300 ease-in-out">
+      <div
+        className={`fixed top-0 left-0 h-full w-80 bg-white shadow-lg z-50 lg:hidden transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold text-black">Menu</h2>
           <button
@@ -39,15 +42,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
               className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <Users className="w-5 h-5 text-gray-600" />
-              <span className="font-medium text-black">Login</span>
-            </Link>
-
-            <Link
-              href="/signup"
-              onClick={onClose}
-              className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <span className="font-medium text-black">Sign Up</span>
+              <span className="font-medium text-black">Login/Signup</span>
             </Link>
           </div>
 

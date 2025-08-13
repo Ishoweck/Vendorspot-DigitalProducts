@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import Image from "next/image";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
 
-export default function RegisterPage() {
+export default function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,8 +33,30 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F8F8F8] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
+        <div className="flex justify-start">
+          <Link
+            href="/"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-[#D7195B] transition-colors duration-200"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Homepage
+          </Link>
+        </div>
+
+        <div className="text-center">
+          <Link href="/" className="inline-block">
+            <Image
+              src="/images/vendorspot-logo.svg"
+              alt="Vendorspot"
+              width={150}
+              height={50}
+              className="h-12 w-auto"
+            />
+          </Link>
+        </div>
+
         <div className="text-center">
           <h2 className="text-3xl font-bold text-neutral-900 font-display">
             Create Account
@@ -62,7 +85,7 @@ export default function RegisterPage() {
                     required
                     value={formData.firstName}
                     onChange={handleChange}
-                    className="input pl-10"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
                     placeholder="First name"
                   />
                 </div>
@@ -82,7 +105,7 @@ export default function RegisterPage() {
                   required
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="input"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
                   placeholder="Last name"
                 />
               </div>
@@ -104,7 +127,7 @@ export default function RegisterPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="input pl-10"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
                   placeholder="Enter your email"
                 />
               </div>
@@ -126,13 +149,13 @@ export default function RegisterPage() {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="input pl-10 pr-10"
+                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
                   placeholder="Create password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -159,13 +182,13 @@ export default function RegisterPage() {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="input pl-10 pr-10"
+                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
                   placeholder="Confirm password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -183,7 +206,7 @@ export default function RegisterPage() {
                 type="checkbox"
                 checked={formData.isVendor}
                 onChange={handleChange}
-                className="h-4 w-4 text-primary-500 focus:ring-primary-500 border-neutral-300 rounded"
+                className="h-4 w-4 text-[#D7195B] focus:ring-[#D7195B] border-gray-300 rounded"
               />
               <label
                 htmlFor="isVendor"
@@ -201,40 +224,43 @@ export default function RegisterPage() {
                 required
                 checked={formData.agreeToTerms}
                 onChange={handleChange}
-                className="h-4 w-4 text-primary-500 focus:ring-primary-500 border-neutral-300 rounded"
+                className="h-4 w-4 text-[#D7195B] focus:ring-[#D7195B] border-gray-300 rounded"
               />
               <label
                 htmlFor="agreeToTerms"
-                className="ml-2 block text-sm text-neutral-700"
+                className="ml-2 block text-sm text-gray-700"
               >
                 I agree to the{" "}
                 <Link
-                  href="/terms"
-                  className="text-primary-500 hover:text-primary-600"
+                  href="https://www.vendorspotng.com/terms"
+                  className="text-[#D7195B] hover:text-[#B01548]"
                 >
                   Terms of Service
                 </Link>{" "}
                 and{" "}
                 <Link
-                  href="/privacy"
-                  className="text-primary-500 hover:text-primary-600"
+                  href="https://www.vendorspotng.com/privacy-policy"
+                  className="text-[#D7195B] hover:text-[#B01548]"
                 >
                   Privacy Policy
                 </Link>
               </label>
             </div>
 
-            <button type="submit" className="w-full btn-primary">
+            <button
+              type="submit"
+              className="w-full bg-[#D7195B] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#B01548] transition-colors duration-200"
+            >
               Create Account
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-neutral-600">
+            <p className="text-gray-600">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="text-primary-500 hover:text-primary-600 font-medium"
+                className="text-[#D7195B] hover:text-[#B01548] font-medium"
               >
                 Sign in
               </Link>

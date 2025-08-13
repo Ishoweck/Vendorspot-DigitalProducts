@@ -76,14 +76,7 @@ export default function Header() {
                 className="hidden lg:flex items-center space-x-2 text-black hover:text-primary-500 transition-colors group"
               >
                 <Users className="w-5 h-5 group-hover:text-primary-500 transition-colors" />
-                <span className="font-medium">Login</span>
-              </Link>
-
-              <Link
-                href="/signup"
-                className="hidden lg:flex items-center space-x-2 text-black hover:text-primary-500 transition-colors"
-              >
-                <span className="font-medium">Sign Up</span>
+                <span className="font-medium">Login/Signup</span>
               </Link>
 
               <Link
