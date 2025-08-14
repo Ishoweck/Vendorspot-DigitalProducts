@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import { logger } from "@/utils/logger";
 
 class SocketService {
   private static io: Server;
@@ -7,10 +8,10 @@ class SocketService {
     this.io = io;
 
     io.on("connection", (socket) => {
-      console.log("User connected:", socket.id);
+      logger.info("User connected:", socket.id);
 
       socket.on("disconnect", () => {
-        console.log("User disconnected:", socket.id);
+        logger.info("User disconnected:", socket.id);
       });
     });
   }

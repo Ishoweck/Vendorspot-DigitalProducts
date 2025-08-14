@@ -1,13 +1,12 @@
 import { Resend } from "resend";
-import { config } from "../config/config";
-import { logger } from "./logger";
+import { config } from "@/config/config";
+import { logger } from "@/utils/logger";
 
 class EmailService {
   private resend: Resend | null = null;
   private isResendEnabled: boolean = false;
 
   constructor() {
-    // Initialize Resend only if API key is provided
     if (config.resendApiKey) {
       this.resend = new Resend(config.resendApiKey);
       this.isResendEnabled = true;
@@ -28,7 +27,6 @@ class EmailService {
   }) {
     try {
       if (this.isResendEnabled && this.resend) {
-        // Use Resend service
         const result = await this.resend.emails.send({
           from: options.from || config.emailFrom,
           to: Array.isArray(options.to) ? options.to : [options.to],
