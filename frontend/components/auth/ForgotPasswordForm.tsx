@@ -42,7 +42,7 @@ export default function ForgotPasswordForm() {
       {
         onSuccess: () => {
           setIsSubmitted(true);
-          setRetryCount(prev => prev + 1);
+          setRetryCount((prev) => prev + 1);
           setCooldownTime(60);
         },
       }
@@ -64,7 +64,7 @@ export default function ForgotPasswordForm() {
       { email },
       {
         onSuccess: () => {
-          setRetryCount(prev => prev + 1);
+          setRetryCount((prev) => prev + 1);
           setCooldownTime(60 * retryCount);
           toast.success("Password reset email sent again!");
         },
@@ -75,16 +75,15 @@ export default function ForgotPasswordForm() {
   if (isSubmitted) {
     return (
       <>
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-black font-inter">
-            Check Your Email
-          </h2>
-          <p className="mt-2 text-gray-600">
-            We've sent a password reset link to your email address
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-8">
+        <div className="card p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-black font-inter">
+              Check Your Email
+            </h2>
+            <p className="mt-2 text-gray-600">
+              We've sent a password reset link to your email address
+            </p>
+          </div>
           <div className="text-center space-y-4">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
               <Mail className="w-8 h-8 text-green-600" />
@@ -133,7 +132,8 @@ export default function ForgotPasswordForm() {
             </div>
             {retryCount >= 3 && (
               <p className="text-sm text-red-500 text-center">
-                Maximum retry attempts reached. Please contact support if you continue to have issues.
+                Maximum retry attempts reached. Please contact support if you
+                continue to have issues.
               </p>
             )}
           </div>
@@ -144,17 +144,16 @@ export default function ForgotPasswordForm() {
 
   return (
     <>
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-black font-inter">
-          Forgot Password
-        </h2>
-        <p className="mt-2 text-gray-600">
-          Enter your email address and we'll send you a link to reset your
-          password
-        </p>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm p-8">
+      <div className="card p-8">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-black font-inter">
+            Forgot Password
+          </h2>
+          <p className="mt-2 text-gray-600">
+            Enter your email address and we'll send you a link to reset your
+            password
+          </p>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label

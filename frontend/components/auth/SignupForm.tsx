@@ -55,16 +55,15 @@ export default function SignupForm() {
 
   return (
     <>
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-neutral-900 font-display">
-          Create Account
-        </h2>
-        <p className="mt-2 text-neutral-600">
-          Join Vendorspot and start your digital journey
-        </p>
-      </div>
-
       <div className="card p-8">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-neutral-900 font-display">
+            Create Account
+          </h2>
+          <p className="mt-2 text-neutral-600">
+            Join Vendorspot and start your digital journey
+          </p>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>

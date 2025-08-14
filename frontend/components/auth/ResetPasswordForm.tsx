@@ -58,16 +58,15 @@ export default function ResetPasswordForm() {
   if (!token) {
     return (
       <>
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-black font-inter">
-            Invalid Reset Link
-          </h2>
-          <p className="mt-2 text-gray-600">
-            This password reset link is invalid or has expired
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-8">
+        <div className="card p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-black font-inter">
+              Invalid Reset Link
+            </h2>
+            <p className="mt-2 text-gray-600">
+              This password reset link is invalid or has expired
+            </p>
+          </div>
           <div className="text-center">
             <p className="text-gray-600 mb-6">
               Please request a new password reset link.
@@ -87,16 +86,15 @@ export default function ResetPasswordForm() {
   if (isSubmitted) {
     return (
       <>
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-black font-inter">
-            Password Reset Successful
-          </h2>
-          <p className="mt-2 text-gray-600">
-            Your password has been successfully reset
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-8">
+        <div className="card p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-black font-inter">
+              Password Reset Successful
+            </h2>
+            <p className="mt-2 text-gray-600">
+              Your password has been successfully reset
+            </p>
+          </div>
           <div className="text-center">
             <p className="text-gray-600 mb-6">
               You can now sign in with your new password.
@@ -115,14 +113,13 @@ export default function ResetPasswordForm() {
 
   return (
     <>
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-black font-inter">
-          Reset Password
-        </h2>
-        <p className="mt-2 text-gray-600">Enter your new password below</p>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm p-8">
+      <div className="card p-8">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-black font-inter">
+            Reset Password
+          </h2>
+          <p className="mt-2 text-gray-600">Enter your new password below</p>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
