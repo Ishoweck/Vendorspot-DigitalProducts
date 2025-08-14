@@ -56,10 +56,10 @@ export default function FeaturedProductsSection() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-        {featuredProducts.map((product) => (
+        {featuredProducts.map((product, index) => (
           <div
             key={product.id}
-            className="h-80 sm:h-96 md:h-[380px] shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-[#9D9C9C]"
+            className={`h-80 sm:h-96 md:h-[380px] shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-[#9D9C9C] ${index >= 2 ? 'hidden sm:block' : ''}`}
             style={{ width: "306px", maxWidth: "100%" }}
           >
             <div className="relative">
@@ -76,10 +76,11 @@ export default function FeaturedProductsSection() {
                   className="p-1.5 sm:p-2 transition-colors duration-200"
                 >
                   <Heart
-                    className={`w-4 h-4 sm:w-5 sm:h-5 ${likedProducts.includes(product.id)
-                      ? "text-red-500 fill-current"
-                      : "text-neutral-600"
-                      }`}
+                    className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                      likedProducts.includes(product.id)
+                        ? "text-red-500 fill-current"
+                        : "text-neutral-600"
+                    }`}
                   />
                 </button>
               </div>
