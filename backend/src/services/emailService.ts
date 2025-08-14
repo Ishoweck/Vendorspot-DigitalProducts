@@ -100,36 +100,40 @@ class EmailService {
     });
   }
 
-  // Email verification template
-  async sendVerificationEmail(
+  // Email verification OTP template
+  async sendVerificationOTPEmail(
     to: string,
     firstName: string,
-    verificationToken: string
+    verificationOTP: string
   ) {
-    const verificationUrl = `${config.frontendUrl}/verify-email?token=${verificationToken}`;
-
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #D7195B;">Verify Your Email</h1>
-        <p>Hi ${firstName},</p>
-        <p>Please verify your email address by clicking the button below:</p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${verificationUrl}" 
-             style="background-color: #D7195B; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            Verify Email
-          </a>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #D7195B; margin: 0;">Vendorspot</h1>
         </div>
-        <p>If the button doesn't work, copy and paste this link into your browser:</p>
-        <p style="word-break: break-all;">${verificationUrl}</p>
-        <p>This link will expire in 24 hours.</p>
-        <p>If you didn't create an account with us, please ignore this email.</p>
-        <p>The Vendorspot Team</p>
+        <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px; text-align: center;">
+          <div style="margin-bottom: 20px;">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#24BE02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2 style="color: #333; margin: 20px 0;">Account Verification</h2>
+          <p style="color: #666; margin-bottom: 30px;">Hi ${firstName}, use this verification code to verify your email address:</p>
+          <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px dashed #D7195B;">
+            <h1 style="color: #D7195B; font-size: 32px; letter-spacing: 8px; margin: 0; font-family: monospace;">${verificationOTP}</h1>
+          </div>
+          <p style="color: #666; font-size: 14px;">This code will expire in 10 minutes.</p>
+        </div>
+        <div style="text-align: center; margin-top: 30px;">
+          <p style="color: #999; font-size: 12px;">If you didn't create an account with us, please ignore this email.</p>
+          <p style="color: #999; font-size: 12px;">The Vendorspot Team</p>
+        </div>
       </div>
     `;
 
     return this.sendEmail({
       to,
-      subject: "Verify Your Vendorspot Account",
+      subject: "Your Vendorspot Verification Code",
       html,
     });
   }

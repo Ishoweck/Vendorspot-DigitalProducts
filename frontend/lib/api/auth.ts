@@ -34,11 +34,11 @@ export const authAPI = {
   resetPassword: (data: { token: string; password: string }) =>
     api.post("/auth/reset-password", data),
 
-  verifyEmail: (data: { token: string }) =>
-    api.post("/auth/verify-email", data),
+  verifyEmailOTP: (data: { email: string; otp: string }) =>
+    api.post("/auth/verify-email-otp", data),
 
-  resendVerification: (data: { email: string }) =>
-    api.post("/auth/resend-verification", data),
+  resendVerificationOTP: (data: { email: string }) =>
+    api.post("/auth/resend-verification-otp", data),
 
   getCurrentUser: () => api.get<{ success: boolean; data: any }>("/auth/me"),
 };

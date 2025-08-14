@@ -102,7 +102,7 @@ export default function ForgotPasswordForm() {
               <button
                 onClick={handleRetry}
                 disabled={forgotPasswordMutation.isLoading || cooldownTime > 0}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full bg-pink-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-pink-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {forgotPasswordMutation.isLoading ? (
                   <>

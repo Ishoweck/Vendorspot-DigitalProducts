@@ -97,16 +97,29 @@ export const useResetPassword = () => {
   });
 };
 
-export const useVerifyEmail = () => {
+export const useVerifyEmailOTP = () => {
   const queryClient = useQueryClient();
 
-  return useMutation(authAPI.verifyEmail, {
+  return useMutation(authAPI.verifyEmailOTP, {
     onSuccess: () => {
       queryClient.invalidateQueries(["user"]);
       toast.success("Email verified successfully");
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to verify email");
+    },
+  });
+};
+
+export const useResendVerificationOTP = () => {
+  return useMutation(authAPI.resendVerificationOTP, {
+    onSuccess: () => {
+      toast.success("Verification code sent to your email");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Failed to send verification code"
+      );
     },
   });
 };

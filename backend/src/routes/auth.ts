@@ -7,8 +7,8 @@ import {
   refreshToken,
   forgotPassword,
   resetPassword,
-  verifyEmail,
-  resendVerification,
+  verifyEmailOTP,
+  resendVerificationOTP,
 } from "@/controllers/authController";
 import { authenticate } from "@/middleware/auth";
 import { validate } from "@/middleware/validate";
@@ -59,8 +59,15 @@ const resetPasswordValidation = [
     .withMessage("Password must be at least 6 characters long"),
 ];
 
-const verifyEmailValidation = [
-  body("token").notEmpty().withMessage("Verification token is required"),
+const verifyEmailOTPValidation = [
+  body("email")
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("Please provide a valid email"),
+  body("otp")
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage("Please provide a valid 6-digit verification code"),
 ];
 
 router.post("/register", registerValidation, validate, register);
@@ -79,12 +86,17 @@ router.post(
   validate,
   resetPassword
 );
-router.post("/verify-email", verifyEmailValidation, validate, verifyEmail);
 router.post(
-  "/resend-verification",
+  "/verify-email-otp",
+  verifyEmailOTPValidation,
+  validate,
+  verifyEmailOTP
+);
+router.post(
+  "/resend-verification-otp",
   forgotPasswordValidation,
   validate,
-  resendVerification
+  resendVerificationOTP
 );
 
 router.get("/me", authenticate, (req, res) => {

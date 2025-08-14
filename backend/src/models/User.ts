@@ -24,8 +24,8 @@ export interface IUser extends Document {
   lockedUntil?: Date;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
-  emailVerificationToken?: string;
-  emailVerificationExpires?: Date;
+  emailVerificationOTP?: string;
+  emailVerificationOTPExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -100,8 +100,8 @@ const userSchema = new Schema<IUser>(
     lockedUntil: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
-    emailVerificationToken: String,
-    emailVerificationExpires: Date,
+    emailVerificationOTP: String,
+    emailVerificationOTPExpires: Date,
   },
   {
     timestamps: true,

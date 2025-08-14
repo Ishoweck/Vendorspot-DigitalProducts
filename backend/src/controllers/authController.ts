@@ -76,29 +76,32 @@ export const register = asyncHandler(
       });
     }
 
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const verificationOTP = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+    const verificationOTPExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    user.emailVerificationToken = verificationToken;
-    user.emailVerificationExpires = verificationExpiry;
+    user.emailVerificationOTP = verificationOTP;
+    user.emailVerificationOTPExpires = verificationOTPExpiry;
     await user.save();
 
     try {
-      await emailService.sendVerificationEmail(
+      await emailService.sendVerificationOTPEmail(
         user.email,
         user.firstName,
-        verificationToken
+        verificationOTP
       );
 
       if (config.nodeEnv === "development") {
-        const verificationUrl = `${config.frontendUrl}/verify-email?token=${verificationToken}`;
-        logger.info(`🔗 VERIFICATION URL (DEV): ${verificationUrl}`);
+        logger.info(
+          `🔢 VERIFICATION OTP (DEV): ${verificationOTP} for ${user.email}`
+        );
       }
 
-      logger.info(`Email verification sent to ${user.email}`, {
+      logger.info(`Email verification OTP sent to ${user.email}`, {
         userId: String(user._id),
         email: user.email,
-        verificationToken,
+        otpExpiry: verificationOTPExpiry,
       });
     } catch (error) {
       logger.error(`Failed to send verification email to ${user.email}:`, {
@@ -346,48 +349,53 @@ export const resetPassword = asyncHandler(
   }
 );
 
-export const verifyEmail = asyncHandler(
+export const verifyEmailOTP = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { token } = req.body;
+    const { email, otp } = req.body;
 
-    if (!token) {
-      return next(createError("Verification token is required", 400));
+    if (!email || !otp) {
+      return next(createError("Email and OTP are required", 400));
     }
 
     // Debug logging
-    logger.info(
-      `Attempting to verify email with token: ${token.substring(0, 10)}...`
-    );
+    logger.info(`Attempting to verify email OTP for: ${email}`);
 
     const user = await User.findOne({
-      emailVerificationToken: token,
-      emailVerificationExpires: { $gt: new Date() },
+      email: email.toLowerCase(),
+      emailVerificationOTP: otp,
+      emailVerificationOTPExpires: { $gt: new Date() },
     });
 
     if (!user) {
-      // Check if user exists with this token but expired
-      const expiredUser = await User.findOne({ emailVerificationToken: token });
-      if (expiredUser) {
-        logger.warn(
-          `Verification token expired for user: ${expiredUser.email}`
-        );
-        return next(createError("Verification token has expired", 400));
+      const userWithExpiredOTP = await User.findOne({
+        email: email.toLowerCase(),
+        emailVerificationOTP: otp,
+      });
+
+      if (userWithExpiredOTP) {
+        logger.warn(`Verification OTP expired for user: ${email}`);
+        return next(createError("Verification code has expired", 400));
       }
 
-      // Check if user is already verified
       const verifiedUser = await User.findOne({
-        emailVerificationToken: { $exists: false },
+        email: email.toLowerCase(),
         isEmailVerified: true,
       });
 
-      logger.warn(`Invalid verification token: ${token.substring(0, 10)}...`);
-      return next(createError("Invalid or expired verification token", 400));
+      if (verifiedUser) {
+        return next(createError("Email is already verified", 400));
+      }
+
+      logger.warn(`Invalid verification OTP for: ${email}`);
+      return next(createError("Invalid verification code", 400));
     }
 
     user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpires = undefined;
+    user.emailVerificationOTP = undefined;
+    user.emailVerificationOTPExpires = undefined;
     await user.save();
+
+    logger.info(`Email verified successfully for: ${email}`);
 
     res.status(200).json({
       success: true,
@@ -396,7 +404,7 @@ export const verifyEmail = asyncHandler(
   }
 );
 
-export const resendVerification = asyncHandler(
+export const resendVerificationOTP = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email } = req.body;
 
@@ -414,36 +422,46 @@ export const resendVerification = asyncHandler(
       return next(createError("Email is already verified", 400));
     }
 
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    // Generate new 6-digit OTP
+    const verificationOTP = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+    const verificationOTPExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    user.emailVerificationToken = verificationToken;
-    user.emailVerificationExpires = verificationExpiry;
+    user.emailVerificationOTP = verificationOTP;
+    user.emailVerificationOTPExpires = verificationOTPExpiry;
     await user.save();
 
     try {
-      await emailService.sendVerificationEmail(
+      await emailService.sendVerificationOTPEmail(
         user.email,
         user.firstName,
-        verificationToken
+        verificationOTP
       );
 
       if (config.nodeEnv === "development") {
-        const verificationUrl = `${config.frontendUrl}/verify-email?token=${verificationToken}`;
-        logger.info(`🔗 RESEND VERIFICATION URL (DEV): ${verificationUrl}`);
+        logger.info(
+          `� RESSEND VERIFICATION OTP (DEV): ${verificationOTP} for ${user.email}`
+        );
       }
+
+      logger.info(`Verification OTP resent to ${user.email}`, {
+        userId: String(user._id),
+        email: user.email,
+        otpExpiry: verificationOTPExpiry,
+      });
     } catch (error) {
-      logger.error(`Failed to send verification email to ${user.email}:`, {
+      logger.error(`Failed to send verification OTP to ${user.email}:`, {
         error: error instanceof Error ? error.message : String(error),
         userId: String(user._id),
-        reason: "verification_email_failed",
+        reason: "verification_otp_failed",
       });
-      return next(createError("Failed to send verification email", 500));
+      return next(createError("Failed to send verification code", 500));
     }
 
     res.status(200).json({
       success: true,
-      message: "Verification email sent successfully",
+      message: "Verification code sent successfully",
     });
   }
 );
