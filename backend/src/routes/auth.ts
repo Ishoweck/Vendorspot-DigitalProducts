@@ -13,7 +13,7 @@ import {
 import { authenticate } from "@/middleware/auth";
 import { validate } from "@/middleware/validate";
 
-const router = Router();
+const router: Router = Router();
 
 const registerValidation = [
   body("email")

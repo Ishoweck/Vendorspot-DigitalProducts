@@ -47,12 +47,15 @@ export const register = asyncHandler(
       role,
     });
 
-    const { token, refreshToken } = generateTokens(user._id);
+    const { token, refreshToken } = generateTokens(user._id.toString());
 
     try {
       await emailService.sendWelcomeEmail(user.email, user.firstName);
     } catch (error) {
-      logger.error("Failed to send welcome email:", error);
+      logger.error(`Failed to send welcome email to ${user.email}:`, {
+        error: error instanceof Error ? error.message : String(error),
+        userId: user._id
+      });
     }
 
     const userResponse = {
@@ -124,7 +127,7 @@ export const login = asyncHandler(
     user.lastLoginAt = new Date();
     await user.save();
 
-    const { token, refreshToken } = generateTokens(user._id);
+    const { token, refreshToken } = generateTokens(user._id.toString());
 
     const userResponse = {
       _id: user._id,
@@ -183,7 +186,7 @@ export const refreshToken = asyncHandler(
       }
 
       const { token: newToken, refreshToken: newRefreshToken } = generateTokens(
-        user._id
+        user._id.toString()
       );
 
       res.status(200).json({
@@ -237,7 +240,10 @@ export const forgotPassword = asyncHandler(
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save();
-      logger.error("Failed to send password reset email:", error);
+      logger.error(`Failed to send password reset email to ${user.email}:`, {
+        error: error instanceof Error ? error.message : String(error),
+        userId: user._id
+      });
     }
   }
 );
@@ -338,7 +344,11 @@ export const resendVerification = asyncHandler(
         verificationToken
       );
     } catch (error) {
-      logger.error("Failed to send verification email:", error);
+      logger.error(`Failed to send verification email to ${user.email}:`, {
+        error: error instanceof Error ? error.message : String(error),
+        userId: user._id,
+        reason: 'verification_email_failed'
+      });
       return next(createError("Failed to send verification email", 500));
     }
 

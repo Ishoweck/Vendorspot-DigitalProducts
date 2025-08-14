@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authenticate, authorize } from "@/middleware/auth";
 
-const router = Router();
+const router: Router = Router();
 
 router.use(authenticate);
 router.use(authorize("ADMIN"));
