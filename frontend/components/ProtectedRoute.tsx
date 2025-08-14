@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserProfile } from "@/hooks/useAPI";
 
@@ -15,8 +15,15 @@ export default function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { data: userProfile, isLoading, error } = useUserProfile();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     if (!isLoading && (error || !userProfile?.data?.data)) {
       router.push("/login");
       return;
@@ -26,7 +33,15 @@ export default function ProtectedRoute({
       router.push("/dashboard");
       return;
     }
-  }, [userProfile, isLoading, error, requiredRole, router]);
+  }, [userProfile, isLoading, error, requiredRole, router, mounted]);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#D7195B]"></div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

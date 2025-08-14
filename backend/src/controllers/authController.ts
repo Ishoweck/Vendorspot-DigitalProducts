@@ -65,8 +65,37 @@ export const register = asyncHandler(
 
     try {
       await emailService.sendWelcomeEmail(user.email, user.firstName);
+      logger.info(`Welcome email sent to ${user.email}`, {
+        userId: String(user._id),
+        email: user.email,
+      });
     } catch (error) {
       logger.error(`Failed to send welcome email to ${user.email}:`, {
+        error: error instanceof Error ? error.message : String(error),
+        userId: String(user._id),
+      });
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    user.emailVerificationToken = verificationToken;
+    user.emailVerificationExpires = verificationExpiry;
+    await user.save();
+
+    try {
+      await emailService.sendVerificationEmail(
+        user.email,
+        user.firstName,
+        verificationToken
+      );
+      logger.info(`Email verification sent to ${user.email}`, {
+        userId: String(user._id),
+        email: user.email,
+        verificationToken,
+      });
+    } catch (error) {
+      logger.error(`Failed to send verification email to ${user.email}:`, {
         error: error instanceof Error ? error.message : String(error),
         userId: String(user._id),
       });
@@ -253,6 +282,11 @@ export const forgotPassword = asyncHandler(
         user.firstName,
         resetToken
       );
+      logger.info(`Password reset email sent to ${user.email}`, {
+        userId: String(user._id),
+        email: user.email,
+        resetToken,
+      });
     } catch (error) {
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;

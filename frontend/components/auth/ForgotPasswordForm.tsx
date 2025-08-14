@@ -1,16 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Mail } from "lucide-react";
+import { Mail, RefreshCw } from "lucide-react";
 import { useForgotPassword } from "@/hooks/useAPI";
 import { toast } from "react-hot-toast";
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [cooldownTime, setCooldownTime] = useState(0);
 
   const forgotPasswordMutation = useForgotPassword();
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (cooldownTime > 0) {
+      interval = setInterval(() => {
+        setCooldownTime((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [cooldownTime]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,11 +32,41 @@ export default function ForgotPasswordForm() {
       return;
     }
 
+    if (cooldownTime > 0) {
+      toast.error(`Please wait ${cooldownTime} seconds before trying again`);
+      return;
+    }
+
     forgotPasswordMutation.mutate(
       { email },
       {
         onSuccess: () => {
           setIsSubmitted(true);
+          setRetryCount(prev => prev + 1);
+          setCooldownTime(60);
+        },
+      }
+    );
+  };
+
+  const handleRetry = () => {
+    if (cooldownTime > 0) {
+      toast.error(`Please wait ${cooldownTime} seconds before trying again`);
+      return;
+    }
+
+    if (retryCount >= 3) {
+      toast.error("Maximum retry attempts reached. Please contact support.");
+      return;
+    }
+
+    forgotPasswordMutation.mutate(
+      { email },
+      {
+        onSuccess: () => {
+          setRetryCount(prev => prev + 1);
+          setCooldownTime(60 * retryCount);
+          toast.success("Password reset email sent again!");
         },
       }
     );
@@ -56,13 +98,44 @@ export default function ForgotPasswordForm() {
             </p>
           </div>
 
-          <div className="mt-6 text-center">
-            <Link
-              href="/login"
-              className="text-[#D7195B] hover:text-[#B01548] font-medium"
-            >
-              Back to Login
-            </Link>
+          <div className="mt-6 space-y-3">
+            {retryCount < 3 && (
+              <button
+                onClick={handleRetry}
+                disabled={forgotPasswordMutation.isLoading || cooldownTime > 0}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {forgotPasswordMutation.isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                    Sending...
+                  </>
+                ) : cooldownTime > 0 ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Retry in {cooldownTime}s
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Send Again ({3 - retryCount} attempts left)
+                  </>
+                )}
+              </button>
+            )}
+            <div className="text-center">
+              <Link
+                href="/login"
+                className="text-[#D7195B] hover:text-[#B01548] font-medium"
+              >
+                Back to Login
+              </Link>
+            </div>
+            {retryCount >= 3 && (
+              <p className="text-sm text-red-500 text-center">
+                Maximum retry attempts reached. Please contact support if you continue to have issues.
+              </p>
+            )}
           </div>
         </div>
       </>

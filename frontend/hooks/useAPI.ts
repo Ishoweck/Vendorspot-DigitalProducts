@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { toast } from "react-hot-toast";
+import { useState, useEffect } from "react";
 import {
   authAPI,
   productsAPI,
@@ -193,10 +194,17 @@ export const useCreateOrder = () => {
 
 // User hooks
 export const useUserProfile = () => {
+  const [isEnabled, setIsEnabled] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const { CookieService } = require("@/lib/cookies");
+      setIsEnabled(!!CookieService.get("auth_token"));
+    }
+  }, []);
+
   return useQuery(["user"], authAPI.getCurrentUser, {
-    enabled:
-      typeof window !== "undefined" &&
-      !!require("@/lib/cookies").CookieService.get("auth_token"),
+    enabled: isEnabled,
     retry: false,
   });
 };

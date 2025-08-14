@@ -1,19 +1,32 @@
 "use client";
 
 import { useUserProfile, useLogout } from "@/hooks/useAPI";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const { data: userProfile, isLoading, error } = useUserProfile();
   const logoutMutation = useLogout();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (error && !localStorage.getItem("token")) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && error) {
       router.push("/login");
     }
-  }, [error, router]);
+  }, [error, router, mounted]);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#D7195B]"></div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
