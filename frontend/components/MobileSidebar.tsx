@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { X, Users } from "lucide-react";
+import {
+  X,
+  Users,
+  UserRoundCheck,
+  ShoppingBag,
+  Heart,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import { useUserProfile, useLogout } from "@/hooks/useAPI";
 
 interface MobileSidebarProps {
   isOpen: boolean;
@@ -10,6 +19,10 @@ interface MobileSidebarProps {
 }
 
 export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
+  const { data: userProfile } = useUserProfile();
+  const logoutMutation = useLogout();
+  const user = userProfile?.data?.data;
+
   return (
     <>
       <div
@@ -36,80 +49,75 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
 
         <div className="p-4 space-y-4">
           <div className="space-y-3 pb-4 border-b">
-            <Link
-              href="/login"
-              onClick={onClose}
-              className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <Users className="w-5 h-5 text-gray-600" />
-              <span className="font-medium text-black">Login/Signup</span>
-            </Link>
+            {user ? (
+              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <UserRoundCheck className="w-5 h-5 text-[#D7195B]" />
+                <span className="font-medium text-black">
+                  Hi, {user.firstName}
+                </span>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                onClick={onClose}
+                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Users className="w-5 h-5 text-gray-600" />
+                <span className="font-medium text-black">Login/Signup</span>
+              </Link>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Link
-              href="https://www.vendorspotng.com/sell-on-spot"
-              onClick={onClose}
-              className="block p-3 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <span className="font-medium text-black">Sell On Spot</span>
-            </Link>
+          {user && (
+            <div className="space-y-2 pb-4 border-b">
+              <Link
+                href="/dashboard/user"
+                onClick={onClose}
+                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Users className="w-5 h-5 text-gray-600" />
+                <span className="font-medium text-black">My Account</span>
+              </Link>
 
-            <Link
-              href="https://www.vendorspotng.com/products"
-              onClick={onClose}
-              className="block p-3 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <span className="font-medium text-black">Products</span>
-            </Link>
+              <Link
+                href="/dashboard/user/orders"
+                onClick={onClose}
+                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ShoppingBag className="w-5 h-5 text-gray-600" />
+                <span className="font-medium text-black">Orders</span>
+              </Link>
 
-            <Link
-              href="/digital-products"
-              onClick={onClose}
-              className="block p-3 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <span className="font-medium text-black">Digital Products</span>
-            </Link>
+              <Link
+                href="/saved-items"
+                onClick={onClose}
+                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Heart className="w-5 h-5 text-gray-600" />
+                <span className="font-medium text-black">Saved Items</span>
+              </Link>
 
-            <Link
-              href="https://www.vendorspotng.com/shops"
-              onClick={onClose}
-              className="block p-3 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <span className="font-medium text-black">Shops</span>
-            </Link>
+              <Link
+                href="/dashboard/user/settings"
+                onClick={onClose}
+                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Settings className="w-5 h-5 text-gray-600" />
+                <span className="font-medium text-black">Settings</span>
+              </Link>
 
-            <Link
-              href="/delivery"
-              onClick={onClose}
-              className="block p-3 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <span className="font-medium text-black">Delivery</span>
-            </Link>
-          </div>
-
-          <div className="pt-4 border-t">
-            <h3 className="font-semibold text-black mb-3">Categories</h3>
-            <div className="space-y-2">
-              {[
-                "Web Templates",
-                "Digital Courses",
-                "Design Resources",
-                "Business Tools",
-                "Mobile Apps",
-                "Graphics",
-              ].map((category) => (
-                <Link
-                  key={category}
-                  href={`/categories/${category.toLowerCase().replace(/\s+/g, "-")}`}
-                  onClick={onClose}
-                  className="block p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <span className="text-gray-700">{category}</span>
-                </Link>
-              ))}
+              <button
+                onClick={() => {
+                  onClose();
+                  logoutMutation.mutate();
+                }}
+                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors w-full text-left"
+              >
+                <LogOut className="w-5 h-5 text-[#D7195B]" />
+                <span className="font-medium text-[#D7195B]">Logout</span>
+              </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>

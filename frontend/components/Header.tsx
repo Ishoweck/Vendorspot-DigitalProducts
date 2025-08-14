@@ -3,15 +3,33 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, X, Users, Menu } from "lucide-react";
+import {
+  Search,
+  X,
+  Users,
+  Menu,
+  UserRoundCheck,
+  ChevronDown,
+  ChevronUp,
+  ShoppingBag,
+  Heart,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import { useUserProfile, useLogout } from "@/hooks/useAPI";
 import MobileSidebar from "./MobileSidebar";
 
 export default function Header() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [advertState, setAdvertState] = useState<
     "expanded" | "compact" | "hidden"
   >("expanded");
+
+  const { data: userProfile } = useUserProfile();
+  const logoutMutation = useLogout();
+  const user = userProfile?.data?.data;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,8 +44,20 @@ export default function Header() {
       }
     };
 
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest(".user-dropdown")) {
+        setIsUserDropdownOpen(false);
+      }
+    };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("click", handleClickOutside);
+    };
   }, []);
 
   const clearSearch = () => {
@@ -71,13 +101,78 @@ export default function Header() {
             </div>
 
             <div className="flex items-center space-x-4">
-              <Link
-                href="/login"
-                className="hidden lg:flex items-center space-x-2 text-black hover:text-primary-500 transition-colors group"
-              >
-                <Users className="w-5 h-5 group-hover:text-primary-500 transition-colors" />
-                <span className="font-medium">Login/Signup</span>
-              </Link>
+              {user ? (
+                <div className="relative hidden lg:block user-dropdown">
+                  <button
+                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                    className="flex items-center space-x-2 text-black hover:text-primary-500 transition-colors group"
+                  >
+                    <UserRoundCheck className="w-5 h-5 group-hover:text-primary-500 transition-colors" />
+                    <span className="font-medium">Hi, {user.firstName}</span>
+                    {isUserDropdownOpen ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </button>
+
+                  {isUserDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                      <Link
+                        href="/dashboard/user"
+                        className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                      >
+                        <Users className="w-4 h-4" />
+                        <span>My Account</span>
+                      </Link>
+                      <Link
+                        href="/dashboard/user/orders"
+                        className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                        <span>Orders</span>
+                      </Link>
+                      <Link
+                        href="/saved-items"
+                        className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                      >
+                        <Heart className="w-4 h-4" />
+                        <span>Saved Items</span>
+                      </Link>
+                      <Link
+                        href="/dashboard/user/settings"
+                        className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => setIsUserDropdownOpen(false)}
+                      >
+                        <Settings className="w-4 h-4" />
+                        <span>Settings</span>
+                      </Link>
+                      <hr className="my-2" />
+                      <button
+                        onClick={() => {
+                          setIsUserDropdownOpen(false);
+                          logoutMutation.mutate();
+                        }}
+                        className="flex items-center space-x-3 px-4 py-2 text-[#D7195B] hover:bg-gray-100 transition-colors w-full text-left"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="hidden lg:flex items-center space-x-2 text-black hover:text-primary-500 transition-colors group"
+                >
+                  <Users className="w-5 h-5 group-hover:text-primary-500 transition-colors" />
+                  <span className="font-medium">Login/Signup</span>
+                </Link>
+              )}
 
               <Link
                 href="/cart"
