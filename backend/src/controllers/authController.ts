@@ -8,13 +8,27 @@ import { logger } from "@/utils/logger";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 
 const generateTokens = (userId: string) => {
-  const token = jwt.sign({ id: userId }, config.jwtSecret, {
-    expiresIn: config.jwtExpiresIn,
-  });
+  const signOptions: jwt.SignOptions = {
+    expiresIn: config.jwtExpiresIn as jwt.SignOptions["expiresIn"],
+    algorithm: "HS256",
+  };
 
-  const refreshToken = jwt.sign({ id: userId }, config.jwtSecret, {
-    expiresIn: config.jwtRefreshExpiresIn,
-  });
+  const refreshSignOptions: jwt.SignOptions = {
+    expiresIn: config.jwtRefreshExpiresIn as jwt.SignOptions["expiresIn"],
+    algorithm: "HS256",
+  };
+
+  const token = jwt.sign(
+    { id: userId },
+    Buffer.from(config.jwtSecret),
+    signOptions
+  );
+
+  const refreshToken = jwt.sign(
+    { id: userId },
+    Buffer.from(config.jwtSecret),
+    refreshSignOptions
+  );
 
   return { token, refreshToken };
 };
@@ -47,14 +61,14 @@ export const register = asyncHandler(
       role,
     });
 
-    const { token, refreshToken } = generateTokens(user._id.toString());
+    const { token, refreshToken } = generateTokens(String(user._id));
 
     try {
       await emailService.sendWelcomeEmail(user.email, user.firstName);
     } catch (error) {
       logger.error(`Failed to send welcome email to ${user.email}:`, {
         error: error instanceof Error ? error.message : String(error),
-        userId: user._id
+        userId: String(user._id),
       });
     }
 
@@ -127,7 +141,7 @@ export const login = asyncHandler(
     user.lastLoginAt = new Date();
     await user.save();
 
-    const { token, refreshToken } = generateTokens(user._id.toString());
+    const { token, refreshToken } = generateTokens(String(user._id));
 
     const userResponse = {
       _id: user._id,
@@ -161,7 +175,7 @@ export const login = asyncHandler(
 );
 
 export const logout = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (_req: Request, res: Response, _next: NextFunction) => {
     res.status(200).json({
       success: true,
       message: "Logout successful",
@@ -178,7 +192,10 @@ export const refreshToken = asyncHandler(
     }
 
     try {
-      const decoded = jwt.verify(refreshToken, config.jwtSecret) as any;
+      const decoded = jwt.verify(
+        refreshToken,
+        config.jwtSecret as string
+      ) as any;
       const user = await User.findById(decoded.id);
 
       if (!user || user.status !== "ACTIVE") {
@@ -186,7 +203,7 @@ export const refreshToken = asyncHandler(
       }
 
       const { token: newToken, refreshToken: newRefreshToken } = generateTokens(
-        user._id.toString()
+        String(user._id)
       );
 
       res.status(200).json({
@@ -242,7 +259,7 @@ export const forgotPassword = asyncHandler(
       await user.save();
       logger.error(`Failed to send password reset email to ${user.email}:`, {
         error: error instanceof Error ? error.message : String(error),
-        userId: user._id
+        userId: String(user._id),
       });
     }
   }
@@ -346,8 +363,8 @@ export const resendVerification = asyncHandler(
     } catch (error) {
       logger.error(`Failed to send verification email to ${user.email}:`, {
         error: error instanceof Error ? error.message : String(error),
-        userId: user._id,
-        reason: 'verification_email_failed'
+        userId: String(user._id),
+        reason: "verification_email_failed",
       });
       return next(createError("Failed to send verification email", 500));
     }
