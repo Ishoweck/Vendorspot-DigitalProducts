@@ -100,7 +100,8 @@ class App {
     const speedLimiter = slowDown({
       windowMs: 15 * 60 * 1000,
       delayAfter: 50,
-      delayMs: 500,
+      delayMs: () => 500,
+      validate: { delayMs: false },
     });
 
     this.app.use("/api/", limiter);
@@ -174,12 +175,7 @@ class App {
         logger.info(
           `🚀 Server running on port ${port} in ${config.nodeEnv} mode`
         );
-        logger.info(`🏥 Health Check: http://localhost:${port}/health`);
-        if (config.nodeEnv === "development") {
-          logger.info(
-            `📚 API Documentation: http://localhost:${port}/api-docs`
-          );
-        }
+        logger.info(`Health Check: http://localhost:${port}/health`);
       });
 
       process.on("SIGTERM", () => {
