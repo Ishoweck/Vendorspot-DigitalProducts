@@ -135,7 +135,7 @@ export default function Header() {
                         <span>Orders</span>
                       </Link>
                       <Link
-                        href="/saved-items"
+                        href="/dashboard/user/saved-items"
                         className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                         onClick={() => setIsUserDropdownOpen(false)}
                       >

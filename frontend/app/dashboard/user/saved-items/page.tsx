@@ -1,7 +1,7 @@
 import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 
-export default function ShippingAddressPage() {
+export default function SavedItemsPage() {
   return (
     <div className="bg-gray-50 min-h-screen">
       <SectionWrapper className="pt-8">
@@ -19,10 +19,10 @@ export default function ShippingAddressPage() {
             <UserSidebar />
             <main className="flex-1 bg-white rounded-lg shadow p-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-6">
-                Shipping Address
+                Saved Items
               </h1>
               <p className="text-gray-600">
-                Your shipping addresses will appear here.
+                Your saved items will appear here.
               </p>
             </main>
           </div>

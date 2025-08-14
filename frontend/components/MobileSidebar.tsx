@@ -10,6 +10,9 @@ import {
   Heart,
   Settings,
   LogOut,
+  CreditCard,
+  Bell,
+  MapPin,
 } from "lucide-react";
 import { useUserProfile, useLogout } from "@/hooks/useAPI";
 
@@ -89,12 +92,39 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
               </Link>
 
               <Link
-                href="/saved-items"
+                href="/dashboard/user/saved-items"
                 onClick={onClose}
                 className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <Heart className="w-5 h-5 text-gray-600" />
                 <span className="font-medium text-black">Saved Items</span>
+              </Link>
+
+              <Link
+                href="/dashboard/user/payment-methods"
+                onClick={onClose}
+                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <CreditCard className="w-5 h-5 text-gray-600" />
+                <span className="font-medium text-black">Payment Methods</span>
+              </Link>
+
+              <Link
+                href="/dashboard/user/notifications"
+                onClick={onClose}
+                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Bell className="w-5 h-5 text-gray-600" />
+                <span className="font-medium text-black">Notifications</span>
+              </Link>
+
+              <Link
+                href="/dashboard/user/shipping-address"
+                onClick={onClose}
+                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <MapPin className="w-5 h-5 text-gray-600" />
+                <span className="font-medium text-black">Shipping Address</span>
               </Link>
 
               <Link
