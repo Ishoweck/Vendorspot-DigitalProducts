@@ -294,7 +294,7 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <AuthWrapper requireAuth={false}>
+    <AuthWrapper requireAuth={true}>
       <Suspense
         fallback={
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
