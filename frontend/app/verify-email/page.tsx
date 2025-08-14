@@ -12,12 +12,17 @@ import { toast } from "react-hot-toast";
 import Image from "next/image";
 import Link from "next/link";
 import AuthWrapper from "@/components/auth/AuthWrapper";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 function VerifyEmailContent() {
   const router = useRouter();
   const { data: userProfile } = useUserProfile();
 
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState("");
   const [verificationStatus, setVerificationStatus] = useState<
     "input" | "verifying" | "success" | "error"
   >("input");
@@ -27,32 +32,10 @@ function VerifyEmailContent() {
 
   const userEmail = userProfile?.data?.data?.email || "";
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return;
-    if (!/^\d*$/.test(value)) return;
-
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      nextInput?.focus();
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
-      prevInput?.focus();
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const otpString = otp.join("");
-    if (otpString.length !== 6) {
+    if (otp.length !== 6) {
       toast.error("Please enter a valid 6-digit verification code");
       return;
     }
@@ -66,7 +49,7 @@ function VerifyEmailContent() {
     setVerificationStatus("verifying");
 
     verifyEmailOTPMutation.mutate(
-      { email: userEmail, otp: otpString },
+      { email: userEmail, otp },
       {
         onSuccess: () => {
           setVerificationStatus("success");
@@ -88,12 +71,13 @@ function VerifyEmailContent() {
       return;
     }
 
+    setOtp("");
     resendVerificationOTPMutation.mutate({ email: userEmail });
   };
 
   const handleRetry = () => {
     setVerificationStatus("input");
-    setOtp(["", "", "", "", "", ""]);
+    setOtp("");
   };
 
   if (verificationStatus === "input") {
@@ -128,19 +112,25 @@ function VerifyEmailContent() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="flex justify-center space-x-2">
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    id={`otp-${index}`}
-                    type="text"
-                    value={digit}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-12 text-center text-xl font-mono border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
-                    maxLength={1}
-                  />
-                ))}
+              <div className="flex justify-center">
+                <InputOTP
+                  maxLength={6}
+                  value={otp}
+                  onChange={setOtp}
+                  render={({ slots }) => (
+                    <InputOTPGroup>
+                      {slots.map((slot, idx) => (
+                        <InputOTPSlot
+                          key={idx}
+                          index={idx}
+                          char={slot.char ?? undefined}
+                          hasFakeCaret={slot.hasFakeCaret}
+                          isActive={slot.isActive}
+                        />
+                      ))}
+                    </InputOTPGroup>
+                  )}
+                />
               </div>
 
               <div className="text-center">
@@ -161,9 +151,7 @@ function VerifyEmailContent() {
 
               <button
                 type="submit"
-                disabled={
-                  verifyEmailOTPMutation.isLoading || otp.join("").length !== 6
-                }
+                disabled={verifyEmailOTPMutation.isLoading || otp.length !== 6}
                 className="w-full bg-[#D7195B] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#B01548] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {verifyEmailOTPMutation.isLoading
@@ -294,7 +282,7 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <AuthWrapper requireAuth={true}>
+    <AuthWrapper requireAuth={false}>
       <Suspense
         fallback={
           <div className="min-h-screen bg-gray-50 flex items-center justify-center">
