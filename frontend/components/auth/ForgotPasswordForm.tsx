@@ -3,16 +3,31 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Mail } from "lucide-react";
+import { useForgotPassword } from "@/hooks/useAPI";
+import { toast } from "react-hot-toast";
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const forgotPasswordMutation = useForgotPassword();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle forgot password logic here
-    console.log("Forgot password attempt:", email);
-    setIsSubmitted(true);
+
+    if (!email) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    forgotPasswordMutation.mutate(
+      { email },
+      {
+        onSuccess: () => {
+          setIsSubmitted(true);
+        },
+      }
+    );
   };
 
   if (isSubmitted) {
@@ -92,9 +107,17 @@ export default function ForgotPasswordForm() {
 
           <button
             type="submit"
-            className="w-full bg-[#D7195B] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#B01548] transition-colors duration-200"
+            disabled={forgotPasswordMutation.isLoading}
+            className="w-full bg-[#D7195B] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#B01548] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Send Reset Link
+            {forgotPasswordMutation.isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                Sending...
+              </>
+            ) : (
+              "Send Reset Link"
+            )}
           </button>
         </form>
 

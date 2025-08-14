@@ -14,23 +14,58 @@ const api = axios.create({
 // Request interceptor - add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle errors
+// Response interceptor - handle errors and token refresh
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      if (typeof window !== "undefined") {
+        const refreshToken = localStorage.getItem("refreshToken");
+
+        if (refreshToken) {
+          try {
+            const response = await api.post("/auth/refresh", { refreshToken });
+            if (response.data.success) {
+              localStorage.setItem("token", response.data.data.token);
+              localStorage.setItem(
+                "refreshToken",
+                response.data.data.refreshToken
+              );
+
+              // Retry the original request with new token
+              originalRequest.headers.Authorization = `Bearer ${response.data.data.token}`;
+              return api(originalRequest);
+            }
+          } catch (refreshError) {
+            // Refresh failed, redirect to login
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+            window.location.href = "/login";
+            return Promise.reject(refreshError);
+          }
+        } else {
+          // No refresh token, redirect to login
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+        }
+      }
     }
+
     return Promise.reject(error);
   }
 );
@@ -38,18 +73,45 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: (credentials: { email: string; password: string }) =>
-    api.post<{ token: string; user: any }>("/auth/login", credentials),
+    api.post<{
+      success: boolean;
+      data: { user: any; token: string; refreshToken: string };
+    }>("/auth/login", credentials),
 
   register: (userData: {
     email: string;
     password: string;
     firstName: string;
     lastName: string;
-  }) => api.post<{ token: string; user: any }>("/auth/register", userData),
+    phone?: string;
+    isVendor?: boolean;
+  }) =>
+    api.post<{
+      success: boolean;
+      data: { user: any; token: string; refreshToken: string };
+    }>("/auth/register", userData),
 
   logout: () => api.post("/auth/logout"),
 
-  refresh: () => api.post<{ token: string }>("/auth/refresh"),
+  refresh: (refreshToken: string) =>
+    api.post<{
+      success: boolean;
+      data: { token: string; refreshToken: string };
+    }>("/auth/refresh", { refreshToken }),
+
+  forgotPassword: (data: { email: string }) =>
+    api.post("/auth/forgot-password", data),
+
+  resetPassword: (data: { token: string; password: string }) =>
+    api.post("/auth/reset-password", data),
+
+  verifyEmail: (data: { token: string }) =>
+    api.post("/auth/verify-email", data),
+
+  resendVerification: (data: { email: string }) =>
+    api.post("/auth/resend-verification", data),
+
+  getCurrentUser: () => api.get<{ success: boolean; data: any }>("/auth/me"),
 };
 
 // Products API

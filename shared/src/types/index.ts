@@ -1,4 +1,3 @@
-// User Types
 export interface User {
   _id: string;
   email: string;
@@ -18,7 +17,6 @@ export interface User {
   updatedAt: string;
 }
 
-// Product Types
 export interface Product {
   _id: string;
   vendorId: string;
@@ -62,7 +60,6 @@ export interface Product {
   updatedAt: string;
 }
 
-// Category Types
 export interface Category {
   _id: string;
   name: string;
@@ -76,7 +73,6 @@ export interface Category {
   updatedAt: string;
 }
 
-// Vendor Types
 export interface Vendor {
   _id: string;
   userId: string;
@@ -99,7 +95,6 @@ export interface Vendor {
   updatedAt: string;
 }
 
-// Cart Types
 export interface CartItem {
   _id: string;
   userId: string;
@@ -109,7 +104,6 @@ export interface CartItem {
   updatedAt: string;
 }
 
-// API Response Types
 export interface ApiResponse<T> {
   success: boolean;
   message?: string;
@@ -128,7 +122,6 @@ export interface PaginatedResponse<T> {
   };
 }
 
-// Auth Types
 export interface LoginRequest {
   email: string;
   password: string;
@@ -140,6 +133,7 @@ export interface RegisterRequest {
   firstName: string;
   lastName: string;
   phone?: string;
+  isVendor?: boolean;
 }
 
 export interface AuthResponse {
@@ -148,7 +142,19 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
-// Product Query Types
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+export interface VerifyEmailRequest {
+  token: string;
+}
+
 export interface ProductQuery {
   page?: number;
   limit?: number;

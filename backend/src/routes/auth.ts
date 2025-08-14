@@ -1,70 +1,101 @@
 import { Router } from "express";
+import { body } from "express-validator";
+import {
+  register,
+  login,
+  logout,
+  refreshToken,
+  forgotPassword,
+  resetPassword,
+  verifyEmail,
+  resendVerification,
+} from "@/controllers/authController";
+import { authenticate } from "@/middleware/auth";
+import { validate } from "@/middleware/validate";
 
 const router = Router();
 
-// Register new user
-router.post("/register", async (req, res) => {
-  try {
-    res.status(201).json({
-      success: true,
-      message: "User registered successfully",
-      data: { message: "Register endpoint - MongoDB implementation needed" },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Registration failed",
-    });
-  }
-});
+// Validation middleware
+const registerValidation = [
+  body("email")
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("Please provide a valid email"),
+  body("password")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters long"),
+  body("firstName")
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage("First name must be at least 2 characters long"),
+  body("lastName")
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage("Last name must be at least 2 characters long"),
+  body("phone")
+    .optional()
+    .isMobilePhone("any")
+    .withMessage("Please provide a valid phone number"),
+];
 
-// Login user
-router.post("/login", async (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      data: { message: "Login endpoint - MongoDB implementation needed" },
-    });
-  } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: "Login failed",
-    });
-  }
-});
+const loginValidation = [
+  body("email")
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("Please provide a valid email"),
+  body("password").notEmpty().withMessage("Password is required"),
+];
 
-// Refresh token
-router.post("/refresh", async (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      message: "Token refreshed",
-      data: {
-        message: "Refresh token endpoint - MongoDB implementation needed",
-      },
-    });
-  } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: "Token refresh failed",
-    });
-  }
-});
+const forgotPasswordValidation = [
+  body("email")
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("Please provide a valid email"),
+];
 
-// Logout user
-router.post("/logout", async (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      message: "Logout successful",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Logout failed",
-    });
-  }
+const resetPasswordValidation = [
+  body("token").notEmpty().withMessage("Reset token is required"),
+  body("password")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters long"),
+];
+
+const verifyEmailValidation = [
+  body("token").notEmpty().withMessage("Verification token is required"),
+];
+
+// Auth routes
+router.post("/register", registerValidation, validate, register);
+router.post("/login", loginValidation, validate, login);
+router.post("/logout", authenticate, logout);
+router.post("/refresh", refreshToken);
+router.post(
+  "/forgot-password",
+  forgotPasswordValidation,
+  validate,
+  forgotPassword
+);
+router.post(
+  "/reset-password",
+  resetPasswordValidation,
+  validate,
+  resetPassword
+);
+router.post("/verify-email", verifyEmailValidation, validate, verifyEmail);
+router.post(
+  "/resend-verification",
+  forgotPasswordValidation,
+  validate,
+  resendVerification
+);
+
+// Get current user (protected route)
+router.get("/me", authenticate, (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "User retrieved successfully",
+    data: req.user,
+  });
 });
 
 export default router;

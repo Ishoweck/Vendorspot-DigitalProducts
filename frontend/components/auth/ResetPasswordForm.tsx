@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Lock } from "lucide-react";
+import { useResetPassword } from "@/hooks/useAPI";
+import { toast } from "react-hot-toast";
 
 export default function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -17,20 +19,32 @@ export default function ResetPasswordForm() {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const resetPasswordMutation = useResetPassword();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match");
+      toast.error("Passwords don't match");
       return;
     }
 
-    // Handle reset password logic here
-    console.log("Reset password attempt:", {
-      token,
-      password: formData.password,
-    });
-    setIsSubmitted(true);
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters long");
+      return;
+    }
+
+    resetPasswordMutation.mutate(
+      {
+        token: token!,
+        password: formData.password,
+      },
+      {
+        onSuccess: () => {
+          setIsSubmitted(true);
+        },
+      }
+    );
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,9 +194,17 @@ export default function ResetPasswordForm() {
 
           <button
             type="submit"
-            className="w-full bg-[#D7195B] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#B01548] transition-colors duration-200"
+            disabled={resetPasswordMutation.isLoading}
+            className="w-full bg-[#D7195B] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#B01548] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Reset Password
+            {resetPasswordMutation.isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                Resetting...
+              </>
+            ) : (
+              "Reset Password"
+            )}
           </button>
         </form>
 

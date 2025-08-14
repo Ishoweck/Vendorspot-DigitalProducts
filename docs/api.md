@@ -47,7 +47,34 @@ Content-Type: application/json
   "password": "password123",
   "firstName": "John",
   "lastName": "Doe",
-  "phone": "+2348012345678"
+  "phone": "+2348012345678",
+  "isVendor": false
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Account created successfully",
+  "data": {
+    "user": {
+      "_id": "user-id",
+      "email": "user@example.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "CUSTOMER",
+      "status": "ACTIVE",
+      "isEmailVerified": false,
+      "isPhoneVerified": false,
+      "country": "Nigeria",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    "token": "jwt-access-token",
+    "refreshToken": "jwt-refresh-token"
+  }
 }
 ```
 
@@ -63,6 +90,33 @@ Content-Type: application/json
 }
 ```
 
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "user": {
+      "_id": "user-id",
+      "email": "user@example.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "CUSTOMER",
+      "status": "ACTIVE",
+      "isEmailVerified": false,
+      "isPhoneVerified": false,
+      "country": "Nigeria",
+      "lastLoginAt": "2024-01-01T00:00:00.000Z",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    "token": "jwt-access-token",
+    "refreshToken": "jwt-refresh-token"
+  }
+}
+```
+
 #### Refresh Token
 
 ```http
@@ -74,11 +128,144 @@ Content-Type: application/json
 }
 ```
 
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Token refreshed successfully",
+  "data": {
+    "token": "new-jwt-access-token",
+    "refreshToken": "new-jwt-refresh-token"
+  }
+}
+```
+
 #### Logout User
 
 ```http
 POST /api/auth/logout
 Authorization: Bearer <token>
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Logout successful"
+}
+```
+
+#### Forgot Password
+
+```http
+POST /api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "If an account with that email exists, a password reset link has been sent"
+}
+```
+
+#### Reset Password
+
+```http
+POST /api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset-token-from-email",
+  "password": "newpassword123"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Password reset successful"
+}
+```
+
+#### Verify Email
+
+```http
+POST /api/auth/verify-email
+Content-Type: application/json
+
+{
+  "token": "verification-token-from-email"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Email verified successfully"
+}
+```
+
+#### Resend Verification Email
+
+```http
+POST /api/auth/resend-verification
+Content-Type: application/json
+
+{
+  "email": "user@example.com"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Verification email sent successfully"
+}
+```
+
+#### Get Current User
+
+```http
+GET /api/auth/me
+Authorization: Bearer <token>
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "User retrieved successfully",
+  "data": {
+    "_id": "user-id",
+    "email": "user@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "role": "CUSTOMER",
+    "status": "ACTIVE",
+    "isEmailVerified": true,
+    "isPhoneVerified": false,
+    "country": "Nigeria",
+    "lastLoginAt": "2024-01-01T00:00:00.000Z",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
 ```
 
 ### Users (`/api/users`)

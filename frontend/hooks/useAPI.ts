@@ -17,9 +17,11 @@ export const useLogin = () => {
 
   return useMutation(authAPI.login, {
     onSuccess: (data) => {
-      localStorage.setItem("token", data.data.token);
+      localStorage.setItem("token", data.data.data.token);
+      localStorage.setItem("refreshToken", data.data.data.refreshToken);
       queryClient.invalidateQueries(["user"]);
       toast.success("Login successful!");
+      window.location.href = "/dashboard";
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Login failed");
@@ -32,9 +34,11 @@ export const useRegister = () => {
 
   return useMutation(authAPI.register, {
     onSuccess: (data) => {
-      localStorage.setItem("token", data.data.token);
+      localStorage.setItem("token", data.data.data.token);
+      localStorage.setItem("refreshToken", data.data.data.refreshToken);
       queryClient.invalidateQueries(["user"]);
       toast.success("Registration successful!");
+      window.location.href = "/dashboard";
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Registration failed");
@@ -48,8 +52,46 @@ export const useLogout = () => {
   return useMutation(authAPI.logout, {
     onSuccess: () => {
       localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
       queryClient.clear();
       toast.success("Logged out successfully");
+      window.location.href = "/login";
+    },
+  });
+};
+
+export const useForgotPassword = () => {
+  return useMutation(authAPI.forgotPassword, {
+    onSuccess: () => {
+      toast.success("Password reset link sent to your email");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to send reset link");
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation(authAPI.resetPassword, {
+    onSuccess: () => {
+      toast.success("Password reset successful");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to reset password");
+    },
+  });
+};
+
+export const useVerifyEmail = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(authAPI.verifyEmail, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["user"]);
+      toast.success("Email verified successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to verify email");
     },
   });
 };
@@ -148,8 +190,9 @@ export const useCreateOrder = () => {
 
 // User hooks
 export const useUserProfile = () => {
-  return useQuery(["user"], usersAPI.getProfile, {
+  return useQuery(["user"], authAPI.getCurrentUser, {
     enabled: !!localStorage.getItem("token"),
+    retry: false,
   });
 };
 

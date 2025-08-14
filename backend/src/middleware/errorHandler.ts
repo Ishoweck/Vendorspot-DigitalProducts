@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { logger } from "../services/logger";
+import { logger } from "@/utils/logger";
 import { config } from "../config/config";
 
 export interface AppError extends Error {
@@ -17,7 +17,6 @@ export const errorHandler = (
   let statusCode = error.statusCode || 500;
   let message = error.message || "Internal Server Error";
 
-  // Log error
   logger.error("Error occurred:", {
     error: error.message,
     stack: error.stack,
@@ -27,25 +26,21 @@ export const errorHandler = (
     userAgent: req.get("User-Agent"),
   });
 
-  // Mongoose validation error
   if (error.name === "ValidationError") {
     statusCode = 400;
     message = "Validation Error";
   }
 
-  // Mongoose duplicate key error
   if (error.name === "MongoServerError" && (error as any).code === 11000) {
     statusCode = 400;
     message = "Duplicate field value entered";
   }
 
-  // Mongoose cast error
   if (error.name === "CastError") {
     statusCode = 400;
     message = "Invalid ID format";
   }
 
-  // JWT errors
   if (error.name === "JsonWebTokenError") {
     statusCode = 401;
     message = "Invalid token";
@@ -66,13 +61,11 @@ export const errorHandler = (
   });
 };
 
-// Async error handler wrapper
 export const asyncHandler =
   (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 
-// Create custom error
 export const createError = (message: string, statusCode: number): AppError => {
   const error: AppError = new Error(message);
   error.statusCode = statusCode;

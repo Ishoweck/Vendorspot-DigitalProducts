@@ -4,7 +4,6 @@ import { User } from "../models/User";
 import { config } from "../config/config";
 import { createError, asyncHandler } from "./errorHandler";
 
-// Extend Request interface to include user
 declare global {
   namespace Express {
     interface Request {
@@ -13,12 +12,10 @@ declare global {
   }
 }
 
-// Verify JWT token
 export const authenticate = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     let token;
 
-    // Check for token in header
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
@@ -31,10 +28,7 @@ export const authenticate = asyncHandler(
     }
 
     try {
-      // Verify token
       const decoded = jwt.verify(token, config.jwtSecret) as any;
-
-      // Get user from database
       const user = await User.findById(decoded.id).select("-password");
 
       if (!user) {
@@ -53,7 +47,6 @@ export const authenticate = asyncHandler(
   }
 );
 
-// Check user roles
 export const authorize = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
@@ -68,7 +61,6 @@ export const authorize = (...roles: string[]) => {
   };
 };
 
-// Check if user is vendor
 export const isVendor = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
@@ -83,7 +75,6 @@ export const isVendor = asyncHandler(
   }
 );
 
-// Check if user is admin
 export const isAdmin = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
@@ -98,7 +89,6 @@ export const isAdmin = asyncHandler(
   }
 );
 
-// Optional authentication (doesn't throw error if no token)
 export const optionalAuth = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     let token;
