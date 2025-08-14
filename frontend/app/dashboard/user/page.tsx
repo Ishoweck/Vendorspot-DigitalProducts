@@ -14,15 +14,6 @@ function UserDashboardContent() {
   return (
     <div className="bg-gray-50 min-h-screen">
       <SectionWrapper className="pt-8 pb-8">
-        <div
-          className="bg-[#D7195B] flex items-center justify-center mb-8"
-          style={{ height: "280px" }}
-        >
-          <h1 className="text-white text-2xl font-medium">
-            Advert Banner Sample
-          </h1>
-        </div>
-
         <div className="max-w-7xl mx-auto">
           <div className="flex gap-8">
             <UserSidebar />
