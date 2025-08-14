@@ -354,12 +354,33 @@ export const verifyEmail = asyncHandler(
       return next(createError("Verification token is required", 400));
     }
 
+    // Debug logging
+    logger.info(
+      `Attempting to verify email with token: ${token.substring(0, 10)}...`
+    );
+
     const user = await User.findOne({
       emailVerificationToken: token,
       emailVerificationExpires: { $gt: new Date() },
     });
 
     if (!user) {
+      // Check if user exists with this token but expired
+      const expiredUser = await User.findOne({ emailVerificationToken: token });
+      if (expiredUser) {
+        logger.warn(
+          `Verification token expired for user: ${expiredUser.email}`
+        );
+        return next(createError("Verification token has expired", 400));
+      }
+
+      // Check if user is already verified
+      const verifiedUser = await User.findOne({
+        emailVerificationToken: { $exists: false },
+        isEmailVerified: true,
+      });
+
+      logger.warn(`Invalid verification token: ${token.substring(0, 10)}...`);
       return next(createError("Invalid or expired verification token", 400));
     }
 

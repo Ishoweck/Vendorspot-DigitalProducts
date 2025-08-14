@@ -1,23 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useVerifyEmail } from "@/hooks/useAPI";
 import Link from "next/link";
 import { CheckCircle, XCircle, Mail } from "lucide-react";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
   const [verificationStatus, setVerificationStatus] = useState<
     "pending" | "success" | "error"
   >("pending");
+  const [hasAttempted, setHasAttempted] = useState(false);
 
   const verifyEmailMutation = useVerifyEmail();
 
   useEffect(() => {
-    if (token) {
+    if (token && !hasAttempted && !verifyEmailMutation.isLoading) {
+      setHasAttempted(true);
       verifyEmailMutation.mutate(
         { token },
         {
@@ -32,10 +34,10 @@ export default function VerifyEmailPage() {
           },
         }
       );
-    } else {
+    } else if (!token) {
       setVerificationStatus("error");
     }
-  }, [token]);
+  }, [token, hasAttempted, verifyEmailMutation.isLoading]);
 
   if (verificationStatus === "pending") {
     return (
@@ -108,5 +110,16 @@ export default function VerifyEmailPage() {
         </div>
       </div>
     </div>
+  );
+}
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D7195B]"></div>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

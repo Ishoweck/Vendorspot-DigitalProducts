@@ -91,11 +91,11 @@ export default function ResetPasswordForm() {
             <h2 className="text-3xl font-bold text-black font-inter">
               Password Reset Successful
             </h2>
+          </div>
+          <div className="text-center">
             <p className="mt-2 text-gray-600">
               Your password has been successfully reset
             </p>
-          </div>
-          <div className="text-center">
             <p className="text-gray-600 mb-6">
               You can now sign in with your new password.
             </p>
