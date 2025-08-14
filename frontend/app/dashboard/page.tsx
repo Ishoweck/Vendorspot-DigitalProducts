@@ -1,62 +1,12 @@
 "use client";
 
 import { useUserProfile, useLogout } from "@/hooks/useAPI";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Mail } from "lucide-react";
+import AuthWrapper from "@/components/auth/AuthWrapper";
 
-export default function DashboardPage() {
-  const { data: userProfile, isLoading, error } = useUserProfile();
+function DashboardContent() {
+  const { data: userProfile } = useUserProfile();
   const logoutMutation = useLogout();
-  const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && error) {
-      router.push("/login");
-    }
-  }, [error, router, mounted]);
-
-  if (!mounted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#D7195B]"></div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#D7195B]"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Authentication Required
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Please log in to access your dashboard.
-          </p>
-          <button
-            onClick={() => router.push("/login")}
-            className="bg-[#D7195B] text-white px-6 py-2 rounded-lg hover:bg-[#B01548] transition-colors"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const user = userProfile?.data?.data;
 
   return (
@@ -96,6 +46,23 @@ export default function DashboardPage() {
                 know about you:
               </p>
 
+              {!user?.isEmailVerified && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center">
+                    <Mail className="w-5 h-5 text-yellow-600 mr-2" />
+                    <div>
+                      <h4 className="text-sm font-medium text-yellow-800">
+                        Email Verification Required
+                      </h4>
+                      <p className="text-sm text-yellow-700 mt-1">
+                        Please check your email and click the verification link
+                        to unlock all features.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="bg-white rounded-lg shadow p-6 max-w-md mx-auto">
                 <h3 className="text-lg font-semibold mb-4">Your Profile</h3>
                 <div className="space-y-2 text-left">
@@ -113,7 +80,15 @@ export default function DashboardPage() {
                   </p>
                   <p>
                     <strong>Email Verified:</strong>{" "}
-                    {user?.isEmailVerified ? "Yes" : "No"}
+                    <span
+                      className={
+                        user?.isEmailVerified
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }
+                    >
+                      {user?.isEmailVerified ? "✓ Verified" : "✗ Not Verified"}
+                    </span>
                   </p>
                   <p>
                     <strong>Member Since:</strong>{" "}
@@ -138,5 +113,13 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <AuthWrapper requireAuth={true}>
+      <DashboardContent />
+    </AuthWrapper>
   );
 }

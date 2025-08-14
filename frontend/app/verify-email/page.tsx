@@ -1,29 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useVerifyEmail } from "@/hooks/useAPI";
+import Link from "next/link";
+import { CheckCircle, XCircle, Mail } from "lucide-react";
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const token = searchParams.get("token");
   const [verificationStatus, setVerificationStatus] = useState<
-    "loading" | "success" | "error"
-  >("loading");
-  const [retryCount, setRetryCount] = useState(0);
+    "pending" | "success" | "error"
+  >("pending");
 
   const verifyEmailMutation = useVerifyEmail();
 
-  const handleVerification = () => {
+  useEffect(() => {
     if (token) {
-      setVerificationStatus("loading");
       verifyEmailMutation.mutate(
         { token },
         {
           onSuccess: () => {
             setVerificationStatus("success");
+            setTimeout(() => {
+              router.push("/dashboard");
+            }, 3000);
           },
           onError: () => {
             setVerificationStatus("error");
@@ -33,27 +35,18 @@ export default function VerifyEmailPage() {
     } else {
       setVerificationStatus("error");
     }
-  };
-
-  const handleRetry = () => {
-    setRetryCount((prev) => prev + 1);
-    handleVerification();
-  };
-
-  useEffect(() => {
-    handleVerification();
   }, [token]);
 
-  if (verificationStatus === "loading") {
+  if (verificationStatus === "pending") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full mx-auto">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-2 border-[#D7195B] border-t-transparent mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D7195B] mx-auto"></div>
+            <h2 className="mt-6 text-3xl font-bold text-gray-900">
               Verifying Your Email
             </h2>
-            <p className="text-gray-600">
+            <p className="mt-2 text-gray-600">
               Please wait while we verify your email address...
             </p>
           </div>
@@ -64,21 +57,21 @@ export default function VerifyEmailPage() {
 
   if (verificationStatus === "success") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full mx-auto">
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <div className="text-center">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Email Verified Successfully!
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Your email address has been verified. You can now access all
-                features of your account.
-              </p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
+            <h2 className="mt-6 text-3xl font-bold text-gray-900">
+              Email Verified Successfully!
+            </h2>
+            <p className="mt-2 text-gray-600">
+              Your email has been verified. You'll be redirected to your
+              dashboard in a few seconds.
+            </p>
+            <div className="mt-6">
               <Link
                 href="/dashboard"
-                className="inline-block bg-[#D7195B] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#B01548] transition-colors duration-200"
+                className="bg-[#D7195B] text-white px-6 py-3 rounded-lg hover:bg-[#B01548] transition-colors"
               >
                 Go to Dashboard
               </Link>
@@ -90,51 +83,27 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full mx-auto">
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <div className="text-center">
-            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Verification Failed
-            </h2>
-            <p className="text-gray-600 mb-6">
-              The verification link is invalid or has expired. Please request a
-              new verification email.
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <XCircle className="mx-auto h-16 w-16 text-red-500" />
+          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+            Verification Failed
+          </h2>
+          <p className="mt-2 text-gray-600">
+            The verification link is invalid or has expired.
+          </p>
+          <div className="mt-6 space-y-4">
+            <Link
+              href="/login"
+              className="block bg-[#D7195B] text-white px-6 py-3 rounded-lg hover:bg-[#B01548] transition-colors"
+            >
+              Back to Login
+            </Link>
+            <p className="text-sm text-gray-500">
+              Need a new verification link? Log in and we'll send you another
+              one.
             </p>
-            <div className="space-y-3">
-              {retryCount < 3 && (
-                <button
-                  onClick={handleRetry}
-                  disabled={verifyEmailMutation.isLoading}
-                  className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  {verifyEmailMutation.isLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                      Retrying...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Try Again ({3 - retryCount} attempts left)
-                    </>
-                  )}
-                </button>
-              )}
-              <Link
-                href="/login"
-                className="block bg-[#D7195B] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#B01548] transition-colors duration-200 text-center"
-              >
-                Go to Login
-              </Link>
-              {retryCount >= 3 && (
-                <p className="text-sm text-gray-500 mt-4">
-                  Maximum retry attempts reached. Please contact support if the
-                  issue persists.
-                </p>
-              )}
-            </div>
           </div>
         </div>
       </div>

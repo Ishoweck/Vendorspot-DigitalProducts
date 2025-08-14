@@ -16,19 +16,30 @@ import {
 export const useLogin = () => {
   const queryClient = useQueryClient();
 
-  return useMutation(authAPI.login, {
-    onSuccess: (data) => {
-      const { CookieService } = require("@/lib/cookies");
-      CookieService.set("auth_token", data.data.data.token, 1);
-      CookieService.set("refresh_token", data.data.data.refreshToken, 7);
-      queryClient.invalidateQueries(["user"]);
-      toast.success("Login successful!");
-      window.location.href = "/dashboard";
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Login failed");
-    },
-  });
+  return useMutation(
+    (credentials: { email: string; password: string; rememberMe?: boolean }) =>
+      authAPI.login(credentials),
+    {
+      onSuccess: (data, variables) => {
+        const { CookieService } = require("@/lib/cookies");
+        const tokenExpiry = variables.rememberMe ? 7 : 1;
+        const refreshExpiry = variables.rememberMe ? 30 : 7;
+
+        CookieService.set("auth_token", data.data.data.token, tokenExpiry);
+        CookieService.set(
+          "refresh_token",
+          data.data.data.refreshToken,
+          refreshExpiry
+        );
+        queryClient.invalidateQueries(["user"]);
+        toast.success("Login successful!");
+        window.location.href = "/dashboard";
+      },
+      onError: (error: any) => {
+        toast.error(error.response?.data?.message || "Login failed");
+      },
+    }
+  );
 };
 
 export const useRegister = () => {

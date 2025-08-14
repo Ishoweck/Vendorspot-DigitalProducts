@@ -89,6 +89,12 @@ export const register = asyncHandler(
         user.firstName,
         verificationToken
       );
+
+      if (config.nodeEnv === "development") {
+        const verificationUrl = `${config.frontendUrl}/verify-email?token=${verificationToken}`;
+        logger.info(`🔗 VERIFICATION URL (DEV): ${verificationUrl}`);
+      }
+
       logger.info(`Email verification sent to ${user.email}`, {
         userId: String(user._id),
         email: user.email,
@@ -282,6 +288,12 @@ export const forgotPassword = asyncHandler(
         user.firstName,
         resetToken
       );
+
+      if (config.nodeEnv === "development") {
+        const resetUrl = `${config.frontendUrl}/reset-password?token=${resetToken}`;
+        logger.info(`🔗 PASSWORD RESET URL (DEV): ${resetUrl}`);
+      }
+
       logger.info(`Password reset email sent to ${user.email}`, {
         userId: String(user._id),
         email: user.email,
@@ -394,6 +406,11 @@ export const resendVerification = asyncHandler(
         user.firstName,
         verificationToken
       );
+
+      if (config.nodeEnv === "development") {
+        const verificationUrl = `${config.frontendUrl}/verify-email?token=${verificationToken}`;
+        logger.info(`🔗 RESEND VERIFICATION URL (DEV): ${verificationUrl}`);
+      }
     } catch (error) {
       logger.error(`Failed to send verification email to ${user.email}:`, {
         error: error instanceof Error ? error.message : String(error),
