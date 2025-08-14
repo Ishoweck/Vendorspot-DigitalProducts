@@ -24,16 +24,26 @@ class EmailService {
     html?: string;
     text?: string;
     from?: string;
-  }) {
+  }): Promise<{ success: boolean; data: any }> {
     try {
       if (this.isResendEnabled && this.resend) {
-        const result = await this.resend.emails.send({
+        const emailData: any = {
           from: options.from || config.emailFrom,
           to: Array.isArray(options.to) ? options.to : [options.to],
           subject: options.subject,
-          html: options.html,
-          text: options.text,
-        });
+        };
+
+        if (options.html) {
+          emailData.html = options.html;
+        }
+
+        if (options.text) {
+          emailData.text = options.text;
+        } else if (!options.html) {
+          emailData.text = options.subject;
+        }
+
+        const result = await this.resend.emails.send(emailData);
 
         logger.info("Email sent successfully via Resend", {
           to: options.to,
@@ -43,7 +53,6 @@ class EmailService {
 
         return { success: true, data: result.data };
       } else {
-        // Fallback: Log email (for development/testing)
         logger.info("Email would be sent (Resend not configured)", {
           to: options.to,
           subject: options.subject,

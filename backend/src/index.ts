@@ -149,14 +149,6 @@ class App {
     // this.app.use("/api/reviews", reviewRoutes);
     // this.app.use("/api/notifications", notificationRoutes);
     // this.app.use("/api/webhooks", webhookRoutes);
-
-    // API documentation for development
-    if (config.nodeEnv === "development") {
-      // TODO: Add Swagger documentation
-      // const swaggerUi = require("swagger-ui-express");
-      // const swaggerSpec = require("./swagger");
-      // this.app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-    }
   }
 
   private initializeErrorHandling(): void {
