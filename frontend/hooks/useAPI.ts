@@ -51,8 +51,8 @@ export const useRegister = () => {
       CookieService.set("auth_token", data.data.data.token, 1);
       CookieService.set("refresh_token", data.data.data.refreshToken, 7);
       queryClient.invalidateQueries(["user"]);
-      toast.success("Registration successful!");
-      window.location.href = "/dashboard";
+      toast.success("Registration successful! Please verify your email.");
+      window.location.href = "/verify-email";
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Registration failed");
