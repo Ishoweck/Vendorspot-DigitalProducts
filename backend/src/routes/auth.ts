@@ -15,7 +15,6 @@ import { validate } from "@/middleware/validate";
 
 const router = Router();
 
-// Validation middleware
 const registerValidation = [
   body("email")
     .isEmail()
@@ -64,7 +63,6 @@ const verifyEmailValidation = [
   body("token").notEmpty().withMessage("Verification token is required"),
 ];
 
-// Auth routes
 router.post("/register", registerValidation, validate, register);
 router.post("/login", loginValidation, validate, login);
 router.post("/logout", authenticate, logout);
@@ -89,7 +87,6 @@ router.post(
   resendVerification
 );
 
-// Get current user (protected route)
 router.get("/me", authenticate, (req, res) => {
   res.status(200).json({
     success: true,

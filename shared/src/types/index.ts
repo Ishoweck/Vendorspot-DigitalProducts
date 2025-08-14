@@ -1,18 +1,24 @@
 export interface User {
   _id: string;
   email: string;
+  phone?: string;
   firstName: string;
   lastName: string;
-  role: "CUSTOMER" | "VENDOR" | "ADMIN" | "MODERATOR";
-  status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "BANNED";
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
   avatar?: string;
-  phone?: string;
+  dateOfBirth?: string;
+  gender?: "MALE" | "FEMALE" | "OTHER";
   address?: string;
   city?: string;
   state?: string;
   country: string;
+  postalCode?: string;
+  role: "CUSTOMER" | "VENDOR" | "ADMIN" | "MODERATOR";
+  status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "BANNED";
+  lastLoginAt?: string;
+  loginAttempts: number;
+  lockedUntil?: string;
   createdAt: string;
   updatedAt: string;
 }

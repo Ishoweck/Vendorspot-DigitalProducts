@@ -11,11 +11,13 @@ const api = axios.create({
   timeout: 10000,
 });
 
+import { CookieService } from "./cookies";
+
 // Request interceptor - add auth token
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
+      const token = CookieService.get("auth_token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -35,32 +37,30 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       if (typeof window !== "undefined") {
-        const refreshToken = localStorage.getItem("refreshToken");
+        const refreshToken = CookieService.get("refresh_token");
 
         if (refreshToken) {
           try {
             const response = await api.post("/auth/refresh", { refreshToken });
             if (response.data.success) {
-              localStorage.setItem("token", response.data.data.token);
-              localStorage.setItem(
-                "refreshToken",
-                response.data.data.refreshToken
+              CookieService.set("auth_token", response.data.data.token, 1);
+              CookieService.set(
+                "refresh_token",
+                response.data.data.refreshToken,
+                7
               );
 
-              // Retry the original request with new token
               originalRequest.headers.Authorization = `Bearer ${response.data.data.token}`;
               return api(originalRequest);
             }
           } catch (refreshError) {
-            // Refresh failed, redirect to login
-            localStorage.removeItem("token");
-            localStorage.removeItem("refreshToken");
+            CookieService.remove("auth_token");
+            CookieService.remove("refresh_token");
             window.location.href = "/login";
             return Promise.reject(refreshError);
           }
         } else {
-          // No refresh token, redirect to login
-          localStorage.removeItem("token");
+          CookieService.remove("auth_token");
           window.location.href = "/login";
         }
       }

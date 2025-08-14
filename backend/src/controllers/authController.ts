@@ -107,7 +107,7 @@ export const login = asyncHandler(
     if (!isPasswordValid) {
       user.loginAttempts += 1;
       if (user.loginAttempts >= 5) {
-        user.lockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+        user.lockedUntil = new Date(Date.now() + 30 * 60 * 1000);
       }
       await user.save();
       return next(createError("Invalid email or password", 401));
@@ -210,7 +210,6 @@ export const forgotPassword = asyncHandler(
 
     const user = await User.findOne({ email: email.toLowerCase() });
 
-    // Always return success for security (don't reveal if email exists)
     res.status(200).json({
       success: true,
       message:
@@ -222,9 +221,8 @@ export const forgotPassword = asyncHandler(
     }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
 
-    // Store reset token in user document (you'll need to add these fields to User model)
     user.passwordResetToken = resetToken;
     user.passwordResetExpires = resetTokenExpiry;
     await user.save();
@@ -327,7 +325,7 @@ export const resendVerification = asyncHandler(
     }
 
     const verificationToken = crypto.randomBytes(32).toString("hex");
-    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     user.emailVerificationToken = verificationToken;
     user.emailVerificationExpires = verificationExpiry;

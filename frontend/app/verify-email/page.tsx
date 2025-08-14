@@ -94,16 +94,10 @@ export default function VerifyEmailPage() {
                             >
                                 Go to Login
                             </Link>
-                            <Link
-                                href="/resend-verification"
-                                className="block text-[#D7195B] hover:text-[#B01548] font-medium"
-                            >
-                                Resend Verification Email
-                            </Link>
                         </div>
                     </div>
                 </div>
             </div>
             );
-  }
+    }
 }

@@ -17,8 +17,9 @@ export const useLogin = () => {
 
   return useMutation(authAPI.login, {
     onSuccess: (data) => {
-      localStorage.setItem("token", data.data.data.token);
-      localStorage.setItem("refreshToken", data.data.data.refreshToken);
+      const { CookieService } = require("@/lib/cookies");
+      CookieService.set("auth_token", data.data.data.token, 1);
+      CookieService.set("refresh_token", data.data.data.refreshToken, 7);
       queryClient.invalidateQueries(["user"]);
       toast.success("Login successful!");
       window.location.href = "/dashboard";
@@ -34,8 +35,9 @@ export const useRegister = () => {
 
   return useMutation(authAPI.register, {
     onSuccess: (data) => {
-      localStorage.setItem("token", data.data.data.token);
-      localStorage.setItem("refreshToken", data.data.data.refreshToken);
+      const { CookieService } = require("@/lib/cookies");
+      CookieService.set("auth_token", data.data.data.token, 1);
+      CookieService.set("refresh_token", data.data.data.refreshToken, 7);
       queryClient.invalidateQueries(["user"]);
       toast.success("Registration successful!");
       window.location.href = "/dashboard";
@@ -51,8 +53,9 @@ export const useLogout = () => {
 
   return useMutation(authAPI.logout, {
     onSuccess: () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
+      const { CookieService } = require("@/lib/cookies");
+      CookieService.remove("auth_token");
+      CookieService.remove("refresh_token");
       queryClient.clear();
       toast.success("Logged out successfully");
       window.location.href = "/login";
@@ -191,7 +194,9 @@ export const useCreateOrder = () => {
 // User hooks
 export const useUserProfile = () => {
   return useQuery(["user"], authAPI.getCurrentUser, {
-    enabled: !!localStorage.getItem("token"),
+    enabled:
+      typeof window !== "undefined" &&
+      !!require("@/lib/cookies").CookieService.get("auth_token"),
     retry: false,
   });
 };

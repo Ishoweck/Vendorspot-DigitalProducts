@@ -1,29 +1,26 @@
 import { authAPI } from "@/lib/api";
+import { CookieService } from "@/lib/cookies";
 
 export class AuthService {
-  private static TOKEN_KEY = "token";
-  private static REFRESH_TOKEN_KEY = "refreshToken";
+  private static TOKEN_KEY = "auth_token";
+  private static REFRESH_TOKEN_KEY = "refresh_token";
 
   static getToken(): string | null {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem(this.TOKEN_KEY);
+    return CookieService.get(this.TOKEN_KEY);
   }
 
   static getRefreshToken(): string | null {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    return CookieService.get(this.REFRESH_TOKEN_KEY);
   }
 
   static setTokens(token: string, refreshToken: string): void {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(this.TOKEN_KEY, token);
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+    CookieService.set(this.TOKEN_KEY, token, 1);
+    CookieService.set(this.REFRESH_TOKEN_KEY, refreshToken, 7);
   }
 
   static clearTokens(): void {
-    if (typeof window === "undefined") return;
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    CookieService.remove(this.TOKEN_KEY);
+    CookieService.remove(this.REFRESH_TOKEN_KEY);
   }
 
   static isAuthenticated(): boolean {
