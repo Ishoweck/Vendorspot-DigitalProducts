@@ -5,8 +5,19 @@ import { useRouter } from "next/navigation";
 import { useUpdateProduct } from "@/hooks/useAPI";
 import { toast } from "react-hot-toast";
 
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  categoryId: string;
+  tags: string[];
+  thumbnail?: string;
+  images?: string[];
+}
+
 interface EditProductFormProps {
-  product: any;
+  product: Product;
 }
 
 export default function EditProductForm({ product }: EditProductFormProps) {
@@ -82,6 +93,11 @@ export default function EditProductForm({ product }: EditProductFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!product?._id) {
+      toast.error("Product ID is missing");
+      return;
+    }
+
     const submitData = new FormData();
     submitData.append("name", formData.name);
     submitData.append("description", formData.description);
@@ -89,8 +105,11 @@ export default function EditProductForm({ product }: EditProductFormProps) {
     submitData.append("categoryId", formData.categoryId);
 
     if (formData.tags) {
-      const tagsArray = formData.tags.split(",").map((tag) => tag.trim());
-      tagsArray.forEach((tag) => submitData.append("tags", tag));
+      const tagsArray = formData.tags
+        .split(",")
+        .map((tag: string) => tag.trim())
+        .filter((tag: string) => tag.length > 0);
+      submitData.append("tags", JSON.stringify(tagsArray));
     }
 
     if (files.file) {
@@ -112,8 +131,9 @@ export default function EditProductForm({ product }: EditProductFormProps) {
       });
       toast.success("Product updated successfully!");
       router.push("/dashboard/vendor/products");
-    } catch (error) {
-      toast.error("Failed to update product");
+    } catch (error: any) {
+      console.error("Update error:", error);
+      toast.error(error?.response?.data?.message || "Failed to update product");
     }
   };
 
@@ -245,7 +265,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
             />
             {previews.images.length > 0 && (
               <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
-                {previews.images.map((image, index) => (
+                {previews.images.map((image: string, index: number) => (
                   <img
                     key={index}
                     src={image}

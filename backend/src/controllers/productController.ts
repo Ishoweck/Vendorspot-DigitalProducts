@@ -3,6 +3,7 @@ import { Product } from "@/models/Product";
 import { Vendor } from "@/models/Vendor";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
+import { SocketService } from "@/services/SocketService";
 
 export const getProducts = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -55,11 +56,27 @@ export const getProductById = asyncHandler(
       return next(createError("Product not found", 404));
     }
 
-    await Product.findByIdAndUpdate(req.params.id, { $inc: { viewCount: 1 } });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { viewCount: 1 } },
+      { new: true }
+    )
+      .populate("vendorId", "businessName")
+      .populate("categoryId", "name");
+
+    try {
+      const io = SocketService.getIO();
+      io.emit("product:viewed", {
+        productId: req.params.id,
+        viewCount: updatedProduct?.viewCount || product.viewCount + 1,
+      });
+    } catch (error) {
+      console.log("Socket emit error:", error);
+    }
 
     res.status(200).json({
       success: true,
-      data: product,
+      data: updatedProduct || product,
     });
   }
 );
@@ -159,6 +176,17 @@ export const createProduct = asyncHandler(
       tags: tags ? JSON.parse(tags) : [],
     });
 
+    try {
+      const io = SocketService.getIO();
+      io.emit("product:created", {
+        productId: product._id,
+        vendorId: vendor._id,
+        product: product,
+      });
+    } catch (error) {
+      console.log("Socket emit error:", error);
+    }
+
     res.status(201).json({
       success: true,
       message: "Product created successfully",
@@ -227,6 +255,17 @@ export const updateProduct = asyncHandler(
 
     await product.save();
 
+    try {
+      const io = SocketService.getIO();
+      io.emit("product:updated", {
+        productId: product._id,
+        vendorId: vendor._id,
+        product: product,
+      });
+    } catch (error) {
+      console.log("Socket emit error:", error);
+    }
+
     res.status(200).json({
       success: true,
       message: "Product updated successfully",
@@ -254,6 +293,16 @@ export const deleteProduct = asyncHandler(
     }
 
     await Product.findByIdAndDelete(req.params.id);
+
+    try {
+      const io = SocketService.getIO();
+      io.emit("product:deleted", {
+        productId: req.params.id,
+        vendorId: vendor._id,
+      });
+    } catch (error) {
+      console.log("Socket emit error:", error);
+    }
 
     res.status(200).json({
       success: true,

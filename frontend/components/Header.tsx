@@ -54,6 +54,9 @@ export default function Header() {
       if (!target.closest(".user-dropdown")) {
         setIsUserDropdownOpen(false);
       }
+      if (!target.closest(".categories-dropdown")) {
+        setIsCategoriesDropdownOpen(false);
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -94,7 +97,7 @@ export default function Header() {
                 <Menu className="w-6 h-6 text-black" />
               </button>
 
-              <div className="relative hidden lg:block mr-4">
+              <div className="relative hidden lg:block mr-4 categories-dropdown">
                 <button
                   onClick={() =>
                     setIsCategoriesDropdownOpen(!isCategoriesDropdownOpen)
