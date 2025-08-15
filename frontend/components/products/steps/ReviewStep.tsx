@@ -2,9 +2,16 @@
 
 import { File, Image } from "lucide-react";
 import { useProductFormStore } from "@/stores/productFormStore";
+import { useCategories } from "@/hooks/useAPI";
 
 export default function ReviewStep() {
   const { formData } = useProductFormStore();
+  const { data: categoriesData } = useCategories();
+
+  const categories = categoriesData?.data || [];
+  const selectedCategory = categories.find(
+    (cat: any) => cat._id === formData.categoryId
+  );
 
   return (
     <div className="space-y-6">
@@ -39,8 +46,8 @@ export default function ReviewStep() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Category
             </label>
-            <p className="text-gray-900 capitalize">
-              {formData.categoryId.replace("-", " ")}
+            <p className="text-gray-900">
+              {selectedCategory?.name || "Category not found"}
             </p>
           </div>
 

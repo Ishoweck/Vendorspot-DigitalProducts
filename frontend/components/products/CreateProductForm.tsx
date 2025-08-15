@@ -71,14 +71,14 @@ export default function CreateProductForm() {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
+        <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => router.back()}
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
+          <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
         </div>
 
         <div className="flex items-center justify-between">

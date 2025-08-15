@@ -3,10 +3,14 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { useProductFormStore } from "@/stores/productFormStore";
+import { useCategories } from "@/hooks/useAPI";
 
 export default function BasicInfoStep() {
   const { formData, updateFormData } = useProductFormStore();
   const [tagInput, setTagInput] = useState("");
+  const { data: categoriesData } = useCategories();
+
+  const categories = categoriesData?.data || [];
 
   const handleAddTag = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
@@ -82,11 +86,11 @@ export default function BasicInfoStep() {
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
           >
             <option value="">Select category</option>
-            <option value="web-templates">Web Templates</option>
-            <option value="graphics">Graphics</option>
-            <option value="ebooks">E-books</option>
-            <option value="courses">Courses</option>
-            <option value="software">Software</option>
+            {categories.map((category: any) => (
+              <option key={category._id} value={category._id}>
+                {category.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
