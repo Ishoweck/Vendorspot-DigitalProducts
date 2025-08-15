@@ -85,7 +85,7 @@ export default function CreateProductForm() {
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium ${
                   currentStep > step.id
                     ? "bg-green-500 text-white"
                     : currentStep === step.id
@@ -94,21 +94,21 @@ export default function CreateProductForm() {
                 }`}
               >
                 {currentStep > step.id ? (
-                  <Check className="w-4 h-4" />
+                  <Check className="w-3 h-3 sm:w-4 sm:h-4" />
                 ) : (
                   step.id
                 )}
               </div>
               <span
-                className={`ml-2 text-sm font-medium ${
+                className={`ml-1 sm:ml-2 text-xs sm:text-sm font-medium ${
                   currentStep >= step.id ? "text-gray-900" : "text-gray-500"
-                }`}
+                } hidden sm:inline`}
               >
                 {step.name}
               </span>
               {index < steps.length - 1 && (
                 <div
-                  className={`w-16 h-0.5 mx-4 ${
+                  className={`w-8 sm:w-16 h-0.5 mx-2 sm:mx-4 ${
                     currentStep > step.id ? "bg-green-500" : "bg-gray-200"
                   }`}
                 />

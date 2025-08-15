@@ -45,25 +45,27 @@ export default function FilesStep() {
           className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#D7195B] transition-colors"
         >
           {formData.file ? (
-            <div className="flex items-center justify-center gap-3">
-              <File className="w-8 h-8 text-[#D7195B]" />
-              <div>
-                <p className="font-medium text-gray-900">
-                  {formData.file.name}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {(formData.file.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
+            <div className="relative">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   updateFormData({ file: null });
                 }}
-                className="text-red-500 hover:text-red-700"
+                className="absolute top-2 right-2 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 text-gray-600" />
               </button>
+              <div className="flex items-center justify-center gap-3">
+                <File className="w-8 h-8 text-[#D7195B]" />
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {formData.file.name}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {(formData.file.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
             <div>
@@ -95,29 +97,31 @@ export default function FilesStep() {
           className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#D7195B] transition-colors"
         >
           {formData.thumbnail ? (
-            <div className="flex items-center justify-center gap-3">
-              <img
-                src={URL.createObjectURL(formData.thumbnail)}
-                alt="Thumbnail"
-                className="w-16 h-16 object-cover rounded-lg"
-              />
-              <div>
-                <p className="font-medium text-gray-900">
-                  {formData.thumbnail.name}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {(formData.thumbnail.size / 1024).toFixed(2)} KB
-                </p>
-              </div>
+            <div className="relative">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   updateFormData({ thumbnail: null });
                 }}
-                className="text-red-500 hover:text-red-700"
+                className="absolute top-2 right-2 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 text-gray-600" />
               </button>
+              <div className="flex items-center justify-center gap-3">
+                <img
+                  src={URL.createObjectURL(formData.thumbnail)}
+                  alt="Thumbnail"
+                  className="w-16 h-16 object-cover rounded-lg"
+                />
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {formData.thumbnail.name}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {(formData.thumbnail.size / 1024).toFixed(2)} KB
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
             <div>

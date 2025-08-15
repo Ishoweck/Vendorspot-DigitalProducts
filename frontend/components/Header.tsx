@@ -17,20 +17,24 @@ import {
   LogOut,
   Package,
 } from "lucide-react";
-import { useUserProfile, useLogout } from "@/hooks/useAPI";
+import { useUserProfile, useLogout, useCategories } from "@/hooks/useAPI";
 import MobileSidebar from "./MobileSidebar";
 
 export default function Header() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isCategoriesDropdownOpen, setIsCategoriesDropdownOpen] =
+    useState(false);
   const [advertState, setAdvertState] = useState<
     "expanded" | "compact" | "hidden"
   >("expanded");
 
   const { data: userProfile } = useUserProfile();
+  const { data: categoriesData } = useCategories();
   const logoutMutation = useLogout();
   const user = userProfile?.data?.data;
+  const categories = categoriesData?.data?.data || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,6 +93,34 @@ export default function Header() {
               >
                 <Menu className="w-6 h-6 text-black" />
               </button>
+
+              <div className="relative hidden lg:block mr-4">
+                <button
+                  onClick={() =>
+                    setIsCategoriesDropdownOpen(!isCategoriesDropdownOpen)
+                  }
+                  className="flex items-center space-x-1 text-black hover:text-primary-500 transition-colors"
+                >
+                  <Menu className="w-5 h-5" />
+                  <span className="text-sm font-medium">Categories</span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+
+                {isCategoriesDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                    {categories.map((category: any) => (
+                      <Link
+                        key={category._id}
+                        href={`/products?category=${category.slug}`}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => setIsCategoriesDropdownOpen(false)}
+                      >
+                        {category.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <Link href="/" className="flex-shrink-0">
                 <Image

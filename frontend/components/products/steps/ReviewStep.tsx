@@ -20,7 +20,7 @@ export default function ReviewStep() {
           Product Details
         </h3>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Product Name

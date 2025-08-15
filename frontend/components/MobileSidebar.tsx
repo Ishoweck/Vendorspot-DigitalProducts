@@ -17,7 +17,7 @@ import {
   Package,
   Wallet,
 } from "lucide-react";
-import { useUserProfile, useLogout } from "@/hooks/useAPI";
+import { useUserProfile, useLogout, useCategories } from "@/hooks/useAPI";
 
 interface MobileSidebarProps {
   isOpen: boolean;
@@ -26,9 +26,11 @@ interface MobileSidebarProps {
 
 export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
   const { data: userProfile } = useUserProfile();
+  const { data: categoriesData } = useCategories();
   const logoutMutation = useLogout();
   const user = userProfile?.data?.data;
   const pathname = usePathname();
+  const categories = categoriesData?.data?.data || [];
 
   return (
     <>
@@ -73,6 +75,23 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                 <span className="font-medium text-black">Login/Signup</span>
               </Link>
             )}
+          </div>
+
+          <div className="space-y-2 pb-4 border-b">
+            <h3 className="text-sm font-medium text-gray-900 px-3 mb-2">
+              Categories
+            </h3>
+            {categories.map((category: any) => (
+              <Link
+                key={category._id}
+                href={`/products?category=${category.slug}`}
+                onClick={onClose}
+                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Package className="w-5 h-5 text-gray-600" />
+                <span className="font-medium text-black">{category.name}</span>
+              </Link>
+            ))}
           </div>
 
           {user && (

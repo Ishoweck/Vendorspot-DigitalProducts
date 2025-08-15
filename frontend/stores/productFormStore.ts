@@ -64,22 +64,16 @@ export const useProductFormStore = create<ProductFormStore>()(
     }),
     {
       name: "product-form-storage",
-      partialize: (state) => ({
-        formData: {
-          name: state.formData.name,
-          description: state.formData.description,
-          price: state.formData.price,
-          categoryId: state.formData.categoryId,
-          tags: state.formData.tags,
-          file: null,
-          thumbnail: null,
-          images: [],
+      storage: {
+        getItem: (name) => {
+          const str = localStorage.getItem(name);
+          if (!str) return null;
+          return JSON.parse(str);
         },
-      }),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          console.log("Form data rehydrated from storage");
-        }
+        setItem: (name, value) => {
+          localStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => localStorage.removeItem(name),
       },
     }
   )
