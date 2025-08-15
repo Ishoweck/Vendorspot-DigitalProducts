@@ -10,6 +10,9 @@ export const productsAPI = {
 
   getById: (id: string) => api.get<any>(`/products/${id}`),
 
+  getVendorProducts: (params?: { page?: number; limit?: number }) =>
+    api.get<{ data: any[]; pagination: any }>("/products/vendor", { params }),
+
   create: (productData: FormData) =>
     api.post<any>("/products", productData, {
       headers: { "Content-Type": "multipart/form-data" },

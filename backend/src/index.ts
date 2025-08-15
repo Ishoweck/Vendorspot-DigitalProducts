@@ -20,9 +20,7 @@ import authRoutes from "@/routes/auth";
 import userRoutes from "@/routes/users";
 import vendorRoutes from "@/routes/vendors";
 import adminRoutes from "@/routes/admin";
-
-// Import routes - Future implementation (commented out for now)
-// import productRoutes from "@/routes/products";
+import productRoutes from "@/routes/products";
 // import orderRoutes from "@/routes/orders";
 // import paymentRoutes from "@/routes/payments";
 // import categoryRoutes from "@/routes/categories";
@@ -141,9 +139,7 @@ class App {
     this.app.use("/api/users", userRoutes);
     this.app.use("/api/vendors", vendorRoutes);
     this.app.use("/api/admin", adminRoutes);
-
-    // Future API routes (commented out for now)
-    // this.app.use("/api/products", productRoutes);
+    this.app.use("/api/products", productRoutes);
     // this.app.use("/api/orders", orderRoutes);
     // this.app.use("/api/payments", paymentRoutes);
     // this.app.use("/api/categories", categoryRoutes);

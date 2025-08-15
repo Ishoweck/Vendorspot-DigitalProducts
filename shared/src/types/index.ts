@@ -28,40 +28,18 @@ export interface Product {
   vendorId: string;
   categoryId: string;
   name: string;
-  slug: string;
   description: string;
-  shortDescription?: string;
   price: number;
-  originalPrice?: number;
-  discountPercentage?: number;
-  isDigital: boolean;
   fileUrl?: string;
-  fileSize?: number;
-  fileType?: string;
-  previewUrl?: string;
   thumbnail?: string;
   images: string[];
   tags: string[];
-  features: string[];
-  requirements?: string;
-  instructions?: string;
-  licenseType?:
-    | "SINGLE_USE"
-    | "MULTIPLE_USE"
-    | "UNLIMITED"
-    | "TIME_LIMITED"
-    | "SUBSCRIPTION";
-  licenseDuration?: number;
-  downloadLimit?: number;
   isActive: boolean;
-  isFeatured: boolean;
   isApproved: boolean;
   approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
-  rejectionReason?: string;
   viewCount: number;
   downloadCount: number;
   rating: number;
-  reviewCount: number;
   createdAt: string;
   updatedAt: string;
 }

@@ -183,12 +183,26 @@ export const useDeleteProduct = () => {
   return useMutation(productsAPI.delete, {
     onSuccess: () => {
       queryClient.invalidateQueries(["products"]);
+      queryClient.invalidateQueries(["vendor-products"]);
       toast.success("Product deleted successfully!");
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to delete product");
     },
   });
+};
+
+export const useVendorProducts = (params?: {
+  page?: number;
+  limit?: number;
+}) => {
+  return useQuery(
+    ["vendor-products", params],
+    () => productsAPI.getVendorProducts(params),
+    {
+      keepPreviousData: true,
+    }
+  );
 };
 
 // Orders hooks

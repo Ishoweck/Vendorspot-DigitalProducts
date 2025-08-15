@@ -19,6 +19,9 @@ interface Config {
   allowedFileTypes: string[];
   bcryptRounds: number;
   cloudinaryUrl: string;
+  cloudinaryCloudName: string;
+  cloudinaryApiKey: string;
+  cloudinaryApiSecret: string;
   logLevel: string;
 }
 
@@ -67,6 +70,9 @@ export const config: Config = {
   bcryptRounds: parseInt(process.env["BCRYPT_ROUNDS"] || "12", 10),
 
   cloudinaryUrl: process.env["CLOUDINARY_URL"] || "",
+  cloudinaryCloudName: process.env["CLOUDINARY_CLOUD_NAME"] || "",
+  cloudinaryApiKey: process.env["CLOUDINARY_API_KEY"] || "",
+  cloudinaryApiSecret: process.env["CLOUDINARY_API_SECRET"] || "",
 
   logLevel: process.env["LOG_LEVEL"] || "info",
 };

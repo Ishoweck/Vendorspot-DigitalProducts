@@ -310,7 +310,7 @@ Query Parameters:
 - `search` (string): Search in product name and description
 - `minPrice` (number): Minimum price filter
 - `maxPrice` (number): Maximum price filter
-- `sortBy` (string): Sort by field (createdAt, price, rating, downloads)
+- `sortBy` (string): Sort by field (createdAt, price, rating)
 - `sortOrder` (string): Sort order (asc, desc)
 - `isFeatured` (boolean): Filter featured products
 
@@ -320,24 +320,29 @@ Query Parameters:
 GET /api/products/:id
 ```
 
+#### Get Vendor Products
+
+```http
+GET /api/products/vendor?page=1&limit=10
+Authorization: Bearer <token>
+```
+
 #### Create Product (Vendor Only)
 
 ```http
 POST /api/products
 Authorization: Bearer <token>
-Content-Type: application/json
+Content-Type: multipart/form-data
 
 {
   "name": "Premium WordPress Theme",
   "description": "A modern, responsive WordPress theme",
-  "shortDescription": "Modern WordPress theme",
   "price": 29.99,
-  "originalPrice": 49.99,
   "categoryId": "category-id",
   "tags": ["wordpress", "theme", "responsive"],
-  "features": ["Responsive Design", "SEO Optimized"],
-  "licenseType": "SINGLE_USE",
-  "downloadLimit": 5
+  "file": [File],
+  "thumbnail": [File],
+  "images": [File, File]
 }
 ```
 

@@ -1,84 +1,55 @@
-// import { Router } from "express";
+import { Router } from "express";
+import multer from "multer";
+import { authenticate, authorize } from "@/middleware/auth";
+import {
+  getProducts,
+  getProductById,
+  getVendorProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from "@/controllers/productController";
 
-// const router = Router();
+const router: Router = Router();
 
-// // Get all products
-// router.get("/", async (req, res) => {
-//   try {
-//     res.status(200).json({
-//       success: true,
-//       message: "Products retrieved successfully",
-//       data: { message: "Get products - MongoDB implementation needed" },
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to get products",
-//     });
-//   }
-// });
+const upload = multer({
+  dest: "uploads/",
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
-// // Get product by ID
-// router.get("/:id", async (req, res) => {
-//   try {
-//     res.status(200).json({
-//       success: true,
-//       message: "Product retrieved successfully",
-//       data: { message: "Get product by ID - MongoDB implementation needed" },
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to get product",
-//     });
-//   }
-// });
+const uploadFields = upload.fields([
+  { name: "file", maxCount: 1 },
+  { name: "thumbnail", maxCount: 1 },
+  { name: "images", maxCount: 5 },
+]);
 
-// // Create new product
-// router.post("/", async (req, res) => {
-//   try {
-//     res.status(201).json({
-//       success: true,
-//       message: "Product created successfully",
-//       data: { message: "Create product - MongoDB implementation needed" },
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to create product",
-//     });
-//   }
-// });
+router.get("/", getProducts);
+router.get(
+  "/vendor",
+  authenticate,
+  authorize("VENDOR", "ADMIN"),
+  getVendorProducts
+);
+router.get("/:id", getProductById);
+router.post(
+  "/",
+  authenticate,
+  authorize("VENDOR", "ADMIN"),
+  uploadFields,
+  createProduct
+);
+router.put(
+  "/:id",
+  authenticate,
+  authorize("VENDOR", "ADMIN"),
+  uploadFields,
+  updateProduct
+);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize("VENDOR", "ADMIN"),
+  deleteProduct
+);
 
-// // Update product
-// router.put("/:id", async (req, res) => {
-//   try {
-//     res.status(200).json({
-//       success: true,
-//       message: "Product updated successfully",
-//       data: { message: "Update product - MongoDB implementation needed" },
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to update product",
-//     });
-//   }
-// });
-
-// // Delete product
-// router.delete("/:id", async (req, res) => {
-//   try {
-//     res.status(200).json({
-//       success: true,
-//       message: "Product deleted successfully",
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to delete product",
-//     });
-//   }
-// });
-
-// export default router;
+export default router;
