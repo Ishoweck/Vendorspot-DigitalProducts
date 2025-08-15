@@ -17,6 +17,7 @@ export default function SignupForm() {
     password: "",
     confirmPassword: "",
     isVendor: false,
+    businessName: "",
     agreeToTerms: false,
   });
 
@@ -42,6 +43,7 @@ export default function SignupForm() {
       lastName: formData.lastName,
       phone: formData.phone || undefined,
       isVendor: formData.isVendor,
+      businessName: formData.isVendor ? formData.businessName : undefined,
     });
   };
 
@@ -230,6 +232,27 @@ export default function SignupForm() {
               I want to sell digital products (Become a vendor)
             </label>
           </div>
+
+          {formData.isVendor && (
+            <div>
+              <label
+                htmlFor="businessName"
+                className="block text-sm font-medium text-neutral-700 mb-2"
+              >
+                Business Name
+              </label>
+              <input
+                id="businessName"
+                name="businessName"
+                type="text"
+                required={formData.isVendor}
+                value={formData.businessName}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+                placeholder="Enter your business name"
+              />
+            </div>
+          )}
 
           <div className="flex items-center">
             <input

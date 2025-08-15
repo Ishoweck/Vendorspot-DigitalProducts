@@ -35,7 +35,15 @@ const generateTokens = (userId: string) => {
 
 export const register = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password, firstName, lastName, phone, isVendor } = req.body;
+    const {
+      email,
+      password,
+      firstName,
+      lastName,
+      phone,
+      isVendor,
+      businessName,
+    } = req.body;
 
     if (!email || !password || !firstName || !lastName) {
       return next(createError("All required fields must be provided", 400));

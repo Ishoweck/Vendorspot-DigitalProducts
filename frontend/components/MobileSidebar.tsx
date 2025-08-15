@@ -13,6 +13,8 @@ import {
   CreditCard,
   Bell,
   MapPin,
+  Package,
+  Wallet,
 } from "lucide-react";
 import { useUserProfile, useLogout } from "@/hooks/useAPI";
 
@@ -74,7 +76,11 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
           {user && (
             <div className="space-y-2 pb-4 border-b">
               <Link
-                href="/dashboard/user"
+                href={
+                  user.role === "VENDOR"
+                    ? "/dashboard/vendor"
+                    : "/dashboard/user"
+                }
                 onClick={onClose}
                 className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
               >
@@ -82,59 +88,127 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                 <span className="font-medium text-black">My Account</span>
               </Link>
 
-              <Link
-                href="/dashboard/user/orders"
-                onClick={onClose}
-                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ShoppingBag className="w-5 h-5 text-gray-600" />
-                <span className="font-medium text-black">Orders</span>
-              </Link>
+              {user.role === "VENDOR" ? (
+                <>
+                  <Link
+                    href="/dashboard/vendor/products"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Package className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">Products</span>
+                  </Link>
 
-              <Link
-                href="/dashboard/user/saved-items"
-                onClick={onClose}
-                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <Heart className="w-5 h-5 text-gray-600" />
-                <span className="font-medium text-black">Saved Items</span>
-              </Link>
+                  <Link
+                    href="/dashboard/vendor/orders"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <ShoppingBag className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">Orders</span>
+                  </Link>
 
-              <Link
-                href="/dashboard/user/payment-methods"
-                onClick={onClose}
-                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <CreditCard className="w-5 h-5 text-gray-600" />
-                <span className="font-medium text-black">Payment Methods</span>
-              </Link>
+                  <Link
+                    href="/dashboard/vendor/notifications"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Bell className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">
+                      Notifications
+                    </span>
+                  </Link>
 
-              <Link
-                href="/dashboard/user/notifications"
-                onClick={onClose}
-                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <Bell className="w-5 h-5 text-gray-600" />
-                <span className="font-medium text-black">Notifications</span>
-              </Link>
+                  <Link
+                    href="/dashboard/vendor/shipping"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <MapPin className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">Shipping</span>
+                  </Link>
 
-              <Link
-                href="/dashboard/user/shipping-address"
-                onClick={onClose}
-                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <MapPin className="w-5 h-5 text-gray-600" />
-                <span className="font-medium text-black">Shipping Address</span>
-              </Link>
+                  <Link
+                    href="/dashboard/vendor/wallet"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Wallet className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">Wallet</span>
+                  </Link>
 
-              <Link
-                href="/dashboard/user/settings"
-                onClick={onClose}
-                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <Settings className="w-5 h-5 text-gray-600" />
-                <span className="font-medium text-black">Settings</span>
-              </Link>
+                  <Link
+                    href="/dashboard/vendor/profile"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Settings className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">Profile</span>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/dashboard/user/orders"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <ShoppingBag className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">Orders</span>
+                  </Link>
+
+                  <Link
+                    href="/dashboard/user/saved-items"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Heart className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">Saved Items</span>
+                  </Link>
+
+                  <Link
+                    href="/dashboard/user/payment-methods"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <CreditCard className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">
+                      Payment Methods
+                    </span>
+                  </Link>
+
+                  <Link
+                    href="/dashboard/user/notifications"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Bell className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">
+                      Notifications
+                    </span>
+                  </Link>
+
+                  <Link
+                    href="/dashboard/user/shipping-address"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <MapPin className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">
+                      Shipping Address
+                    </span>
+                  </Link>
+
+                  <Link
+                    href="/dashboard/user/settings"
+                    onClick={onClose}
+                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Settings className="w-5 h-5 text-gray-600" />
+                    <span className="font-medium text-black">Settings</span>
+                  </Link>
+                </>
+              )}
 
               <button
                 onClick={() => {

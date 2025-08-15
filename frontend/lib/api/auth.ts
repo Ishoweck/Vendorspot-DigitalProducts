@@ -14,6 +14,7 @@ export const authAPI = {
     lastName: string;
     phone?: string;
     isVendor?: boolean;
+    businessName?: string;
   }) =>
     api.post<{
       success: boolean;

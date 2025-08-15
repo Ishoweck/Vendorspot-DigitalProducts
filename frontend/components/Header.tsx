@@ -15,6 +15,7 @@ import {
   Heart,
   Settings,
   LogOut,
+  Package,
 } from "lucide-react";
 import { useUserProfile, useLogout } from "@/hooks/useAPI";
 import MobileSidebar from "./MobileSidebar";
@@ -119,37 +120,73 @@ export default function Header() {
                   {isUserDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                       <Link
-                        href="/dashboard/user"
+                        href={
+                          user.role === "VENDOR"
+                            ? "/dashboard/vendor"
+                            : "/dashboard/user"
+                        }
                         className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                         onClick={() => setIsUserDropdownOpen(false)}
                       >
                         <Users className="w-4 h-4" />
                         <span>My Account</span>
                       </Link>
-                      <Link
-                        href="/dashboard/user/orders"
-                        className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                      >
-                        <ShoppingBag className="w-4 h-4" />
-                        <span>Orders</span>
-                      </Link>
-                      <Link
-                        href="/dashboard/user/saved-items"
-                        className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                      >
-                        <Heart className="w-4 h-4" />
-                        <span>Saved Items</span>
-                      </Link>
-                      <Link
-                        href="/dashboard/user/settings"
-                        className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                      >
-                        <Settings className="w-4 h-4" />
-                        <span>Settings</span>
-                      </Link>
+
+                      {user.role === "VENDOR" ? (
+                        <>
+                          <Link
+                            href="/dashboard/vendor/products"
+                            className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <Package className="w-4 h-4" />
+                            <span>Products</span>
+                          </Link>
+                          <Link
+                            href="/dashboard/vendor/orders"
+                            className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <ShoppingBag className="w-4 h-4" />
+                            <span>Orders</span>
+                          </Link>
+                          <Link
+                            href="/dashboard/vendor/profile"
+                            className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <Settings className="w-4 h-4" />
+                            <span>Profile</span>
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <Link
+                            href="/dashboard/user/orders"
+                            className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <ShoppingBag className="w-4 h-4" />
+                            <span>Orders</span>
+                          </Link>
+                          <Link
+                            href="/dashboard/user/saved-items"
+                            className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <Heart className="w-4 h-4" />
+                            <span>Saved Items</span>
+                          </Link>
+                          <Link
+                            href="/dashboard/user/settings"
+                            className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                          >
+                            <Settings className="w-4 h-4" />
+                            <span>Settings</span>
+                          </Link>
+                        </>
+                      )}
                       <hr className="my-2" />
                       <button
                         onClick={() => {

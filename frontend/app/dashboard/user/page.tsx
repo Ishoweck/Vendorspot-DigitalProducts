@@ -19,7 +19,7 @@ function UserDashboardContent() {
             <UserSidebar />
 
             <main className="flex-1 bg-white rounded-lg shadow p-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">
+              <h1 className="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-200">
                 Dashboard
               </h1>
 
@@ -40,21 +40,21 @@ function UserDashboardContent() {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-2">
                     Total Orders
                   </h3>
                   <p className="text-3xl font-bold text-[#D7195B]">0</p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-2">
                     Saved Items
                   </h3>
                   <p className="text-3xl font-bold text-[#D7195B]">0</p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-2">
                     Account Status
                   </h3>
@@ -63,7 +63,7 @@ function UserDashboardContent() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-4">
                     Account Details
                   </h3>
@@ -82,7 +82,7 @@ function UserDashboardContent() {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-gray-900">
                       Shipping Address
