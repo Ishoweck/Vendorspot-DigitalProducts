@@ -10,7 +10,7 @@ export default function BasicInfoStep() {
   const [tagInput, setTagInput] = useState("");
   const { data: categoriesData } = useCategories();
 
-  const categories = categoriesData?.data || [];
+  const categories = Array.isArray(categoriesData?.data) ? categoriesData.data : [];
 
   const handleAddTag = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
