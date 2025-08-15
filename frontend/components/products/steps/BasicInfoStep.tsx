@@ -8,9 +8,10 @@ import { useCategories } from "@/hooks/useAPI";
 export default function BasicInfoStep() {
   const { formData, updateFormData } = useProductFormStore();
   const [tagInput, setTagInput] = useState("");
-  const { data: categoriesData } = useCategories();
+  const { data: categoriesData, isLoading: categoriesLoading } =
+    useCategories();
 
-  const categories = Array.isArray(categoriesData?.data) ? categoriesData.data : [];
+  const categories = categoriesData?.data?.data || [];
 
   const handleAddTag = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
@@ -83,9 +84,12 @@ export default function BasicInfoStep() {
           <select
             value={formData.categoryId}
             onChange={(e) => updateFormData({ categoryId: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+            disabled={categoriesLoading}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <option value="">Select category</option>
+            <option value="">
+              {categoriesLoading ? "Loading categories..." : "Select category"}
+            </option>
             {categories.map((category: any) => (
               <option key={category._id} value={category._id}>
                 {category.name}
@@ -117,7 +121,7 @@ export default function BasicInfoStep() {
                 {tag}
                 <button
                   onClick={() => handleRemoveTag(tag)}
-                  className="hover:bg-white/20 rounded-full p-0.5"
+                  className="hover:bg-white/20 rounded-full p-0.5 cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                 </button>

@@ -8,7 +8,7 @@ export default function ReviewStep() {
   const { formData } = useProductFormStore();
   const { data: categoriesData } = useCategories();
 
-  const categories = Array.isArray(categoriesData?.data) ? categoriesData.data : [];
+  const categories = categoriesData?.data?.data || [];
   const selectedCategory = categories.find(
     (cat: any) => cat._id === formData.categoryId
   );
