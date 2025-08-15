@@ -67,7 +67,6 @@ export default function EditProductForm({ product }: EditProductFormProps) {
         images: imageFiles,
       }));
 
-      // Create previews for images
       const imagePreviews = imageFiles.map((file) => URL.createObjectURL(file));
       setPreviews((prev) => ({
         ...prev,
@@ -80,7 +79,6 @@ export default function EditProductForm({ product }: EditProductFormProps) {
         [name]: file,
       }));
 
-      // Create preview for thumbnail
       if (name === "thumbnail" && file) {
         setPreviews((prev) => ({
           ...prev,
@@ -139,7 +137,6 @@ export default function EditProductForm({ product }: EditProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic Information */}
       <div className="bg-gray-50 p-6 rounded-lg">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Basic Information
@@ -209,7 +206,6 @@ export default function EditProductForm({ product }: EditProductFormProps) {
         </div>
       </div>
 
-      {/* Files */}
       <div className="bg-gray-50 p-6 rounded-lg">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Files</h3>
 
@@ -279,7 +275,6 @@ export default function EditProductForm({ product }: EditProductFormProps) {
         </div>
       </div>
 
-      {/* Submit Button */}
       <div className="flex items-center justify-end gap-4">
         <button
           type="button"

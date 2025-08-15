@@ -12,7 +12,7 @@ function EditProductContent() {
   const productId = params.id as string;
   const { data: productData, isLoading } = useProduct(productId);
 
-  const product = productData?.data;
+  const product = productData?.data?.data;
 
   return (
     <div className="bg-gray-50 min-h-screen">

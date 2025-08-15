@@ -7,16 +7,29 @@ import { useVendorProducts, useDeleteProduct } from "@/hooks/useAPI";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import AuthWrapper from "@/components/auth/AuthWrapper";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import { useSocket } from "@/hooks/useSocket";
 
 function VendorProductsContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    productId: string;
+    productName: string;
+  }>({
+    isOpen: false,
+    productId: "",
+    productName: "",
+  });
+
   const { data: productsData, isLoading } = useVendorProducts({
     page: currentPage,
     limit: 10,
   });
   const deleteProductMutation = useDeleteProduct();
+  useSocket();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -37,11 +50,22 @@ function VendorProductsContent() {
   const products = productsData?.data?.data || [];
   const pagination = productsData?.data?.pagination;
 
-  const handleDeleteProduct = (productId: string) => {
-    if (confirm("Are you sure you want to delete this product?")) {
-      deleteProductMutation.mutate(productId);
-    }
+  const handleDeleteProduct = (productId: string, productName: string) => {
+    setDeleteModal({
+      isOpen: true,
+      productId,
+      productName,
+    });
     setActiveDropdown(null);
+  };
+
+  const confirmDelete = () => {
+    deleteProductMutation.mutate(deleteModal.productId);
+    setDeleteModal({ isOpen: false, productId: "", productName: "" });
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({ isOpen: false, productId: "", productName: "" });
   };
 
   const toggleDropdown = (productId: string) => {
@@ -50,20 +74,23 @@ function VendorProductsContent() {
 
   return (
     <div className="bg-gray-50 min-h-screen overflow-hidden">
-      <SectionWrapper className="pt-8 pb-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-8">
+      <SectionWrapper className="pt-4 pb-4 md:pt-8 md:pb-8">
+        <div className="max-w-7xl mx-auto px-2 md:px-4">
+          <div className="flex gap-4 md:gap-8">
             <VendorSidebar />
 
-            <main className="flex-1 bg-white rounded-lg shadow p-6 min-w-0">
-              <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Products</h1>
+            <main className="flex-1 bg-white rounded-lg shadow p-3 md:p-6 min-w-0">
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+                  Products
+                </h1>
                 <Link
                   href="/dashboard/vendor/products/create"
-                  className="bg-[#D7195B] text-white px-4 py-2 rounded-lg hover:bg-[#B01548] transition-colors flex items-center gap-2"
+                  className="bg-[#D7195B] text-white px-3 py-2 md:px-4 md:py-2 rounded-lg hover:bg-[#B01548] transition-colors flex items-center gap-2 text-sm md:text-base"
                 >
                   <Plus className="w-4 h-4" />
-                  Add Product
+                  <span className="hidden sm:inline">Add Product</span>
+                  <span className="sm:hidden">Add</span>
                 </Link>
               </div>
 
@@ -152,7 +179,10 @@ function VendorProductsContent() {
                                       </Link>
                                       <button
                                         onClick={() =>
-                                          handleDeleteProduct(product._id)
+                                          handleDeleteProduct(
+                                            product._id,
+                                            product.name
+                                          )
                                         }
                                         className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
                                         disabled={
@@ -187,129 +217,143 @@ function VendorProductsContent() {
                   </div>
 
                   <div className="hidden md:block">
-                    <div className="border border-gray-200 rounded-lg max-h-[70vh] overflow-y-auto">
-                      <table className="w-full divide-y divide-gray-200 overflow-y-auto">
-                        <thead className="bg-gray-50 sticky top-0 z-10">
-                          <tr>
-                            <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
-                              Product
-                            </th>
-                            <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
-                              Price
-                            </th>
-                            <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
-                              Status
-                            </th>
-                            <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
-                              Views
-                            </th>
-                            <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
-                              Downloads
-                            </th>
-                            <th className="text-center py-4 px-6 font-semibold text-gray-900">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {products.map((product: any) => (
-                            <tr
-                              key={product._id}
-                              className="hover:bg-gray-50 transition-colors"
-                            >
-                              <td className="py-4 px-6 border-r border-gray-200">
-                                <div className="flex items-center gap-4">
-                                  <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    {product.thumbnail ? (
-                                      <img
-                                        src={product.thumbnail}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover rounded-lg"
-                                      />
-                                    ) : (
-                                      <div className="w-8 h-8 bg-gray-400 rounded"></div>
+                    <div
+                      className="border border-gray-200 rounded-lg overflow-hidden"
+                      style={{ height: "200px" }}
+                    >
+                      <div className="h-full overflow-y-auto">
+                        <table className="w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50 sticky top-0 z-10">
+                            <tr>
+                              <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
+                                Product
+                              </th>
+                              <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
+                                Price
+                              </th>
+                              <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
+                                Status
+                              </th>
+                              <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
+                                Views
+                              </th>
+                              <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
+                                Downloads
+                              </th>
+                              <th className="text-center py-4 px-6 font-semibold text-gray-900">
+                                Actions
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {products.map((product: any) => (
+                              <tr
+                                key={product._id}
+                                className="hover:bg-gray-50 transition-colors"
+                              >
+                                <td className="py-4 px-6 border-r border-gray-200">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                                      {product.thumbnail ? (
+                                        <img
+                                          src={product.thumbnail}
+                                          alt={product.name}
+                                          className="w-full h-full object-cover rounded-lg"
+                                        />
+                                      ) : (
+                                        <div className="w-8 h-8 bg-gray-400 rounded"></div>
+                                      )}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <h3 className="font-semibold text-gray-900 truncate">
+                                        {product.name}
+                                      </h3>
+                                      <p className="text-sm text-gray-600 line-clamp-2 mt-1">
+                                        {product.description}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-4 px-6 border-r border-gray-200">
+                                  <span className="font-semibold text-gray-900">
+                                    ₦{product.price.toLocaleString()}
+                                  </span>
+                                </td>
+                                <td className="py-4 px-6 border-r border-gray-200">
+                                  <span
+                                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                      product.approvalStatus === "APPROVED"
+                                        ? "bg-green-100 text-green-800"
+                                        : product.approvalStatus === "PENDING"
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    {product.approvalStatus}
+                                  </span>
+                                </td>
+                                <td className="py-4 px-6 text-gray-600 border-r border-gray-200">
+                                  {product.viewCount}
+                                </td>
+                                <td className="py-4 px-6 text-gray-600 border-r border-gray-200">
+                                  {product.downloadCount}
+                                </td>
+                                <td className="py-4 px-6 relative">
+                                  <div className="flex items-center justify-center">
+                                    <button
+                                      onClick={() =>
+                                        toggleDropdown(product._id)
+                                      }
+                                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                    >
+                                      <MoreVertical className="w-4 h-4" />
+                                    </button>
+                                    {activeDropdown === product._id && (
+                                      <div className="absolute right-6 top-12 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                                        <Link
+                                          href={`/products/${product._id}`}
+                                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                          onClick={() =>
+                                            setActiveDropdown(null)
+                                          }
+                                        >
+                                          <Eye className="w-4 h-4" />
+                                          View Product
+                                        </Link>
+                                        <Link
+                                          href={`/dashboard/vendor/products/${product._id}/edit`}
+                                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                          onClick={() =>
+                                            setActiveDropdown(null)
+                                          }
+                                        >
+                                          <Edit className="w-4 h-4" />
+                                          Edit Product
+                                        </Link>
+                                        <button
+                                          onClick={() =>
+                                            handleDeleteProduct(
+                                              product._id,
+                                              product.name
+                                            )
+                                          }
+                                          className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                                          disabled={
+                                            deleteProductMutation.isLoading
+                                          }
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                          Delete Product
+                                        </button>
+                                      </div>
                                     )}
                                   </div>
-                                  <div className="min-w-0 flex-1">
-                                    <h3 className="font-semibold text-gray-900 truncate">
-                                      {product.name}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-                                      {product.description}
-                                    </p>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="py-4 px-6 border-r border-gray-200">
-                                <span className="font-semibold text-gray-900">
-                                  ₦{product.price.toLocaleString()}
-                                </span>
-                              </td>
-                              <td className="py-4 px-6 border-r border-gray-200">
-                                <span
-                                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                    product.approvalStatus === "APPROVED"
-                                      ? "bg-green-100 text-green-800"
-                                      : product.approvalStatus === "PENDING"
-                                        ? "bg-yellow-100 text-yellow-800"
-                                        : "bg-red-100 text-red-800"
-                                  }`}
-                                >
-                                  {product.approvalStatus}
-                                </span>
-                              </td>
-                              <td className="py-4 px-6 text-gray-600 border-r border-gray-200">
-                                {product.viewCount}
-                              </td>
-                              <td className="py-4 px-6 text-gray-600 border-r border-gray-200">
-                                {product.downloadCount}
-                              </td>
-                              <td className="py-4 px-6 relative">
-                                <div className="flex items-center justify-center">
-                                  <button
-                                    onClick={() => toggleDropdown(product._id)}
-                                    className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                                  >
-                                    <MoreVertical className="w-4 h-4" />
-                                  </button>
-                                  {activeDropdown === product._id && (
-                                    <div className="absolute right-6 top-12 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                                      <Link
-                                        href={`/products/${product._id}`}
-                                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                        onClick={() => setActiveDropdown(null)}
-                                      >
-                                        <Eye className="w-4 h-4" />
-                                        View Product
-                                      </Link>
-                                      <Link
-                                        href={`/dashboard/vendor/products/${product._id}/edit`}
-                                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                        onClick={() => setActiveDropdown(null)}
-                                      >
-                                        <Edit className="w-4 h-4" />
-                                        Edit Product
-                                      </Link>
-                                      <button
-                                        onClick={() =>
-                                          handleDeleteProduct(product._id)
-                                        }
-                                        className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
-                                        disabled={
-                                          deleteProductMutation.isLoading
-                                        }
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                        Delete Product
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
 
@@ -363,6 +407,16 @@ function VendorProductsContent() {
           </div>
         </div>
       </SectionWrapper>
+
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${deleteModal.productName}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 }

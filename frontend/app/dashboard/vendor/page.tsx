@@ -3,7 +3,6 @@
 import { useUserProfile } from "@/hooks/useAPI";
 import {
   Mail,
-  Edit,
   TrendingUp,
   Package,
   Star,
@@ -13,10 +12,12 @@ import Link from "next/link";
 import AuthWrapper from "@/components/auth/AuthWrapper";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
+import { useSocket } from "@/hooks/useSocket";
 
 function VendorDashboardContent() {
   const { data: userProfile } = useUserProfile();
   const user = userProfile?.data?.data;
+  useSocket();
 
   return (
     <div className="bg-gray-50 min-h-screen">
