@@ -261,7 +261,7 @@ export default function ProductsPage() {
             </div>
 
             <div>
-              <h3 className="font-medium text-gray-900 mb-3">Minimum Rating</h3>
+              <h3 className="font-medium text-gray-900 mb-3">Product Rating</h3>
               <div className="space-y-2">
                 {[4, 3, 2, 1, 0].map((rating) => (
                   <button
