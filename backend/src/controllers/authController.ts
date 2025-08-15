@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { User } from "@/models/User";
+import { Vendor } from "@/models/Vendor";
 import { config } from "@/config/config";
 import { emailService } from "@/services/emailService";
 import { logger } from "@/utils/logger";
@@ -53,9 +54,22 @@ export const register = asyncHandler(
       return next(createError("Password must be at least 6 characters", 400));
     }
 
+    if (isVendor && !businessName) {
+      return next(createError("Business name is required for vendors", 400));
+    }
+
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return next(createError("User with this email already exists", 409));
+    }
+
+    if (phone) {
+      const existingPhoneUser = await User.findOne({ phone });
+      if (existingPhoneUser) {
+        return next(
+          createError("User with this phone number already exists", 409)
+        );
+      }
     }
 
     const role = isVendor ? "VENDOR" : "CUSTOMER";
@@ -65,9 +79,31 @@ export const register = asyncHandler(
       password,
       firstName,
       lastName,
-      phone,
+      phone: phone || undefined,
       role,
     });
+
+    let vendor = null;
+    if (isVendor && businessName) {
+      try {
+        vendor = await Vendor.create({
+          userId: user._id,
+          businessName,
+        });
+        logger.info(`Vendor record created for user: ${user.email}`, {
+          userId: String(user._id),
+          vendorId: String(vendor._id),
+          businessName,
+        });
+      } catch (error) {
+        await User.findByIdAndDelete(user._id);
+        logger.error(`Failed to create vendor record for ${user.email}:`, {
+          error: error instanceof Error ? error.message : String(error),
+          userId: String(user._id),
+        });
+        return next(createError("Failed to create vendor account", 500));
+      }
+    }
 
     const { token, refreshToken } = generateTokens(String(user._id));
 
@@ -133,6 +169,7 @@ export const register = asyncHandler(
       city: user.city,
       state: user.state,
       country: user.country,
+      businessName: vendor?.businessName,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -189,6 +226,11 @@ export const login = asyncHandler(
 
     const { token, refreshToken } = generateTokens(String(user._id));
 
+    let vendor = null;
+    if (user.role === "VENDOR") {
+      vendor = await Vendor.findOne({ userId: user._id });
+    }
+
     const userResponse = {
       _id: user._id,
       email: user.email,
@@ -204,6 +246,7 @@ export const login = asyncHandler(
       city: user.city,
       state: user.state,
       country: user.country,
+      businessName: vendor?.businessName,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

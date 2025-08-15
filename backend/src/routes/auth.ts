@@ -99,32 +99,47 @@ router.post(
   resendVerificationOTP
 );
 
-router.get("/me", authenticate, (req, res) => {
-  const user = req.user as any;
-  const userResponse = {
-    _id: user._id,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    role: user.role,
-    status: user.status,
-    isEmailVerified: user.isEmailVerified,
-    isPhoneVerified: user.isPhoneVerified,
-    avatar: user.avatar,
-    phone: user.phone,
-    address: user.address,
-    city: user.city,
-    state: user.state,
-    country: user.country,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-  };
+router.get("/me", authenticate, async (req, res) => {
+  try {
+    const user = req.user as any;
 
-  res.status(200).json({
-    success: true,
-    message: "User retrieved successfully",
-    data: userResponse,
-  });
+    let vendor = null;
+    if (user.role === "VENDOR") {
+      const { Vendor } = await import("@/models/Vendor");
+      vendor = await Vendor.findOne({ userId: user._id });
+    }
+
+    const userResponse = {
+      _id: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      status: user.status,
+      isEmailVerified: user.isEmailVerified,
+      isPhoneVerified: user.isPhoneVerified,
+      avatar: user.avatar,
+      phone: user.phone,
+      address: user.address,
+      city: user.city,
+      state: user.state,
+      country: user.country,
+      businessName: vendor?.businessName,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "User retrieved successfully",
+      data: userResponse,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve user information",
+    });
+  }
 });
 
 export default router;
