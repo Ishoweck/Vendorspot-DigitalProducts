@@ -30,8 +30,41 @@ export const useSocket = () => {
         return oldData;
       });
 
-      queryClient.invalidateQueries(["vendor-products"]);
-      queryClient.invalidateQueries(["products"]);
+      queryClient.setQueryData(["vendor-products"], (oldData: any) => {
+        if (oldData?.data?.data) {
+          const updatedProducts = oldData.data.data.map((product: any) =>
+            product._id === data.productId
+              ? { ...product, viewCount: data.viewCount }
+              : product
+          );
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              data: updatedProducts,
+            },
+          };
+        }
+        return oldData;
+      });
+
+      queryClient.setQueryData(["products"], (oldData: any) => {
+        if (oldData?.data?.data) {
+          const updatedProducts = oldData.data.data.map((product: any) =>
+            product._id === data.productId
+              ? { ...product, viewCount: data.viewCount }
+              : product
+          );
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              data: updatedProducts,
+            },
+          };
+        }
+        return oldData;
+      });
     };
 
     const handleProductCreated = () => {

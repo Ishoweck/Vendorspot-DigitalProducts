@@ -10,7 +10,7 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  categoryId: string;
+  categoryId: string | { _id: string };
   tags: string[];
   thumbnail?: string;
   images?: string[];
@@ -28,7 +28,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
     name: product.name || "",
     description: product.description || "",
     price: product.price || "",
-    categoryId: product.categoryId || "",
+    categoryId: typeof product.categoryId === 'string' ? product.categoryId : product.categoryId?._id || "",
     tags: product.tags?.join(", ") || "",
   });
 
