@@ -76,13 +76,11 @@ export default function VendorSidebar() {
               key={item.href}
               href={item.href}
               className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
-                isActive
-                  ? "bg-[#D7195B] text-white"
-                  : "hover:bg-gray-100 text-gray-900"
+                isActive ? "text-[#D7195B] font-semibold" : "hover:bg-gray-100 text-gray-900"
               }`}
             >
               <Icon
-                className={`w-5 h-5 ${isActive ? "text-white" : "text-gray-600"}`}
+                className={`w-5 h-5 ${isActive ? "text-[#D7195B]" : "text-gray-600"}`}
               />
               <span>{item.label}</span>
             </Link>

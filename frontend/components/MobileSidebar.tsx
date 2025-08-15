@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   X,
   Users,
@@ -27,6 +28,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
   const { data: userProfile } = useUserProfile();
   const logoutMutation = useLogout();
   const user = userProfile?.data?.data;
+  const pathname = usePathname();
 
   return (
     <>
@@ -82,10 +84,26 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                     : "/dashboard/user"
                 }
                 onClick={onClose}
-                className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                  pathname ===
+                  (user.role === "VENDOR"
+                    ? "/dashboard/vendor"
+                    : "/dashboard/user")
+                    ? "text-[#D7195B]"
+                    : "hover:bg-gray-100 text-black"
+                }`}
               >
-                <Users className="w-5 h-5 text-gray-600" />
-                <span className="font-medium text-black">My Account</span>
+                <Users
+                  className={`w-5 h-5 ${
+                    pathname ===
+                    (user.role === "VENDOR"
+                      ? "/dashboard/vendor"
+                      : "/dashboard/user")
+                      ? "text-[#D7195B]"
+                      : "text-gray-600"
+                  }`}
+                />
+                <span className="font-medium">My Account</span>
               </Link>
 
               {user.role === "VENDOR" ? (
@@ -93,57 +111,115 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                   <Link
                     href="/dashboard/vendor/products"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/vendor/products"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <Package className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">Products</span>
+                    <Package
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/vendor/products"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Products</span>
                   </Link>
 
                   <Link
                     href="/dashboard/vendor/orders"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/vendor/orders"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <ShoppingBag className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">Orders</span>
+                    <ShoppingBag
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/vendor/orders"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Orders</span>
                   </Link>
 
                   <Link
                     href="/dashboard/vendor/notifications"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/vendor/notifications"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <Bell className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">
-                      Notifications
-                    </span>
+                    <Bell
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/vendor/notifications"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Notifications</span>
                   </Link>
 
                   <Link
                     href="/dashboard/vendor/shipping"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/vendor/shipping"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <MapPin className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">Shipping</span>
+                    <MapPin
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/vendor/shipping"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Shipping</span>
                   </Link>
 
                   <Link
                     href="/dashboard/vendor/wallet"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/vendor/wallet"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <Wallet className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">Wallet</span>
+                    <Wallet
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/vendor/wallet"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Wallet</span>
                   </Link>
 
                   <Link
                     href="/dashboard/vendor/profile"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/vendor/profile"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <Settings className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">Profile</span>
+                    <Settings
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/vendor/profile"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Profile</span>
                   </Link>
                 </>
               ) : (
@@ -151,61 +227,115 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                   <Link
                     href="/dashboard/user/orders"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/user/orders"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <ShoppingBag className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">Orders</span>
+                    <ShoppingBag
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/user/orders"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Orders</span>
                   </Link>
 
                   <Link
                     href="/dashboard/user/saved-items"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/user/saved-items"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <Heart className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">Saved Items</span>
+                    <Heart
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/user/saved-items"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Saved Items</span>
                   </Link>
 
                   <Link
                     href="/dashboard/user/payment-methods"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/user/payment-methods"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <CreditCard className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">
-                      Payment Methods
-                    </span>
+                    <CreditCard
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/user/payment-methods"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Payment Methods</span>
                   </Link>
 
                   <Link
                     href="/dashboard/user/notifications"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/user/notifications"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <Bell className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">
-                      Notifications
-                    </span>
+                    <Bell
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/user/notifications"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Notifications</span>
                   </Link>
 
                   <Link
                     href="/dashboard/user/shipping-address"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/user/shipping-address"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <MapPin className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">
-                      Shipping Address
-                    </span>
+                    <MapPin
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/user/shipping-address"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Shipping Address</span>
                   </Link>
 
                   <Link
                     href="/dashboard/user/settings"
                     onClick={onClose}
-                    className="flex items-center space-x-3 p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                      pathname === "/dashboard/user/settings"
+                        ? "text-[#D7195B]"
+                        : "hover:bg-gray-100 text-black"
+                    }`}
                   >
-                    <Settings className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium text-black">Settings</span>
+                    <Settings
+                      className={`w-5 h-5 ${
+                        pathname === "/dashboard/user/settings"
+                          ? "text-[#D7195B]"
+                          : "text-gray-600"
+                      }`}
+                    />
+                    <span className="font-medium">Settings</span>
                   </Link>
                 </>
               )}
