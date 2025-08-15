@@ -30,7 +30,7 @@ export default function HeroSection() {
               </Link>
 
               <Link
-                href="/register?vendor=true"
+                href="/signup?vendor=true"
                 className="bg-white text-[#D7195B] border border-[#D7195B] px-6 sm:px-8 py-3 rounded-lg font-medium hover:bg-[#D7195B] hover:text-white transition-colors duration-200 text-center text-sm sm:text-base"
               >
                 Become a Vendor

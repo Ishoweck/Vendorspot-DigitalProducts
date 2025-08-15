@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Edit, Trash2, Eye, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import { useVendorProducts, useDeleteProduct } from "@/hooks/useAPI";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
@@ -10,11 +10,30 @@ import AuthWrapper from "@/components/auth/AuthWrapper";
 
 function VendorProductsContent() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: productsData, isLoading } = useVendorProducts({
     page: currentPage,
     limit: 10,
   });
   const deleteProductMutation = useDeleteProduct();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const products = productsData?.data?.data || [];
   const pagination = productsData?.data?.pagination;
@@ -23,6 +42,11 @@ function VendorProductsContent() {
     if (confirm("Are you sure you want to delete this product?")) {
       deleteProductMutation.mutate(productId);
     }
+    setActiveDropdown(null);
+  };
+
+  const toggleDropdown = (productId: string) => {
+    setActiveDropdown(activeDropdown === productId ? null : productId);
   };
 
   return (
@@ -62,65 +86,82 @@ function VendorProductsContent() {
                 </div>
               ) : (
                 <>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-gray-200">
-                          <th className="text-left py-3 px-4 font-medium text-gray-900">
-                            Product
-                          </th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900">
-                            Price
-                          </th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900">
-                            Status
-                          </th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900">
-                            Views
-                          </th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-900">
-                            Downloads
-                          </th>
-                          <th className="text-right py-3 px-4 font-medium text-gray-900">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {products.map((product: any) => (
-                          <tr
-                            key={product._id}
-                            className="border-b border-gray-100 hover:bg-gray-50"
-                          >
-                            <td className="py-4 px-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                                  {product.thumbnail ? (
-                                    <img
-                                      src={product.thumbnail}
-                                      alt={product.name}
-                                      className="w-full h-full object-cover rounded-lg"
-                                    />
-                                  ) : (
-                                    <div className="w-6 h-6 bg-gray-400 rounded"></div>
-                                  )}
-                                </div>
-                                <div>
-                                  <h3 className="font-medium text-gray-900">
-                                    {product.name}
-                                  </h3>
-                                  <p className="text-sm text-gray-600 line-clamp-1">
-                                    {product.description}
-                                  </p>
+                  {/* Mobile Cards View */}
+                  <div className="block md:hidden space-y-4">
+                    {products.map((product: any) => (
+                      <div
+                        key={product._id}
+                        className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                            {product.thumbnail ? (
+                              <img
+                                src={product.thumbnail}
+                                alt={product.name}
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 bg-gray-400 rounded"></div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-medium text-gray-900 truncate">
+                                  {product.name}
+                                </h3>
+                                <p className="text-sm text-gray-600 line-clamp-2 mt-1">
+                                  {product.description}
+                                </p>
+                                <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                                  <span className="font-medium text-gray-900">
+                                    ₦{product.price.toLocaleString()}
+                                  </span>
+                                  <span>{product.viewCount} views</span>
+                                  <span>{product.downloadCount} downloads</span>
                                 </div>
                               </div>
-                            </td>
-                            <td className="py-4 px-4">
-                              <span className="font-medium text-gray-900">
-                                ₦{product.price.toLocaleString()}
-                              </span>
-                            </td>
-                            <td className="py-4 px-4">
+                              <div className="relative ml-2" ref={dropdownRef}>
+                                <button
+                                  onClick={() => toggleDropdown(product._id)}
+                                  className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+                                >
+                                  <MoreVertical className="w-4 h-4" />
+                                </button>
+                                {activeDropdown === product._id && (
+                                  <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                                    <Link
+                                      href={`/products/${product._id}`}
+                                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                      onClick={() => setActiveDropdown(null)}
+                                    >
+                                      <Eye className="w-4 h-4" />
+                                      View Product
+                                    </Link>
+                                    <Link
+                                      href={`/dashboard/vendor/products/${product._id}/edit`}
+                                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                      onClick={() => setActiveDropdown(null)}
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                      Edit Product
+                                    </Link>
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteProduct(product._id)
+                                      }
+                                      className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                                      disabled={deleteProductMutation.isLoading}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                      Delete Product
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="mt-3">
                               <span
                                 className={`px-2 py-1 rounded-full text-xs font-medium ${
                                   product.approvalStatus === "APPROVED"
@@ -132,42 +173,147 @@ function VendorProductsContent() {
                               >
                                 {product.approvalStatus}
                               </span>
-                            </td>
-                            <td className="py-4 px-4 text-gray-600">
-                              {product.viewCount}
-                            </td>
-                            <td className="py-4 px-4 text-gray-600">
-                              {product.downloadCount}
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="flex items-center justify-end gap-2">
-                                <Link
-                                  href={`/products/${product._id}`}
-                                  className="p-2 text-gray-600 hover:text-[#D7195B] transition-colors"
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </Link>
-                                <Link
-                                  href={`/dashboard/vendor/products/${product._id}/edit`}
-                                  className="p-2 text-gray-600 hover:text-[#D7195B] transition-colors"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Link>
-                                <button
-                                  onClick={() =>
-                                    handleDeleteProduct(product._id)
-                                  }
-                                  className="p-2 text-gray-600 hover:text-red-600 transition-colors"
-                                  disabled={deleteProductMutation.isLoading}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </td>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <table className="w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
+                              Product
+                            </th>
+                            <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
+                              Price
+                            </th>
+                            <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
+                              Status
+                            </th>
+                            <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
+                              Views
+                            </th>
+                            <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
+                              Downloads
+                            </th>
+                            <th className="text-center py-4 px-6 font-semibold text-gray-900">
+                              Actions
+                            </th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {products.map((product: any) => (
+                            <tr
+                              key={product._id}
+                              className="hover:bg-gray-50 transition-colors"
+                            >
+                              <td className="py-4 px-6 border-r border-gray-200">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    {product.thumbnail ? (
+                                      <img
+                                        src={product.thumbnail}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover rounded-lg"
+                                      />
+                                    ) : (
+                                      <div className="w-8 h-8 bg-gray-400 rounded"></div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <h3 className="font-semibold text-gray-900 truncate">
+                                      {product.name}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 line-clamp-2 mt-1">
+                                      {product.description}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-4 px-6 border-r border-gray-200">
+                                <span className="font-semibold text-gray-900">
+                                  ₦{product.price.toLocaleString()}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6 border-r border-gray-200">
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    product.approvalStatus === "APPROVED"
+                                      ? "bg-green-100 text-green-800"
+                                      : product.approvalStatus === "PENDING"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {product.approvalStatus}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6 text-gray-600 border-r border-gray-200">
+                                {product.viewCount}
+                              </td>
+                              <td className="py-4 px-6 text-gray-600 border-r border-gray-200">
+                                {product.downloadCount}
+                              </td>
+                              <td className="py-4 px-6">
+                                <div className="flex items-center justify-center">
+                                  <div className="relative" ref={dropdownRef}>
+                                    <button
+                                      onClick={() =>
+                                        toggleDropdown(product._id)
+                                      }
+                                      className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                    >
+                                      <MoreVertical className="w-4 h-4" />
+                                    </button>
+                                    {activeDropdown === product._id && (
+                                      <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                                        <Link
+                                          href={`/products/${product._id}`}
+                                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                          onClick={() =>
+                                            setActiveDropdown(null)
+                                          }
+                                        >
+                                          <Eye className="w-4 h-4" />
+                                          View Product
+                                        </Link>
+                                        <Link
+                                          href={`/dashboard/vendor/products/${product._id}/edit`}
+                                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                          onClick={() =>
+                                            setActiveDropdown(null)
+                                          }
+                                        >
+                                          <Edit className="w-4 h-4" />
+                                          Edit Product
+                                        </Link>
+                                        <button
+                                          onClick={() =>
+                                            handleDeleteProduct(product._id)
+                                          }
+                                          className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                                          disabled={
+                                            deleteProductMutation.isLoading
+                                          }
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                          Delete Product
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
 
                   {pagination && pagination.totalPages > 1 && (

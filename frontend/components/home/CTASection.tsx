@@ -9,7 +9,7 @@ export default function CTASection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
           <Link
-            href="/register"
+            href="/signup?vendor=true"
             className="bg-[#D7195B] text-white px-6 sm:px-8 py-3 font-medium hover:bg-[#B91548] transition-colors duration-200 text-sm sm:text-base"
             style={{ borderRadius: "15px" }}
           >

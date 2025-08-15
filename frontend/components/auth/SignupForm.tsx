@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { useRegister } from "@/hooks/useAPI";
 import { toast } from "react-hot-toast";
 
 export default function SignupForm() {
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -54,6 +56,13 @@ export default function SignupForm() {
       [name]: type === "checkbox" ? checked : value,
     }));
   };
+
+  useEffect(() => {
+    const isVendor = searchParams.get("vendor") === "true";
+    if (isVendor) {
+      setFormData((prev) => ({ ...prev, isVendor: true }));
+    }
+  }, [searchParams]);
 
   return (
     <>

@@ -18,7 +18,7 @@ export default function FeaturedShopsSection() {
           {featuredShops.map((shopName, index) => (
             <div
               key={index}
-              className={`bg-white rounded-lg hover:shadow-lg transition-shadow duration-200 w-full flex items-center justify-center ${index >= 2 ? "hidden sm:block" : ""}`}
+              className={`bg-white rounded-lg hover:shadow-lg transition-shadow duration-200 w-full flex items-center justify-center text-center ${index >= 2 ? "hidden sm:block" : ""}`}
               style={{
                 borderRadius: "8px",
                 aspectRatio: "227/203",
