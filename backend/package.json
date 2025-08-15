@@ -9,7 +9,11 @@
     "start": "node dist/index.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "clear:users": "node scripts/clear-users.js",
+    "clear:products": "node scripts/clear-products.js",
+    "clear:cloudinary": "node scripts/clear-cloudinary.js",
+    "clear:all": "node scripts/clear-all.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

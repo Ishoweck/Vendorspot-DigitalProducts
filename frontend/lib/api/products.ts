@@ -16,11 +16,13 @@ export const productsAPI = {
   create: (productData: FormData) =>
     api.post<any>("/products", productData, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000,
     }),
 
   update: (id: string, productData: FormData) =>
     api.put<any>(`/products/${id}`, productData, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000,
     }),
 
   delete: (id: string) => api.delete(`/products/${id}`),
