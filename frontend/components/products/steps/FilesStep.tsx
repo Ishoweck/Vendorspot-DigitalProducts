@@ -34,6 +34,17 @@ export default function FilesStep() {
     updateFormData({ images: newImages });
   };
 
+  const truncateFileName = (fileName: string, maxLength: number = 25) => {
+    if (fileName.length <= maxLength) return fileName;
+    const extension = fileName.split(".").pop();
+    const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf("."));
+    const truncatedName = nameWithoutExt.substring(
+      0,
+      maxLength - extension!.length - 4
+    );
+    return `${truncatedName}...${extension}`;
+  };
+
   const hasFileMetadata = formData.fileMetadata && !formData.file;
   const hasThumbnailMetadata =
     formData.thumbnailMetadata && !formData.thumbnail;
@@ -62,10 +73,10 @@ export default function FilesStep() {
 
           {formData.file ? (
             <div className="flex items-center justify-center gap-3">
-              <File className="w-8 h-8 text-[#D7195B]" />
-              <div>
-                <p className="font-medium text-gray-900">
-                  {formData.file.name}
+              <File className="w-8 h-8 text-[#D7195B] flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-gray-900 break-words">
+                  {truncateFileName(formData.file.name)}
                 </p>
                 <p className="text-sm text-gray-600">
                   {(formData.file.size / 1024 / 1024).toFixed(2)} MB
@@ -74,19 +85,20 @@ export default function FilesStep() {
             </div>
           ) : hasFileMetadata ? (
             <div className="flex items-center justify-center gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <RefreshCw className="w-6 h-6 text-orange-500" />
                 <File className="w-8 h-8 text-gray-400" />
               </div>
-              <div>
-                <p className="font-medium text-orange-600">
-                  Re-upload required: {formData?.fileMetadata?.name}
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-orange-600 break-words">
+                  Re-upload required:{" "}
+                  {truncateFileName(formData?.fileMetadata?.name || "")}
                 </p>
                 <p className="text-sm text-gray-600">
                   {formData?.fileMetadata?.size !== undefined
                     ? (formData.fileMetadata.size / 1024 / 1024).toFixed(2)
-                    : "N/A"} MB
-                  (previous)
+                    : "N/A"}{" "}
+                  MB (previous)
                 </p>
                 <p className="text-xs text-orange-500 mt-1">
                   Files need to be re-uploaded after page refresh
@@ -139,11 +151,11 @@ export default function FilesStep() {
               <img
                 src={URL.createObjectURL(formData.thumbnail)}
                 alt="Thumbnail"
-                className="w-16 h-16 object-cover rounded-lg"
+                className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
               />
-              <div>
-                <p className="font-medium text-gray-900">
-                  {formData.thumbnail.name}
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-gray-900 break-words">
+                  {truncateFileName(formData.thumbnail.name)}
                 </p>
                 <p className="text-sm text-gray-600">
                   {(formData.thumbnail.size / 1024).toFixed(2)} KB
@@ -152,19 +164,20 @@ export default function FilesStep() {
             </div>
           ) : hasThumbnailMetadata ? (
             <div className="flex items-center justify-center gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <RefreshCw className="w-6 h-6 text-orange-500" />
                 <Image className="w-8 h-8 text-gray-400" />
               </div>
-              <div>
-                <p className="font-medium text-orange-600">
-                  Re-upload required: {formData?.thumbnailMetadata?.name}
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-orange-600 break-words">
+                  Re-upload required:{" "}
+                  {truncateFileName(formData?.thumbnailMetadata?.name || "")}
                 </p>
                 <p className="text-sm text-gray-600">
                   {formData?.thumbnailMetadata?.size !== undefined
                     ? (formData.thumbnailMetadata.size / 1024).toFixed(2)
-                    : "N/A"} KB
-                  (previous)
+                    : "N/A"}{" "}
+                  KB (previous)
                 </p>
                 <p className="text-xs text-orange-500 mt-1">
                   Files need to be re-uploaded after page refresh
@@ -212,7 +225,7 @@ export default function FilesStep() {
         />
 
         {formData.images.length > 0 && (
-          <div className="grid grid-cols-4 gap-4 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
             {formData.images.map((image, index) => (
               <div key={index} className="relative">
                 <img
@@ -231,23 +244,25 @@ export default function FilesStep() {
           </div>
         )}
 
-        {formData?.imagesMetadata?.length > 0 && formData?.images?.length === 0 && (
-          <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-            <p className="text-orange-700 font-medium mb-2">
-              Previously selected images (need re-upload):
-            </p>
-            <ul className="text-sm text-orange-600 space-y-1">
-              {formData.imagesMetadata.map((meta, index) => (
-                <li key={index}>
-                  • {meta.name} ({(meta.size / 1024).toFixed(2)} KB)
-                </li>
-              ))}
-            </ul>
-            <p className="text-xs text-orange-500 mt-2">
-              Files need to be re-uploaded after page refresh
-            </p>
-          </div>
-        )}
+        {formData?.imagesMetadata?.length > 0 &&
+          formData?.images?.length === 0 && (
+            <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <p className="text-orange-700 font-medium mb-2">
+                Previously selected images (need re-upload):
+              </p>
+              <ul className="text-sm text-orange-600 space-y-1">
+                {formData.imagesMetadata.map((meta, index) => (
+                  <li key={index} className="break-words">
+                    • {truncateFileName(meta.name)} (
+                    {(meta.size / 1024).toFixed(2)} KB)
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-orange-500 mt-2">
+                Files need to be re-uploaded after page refresh
+              </p>
+            </div>
+          )}
       </div>
     </div>
   );

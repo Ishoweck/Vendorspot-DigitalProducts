@@ -15,70 +15,78 @@ export default function ReviewStep() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gray-50 rounded-lg p-6">
+      <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Product Details
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Product Name
-            </label>
-            <p className="text-gray-900">{formData.name}</p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Product Name
+              </label>
+              <p className="text-gray-900 break-words">{formData.name}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Price
+              </label>
+              <p className="text-gray-900">
+                ₦{formData.price.toLocaleString()}
+              </p>
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Price
-            </label>
-            <p className="text-gray-900">₦{formData.price.toLocaleString()}</p>
-          </div>
-
-          <div className="col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Description
             </label>
-            <p className="text-gray-900">{formData.description}</p>
+            <p className="text-gray-900 break-words">{formData.description}</p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
-            </label>
-            <p className="text-gray-900">
-              {selectedCategory?.name || "Category not found"}
-            </p>
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Category
+              </label>
+              <p className="text-gray-900">
+                {selectedCategory?.name || "Category not found"}
+              </p>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tags
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {formData.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="bg-[#D7195B] text-white px-2 py-1 rounded-full text-xs"
-                >
-                  {tag}
-                </span>
-              ))}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tags
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {formData.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="bg-[#D7195B] text-white px-2 py-1 rounded-full text-xs break-words"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-gray-50 rounded-lg p-6">
+      <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Files</h3>
 
         <div className="space-y-4">
           {formData.file && (
             <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
-              <File className="w-8 h-8 text-[#D7195B]" />
-              <div>
+              <File className="w-8 h-8 text-[#D7195B] flex-shrink-0" />
+              <div className="min-w-0 flex-1">
                 <p className="font-medium text-gray-900">Product File</p>
-                <p className="text-sm text-gray-600">{formData.file.name}</p>
+                <p className="text-sm text-gray-600 break-words">
+                  {formData.file.name}
+                </p>
               </div>
             </div>
           )}
@@ -88,11 +96,11 @@ export default function ReviewStep() {
               <img
                 src={URL.createObjectURL(formData.thumbnail)}
                 alt="Thumbnail"
-                className="w-12 h-12 object-cover rounded-lg"
+                className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
               />
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="font-medium text-gray-900">Thumbnail</p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 break-words">
                   {formData.thumbnail.name}
                 </p>
               </div>
@@ -104,7 +112,7 @@ export default function ReviewStep() {
               <p className="font-medium text-gray-900 mb-3">
                 Additional Images ({formData.images.length})
               </p>
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                 {formData.images.map((image, index) => (
                   <img
                     key={index}
