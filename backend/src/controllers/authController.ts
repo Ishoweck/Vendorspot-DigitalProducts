@@ -67,7 +67,10 @@ export const register = asyncHandler(
       const existingPhoneUser = await User.findOne({ phone });
       if (existingPhoneUser) {
         return next(
-          createError("User with this phone number already exists", 409)
+          createError(
+            "This phone number is already registered. Please use a different number or try logging in.",
+            409
+          )
         );
       }
     }
