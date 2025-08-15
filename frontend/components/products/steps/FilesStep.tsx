@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Upload, X, File, Image } from "lucide-react";
+import { Upload, X, File, Image, RefreshCw } from "lucide-react";
 import { useProductFormStore } from "@/stores/productFormStore";
 
 export default function FilesStep() {
@@ -34,6 +34,10 @@ export default function FilesStep() {
     updateFormData({ images: newImages });
   };
 
+  const hasFileMetadata = formData.fileMetadata && !formData.file;
+  const hasThumbnailMetadata =
+    formData.thumbnailMetadata && !formData.thumbnail;
+
   return (
     <div className="space-y-6">
       <div>
@@ -42,29 +46,51 @@ export default function FilesStep() {
         </label>
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#D7195B] transition-colors"
+          className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#D7195B] transition-colors"
         >
+          {formData.file && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                updateFormData({ file: null, fileMetadata: null });
+              }}
+              className="absolute top-1 right-1 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors z-10"
+            >
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
+          )}
+
           {formData.file ? (
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  updateFormData({ file: null });
-                }}
-                className="absolute top-2 right-2 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors"
-              >
-                <X className="w-4 h-4 text-gray-600" />
-              </button>
-              <div className="flex items-center justify-center gap-3">
-                <File className="w-8 h-8 text-[#D7195B]" />
-                <div>
-                  <p className="font-medium text-gray-900">
-                    {formData.file.name}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {(formData.file.size / 1024 / 1024).toFixed(2)} MB
-                  </p>
-                </div>
+            <div className="flex items-center justify-center gap-3">
+              <File className="w-8 h-8 text-[#D7195B]" />
+              <div>
+                <p className="font-medium text-gray-900">
+                  {formData.file.name}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {(formData.file.size / 1024 / 1024).toFixed(2)} MB
+                </p>
+              </div>
+            </div>
+          ) : hasFileMetadata ? (
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="w-6 h-6 text-orange-500" />
+                <File className="w-8 h-8 text-gray-400" />
+              </div>
+              <div>
+                <p className="font-medium text-orange-600">
+                  Re-upload required: {formData?.fileMetadata?.name}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {formData?.fileMetadata?.size !== undefined
+                    ? (formData.fileMetadata.size / 1024 / 1024).toFixed(2)
+                    : "N/A"} MB
+                  (previous)
+                </p>
+                <p className="text-xs text-orange-500 mt-1">
+                  Files need to be re-uploaded after page refresh
+                </p>
               </div>
             </div>
           ) : (
@@ -94,33 +120,55 @@ export default function FilesStep() {
         </label>
         <div
           onClick={() => thumbnailInputRef.current?.click()}
-          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#D7195B] transition-colors"
+          className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#D7195B] transition-colors"
         >
+          {formData.thumbnail && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                updateFormData({ thumbnail: null, thumbnailMetadata: null });
+              }}
+              className="absolute top-1 right-1 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors z-10"
+            >
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
+          )}
+
           {formData.thumbnail ? (
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  updateFormData({ thumbnail: null });
-                }}
-                className="absolute top-2 right-2 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors"
-              >
-                <X className="w-4 h-4 text-gray-600" />
-              </button>
-              <div className="flex items-center justify-center gap-3">
-                <img
-                  src={URL.createObjectURL(formData.thumbnail)}
-                  alt="Thumbnail"
-                  className="w-16 h-16 object-cover rounded-lg"
-                />
-                <div>
-                  <p className="font-medium text-gray-900">
-                    {formData.thumbnail.name}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {(formData.thumbnail.size / 1024).toFixed(2)} KB
-                  </p>
-                </div>
+            <div className="flex items-center justify-center gap-3">
+              <img
+                src={URL.createObjectURL(formData.thumbnail)}
+                alt="Thumbnail"
+                className="w-16 h-16 object-cover rounded-lg"
+              />
+              <div>
+                <p className="font-medium text-gray-900">
+                  {formData.thumbnail.name}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {(formData.thumbnail.size / 1024).toFixed(2)} KB
+                </p>
+              </div>
+            </div>
+          ) : hasThumbnailMetadata ? (
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="w-6 h-6 text-orange-500" />
+                <Image className="w-8 h-8 text-gray-400" />
+              </div>
+              <div>
+                <p className="font-medium text-orange-600">
+                  Re-upload required: {formData?.thumbnailMetadata?.name}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {formData?.thumbnailMetadata?.size !== undefined
+                    ? (formData.thumbnailMetadata.size / 1024).toFixed(2)
+                    : "N/A"} KB
+                  (previous)
+                </p>
+                <p className="text-xs text-orange-500 mt-1">
+                  Files need to be re-uploaded after page refresh
+                </p>
               </div>
             </div>
           ) : (
@@ -180,6 +228,24 @@ export default function FilesStep() {
                 </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {formData?.imagesMetadata?.length > 0 && formData?.images?.length === 0 && (
+          <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+            <p className="text-orange-700 font-medium mb-2">
+              Previously selected images (need re-upload):
+            </p>
+            <ul className="text-sm text-orange-600 space-y-1">
+              {formData.imagesMetadata.map((meta, index) => (
+                <li key={index}>
+                  • {meta.name} ({(meta.size / 1024).toFixed(2)} KB)
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-orange-500 mt-2">
+              Files need to be re-uploaded after page refresh
+            </p>
           </div>
         )}
       </div>

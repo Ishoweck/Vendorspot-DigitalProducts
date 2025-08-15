@@ -8,6 +8,7 @@ import BasicInfoStep from "./steps/BasicInfoStep";
 import FilesStep from "./steps/FilesStep";
 import ReviewStep from "./steps/ReviewStep";
 import { useProductFormStore } from "@/stores/productFormStore";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 const steps = [
   { id: 1, name: "Basic Info", component: BasicInfoStep },
@@ -18,14 +19,11 @@ const steps = [
 export default function CreateProductForm() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const { formData, isStepValid, resetForm } = useProductFormStore();
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showClearModal, setShowClearModal] = useState(false);
+  const { formData, isStepValid, resetForm, clearPersistedData } =
+    useProductFormStore();
   const createProductMutation = useCreateProduct();
-
-  useEffect(() => {
-    return () => {
-      resetForm();
-    };
-  }, [resetForm]);
 
   const handleNext = () => {
     if (currentStep < steps.length && isStepValid(currentStep)) {
@@ -61,9 +59,19 @@ export default function CreateProductForm() {
     createProductMutation.mutate(submitData, {
       onSuccess: () => {
         resetForm();
+        clearPersistedData();
         router.push("/dashboard/vendor/products");
       },
     });
+  };
+
+  const handleCancel = () => {
+    setShowCancelModal(true);
+  };
+
+  const handleConfirmCancel = () => {
+    clearPersistedData();
+    router.back();
   };
 
   const CurrentStepComponent = steps[currentStep - 1].component;
@@ -73,7 +81,7 @@ export default function CreateProductForm() {
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">
           <button
-            onClick={() => router.back()}
+            onClick={handleCancel}
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -123,13 +131,22 @@ export default function CreateProductForm() {
       </div>
 
       <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-        <button
-          onClick={handlePrevious}
-          disabled={currentStep === 1}
-          className="px-4 py-2 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          Previous
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handlePrevious}
+            disabled={currentStep === 1}
+            className="px-4 py-2 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Previous
+          </button>
+
+          <button
+            onClick={() => setShowClearModal(true)}
+            className="px-4 py-2 text-red-600 hover:text-red-800 transition-colors text-sm"
+          >
+            Clear All
+          </button>
+        </div>
 
         <div className="flex items-center gap-3">
           {currentStep < steps.length ? (
@@ -161,6 +178,29 @@ export default function CreateProductForm() {
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={showCancelModal}
+        title="Cancel Product Creation"
+        message="Are you sure you want to cancel? All progress will be lost."
+        confirmLabel="Yes, Cancel"
+        cancelLabel="No, Continue"
+        onConfirm={handleConfirmCancel}
+        onCancel={() => setShowCancelModal(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={showClearModal}
+        title="Clear All Data"
+        message="Are you sure you want to clear all data? This action cannot be undone."
+        confirmLabel="Yes, Clear All"
+        cancelLabel="No, Keep Data"
+        onConfirm={() => {
+          clearPersistedData();
+          setShowClearModal(false);
+        }}
+        onCancel={() => setShowClearModal(false)}
+      />
     </div>
   );
 }

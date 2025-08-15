@@ -42,11 +42,11 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
       />
 
       <div
-        className={`fixed top-0 left-0 h-full w-80 bg-white shadow-lg z-50 lg:hidden transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-80 bg-white shadow-lg z-50 lg:hidden transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
           <h2 className="text-lg font-semibold text-black">Menu</h2>
           <button
             onClick={onClose}
@@ -56,7 +56,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
           </button>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-4 overflow-y-auto flex-1 overscroll-contain">
           <div className="space-y-3 pb-4 border-b">
             {user ? (
               <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">

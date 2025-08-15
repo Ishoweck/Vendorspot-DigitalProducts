@@ -99,11 +99,9 @@ export default function Header() {
                   onClick={() =>
                     setIsCategoriesDropdownOpen(!isCategoriesDropdownOpen)
                   }
-                  className="flex items-center space-x-1 text-black hover:text-primary-500 transition-colors"
+                  className="items-center text-black hover:text-primary-500 transition-colors"
                 >
                   <Menu className="w-5 h-5" />
-                  <span className="text-sm font-medium">Categories</span>
-                  <ChevronDown className="w-4 h-4" />
                 </button>
 
                 {isCategoriesDropdownOpen && (
