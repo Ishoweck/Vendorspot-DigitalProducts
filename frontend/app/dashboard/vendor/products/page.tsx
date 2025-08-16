@@ -93,7 +93,7 @@ function VendorProductsContent() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen overflow-hidden">
+    <div className="bg-gray-50 min-h-screen">
       <SectionWrapper className="pt-4 pb-4 md:pt-8 md:pb-8">
         <div className="max-w-7xl mx-auto px-2 md:px-4">
           <div className="flex gap-4 md:gap-8">
@@ -177,7 +177,7 @@ function VendorProductsContent() {
                                     <MoreVertical className="w-4 h-4" />
                                   </button>
                                   {activeDropdown === product._id && (
-                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]">
+                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                                       <Link
                                         href={`/products/${product._id}`}
                                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
