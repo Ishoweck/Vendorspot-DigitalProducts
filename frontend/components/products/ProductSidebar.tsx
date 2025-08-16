@@ -21,6 +21,7 @@ export function ProductSidebar({
   setShowFilters,
   onApplyPriceFilter,
   onResetRating,
+  products,
 }: SidebarProps) {
   const [vendorSearch, setVendorSearch] = useState("");
   const [showVendorDropdown, setShowVendorDropdown] = useState(false);
@@ -29,6 +30,18 @@ export function ProductSidebar({
     "All Categories",
     ...categories.map((cat: any) => cat.name),
   ];
+
+  const vendors = Array.from(
+    new Set(
+      products
+        .map((p: any) => p.vendorId?.businessName)
+        .filter((name: string) => name)
+    )
+  );
+
+  const filteredVendors = vendors.filter((vendor) =>
+    vendor.toLowerCase().includes(vendorSearch.toLowerCase())
+  );
 
   return (
     <>
@@ -93,6 +106,64 @@ export function ProductSidebar({
               </button>
             )}
           </div>
+        </div>
+
+        <div>
+          <h3 className="font-medium text-gray-900 mb-3">Vendor</h3>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search vendors..."
+              value={vendorSearch}
+              onChange={(e) => setVendorSearch(e.target.value)}
+              onFocus={() => setShowVendorDropdown(true)}
+              className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7195B] focus:border-[#D7195B] text-sm"
+            />
+            {(vendorSearch || selectedVendor) && (
+              <button
+                onClick={() => {
+                  setVendorSearch("");
+                  setSelectedVendor("");
+                }}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+            {showVendorDropdown && vendorSearch && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+                {filteredVendors.map((vendor) => (
+                  <button
+                    key={vendor}
+                    onClick={() => {
+                      setSelectedVendor(vendor);
+                      setVendorSearch(vendor);
+                      setShowVendorDropdown(false);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                  >
+                    {vendor}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {selectedVendor && (
+            <div className="mt-2">
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-pink-100 text-[#D7195B] rounded text-xs">
+                {selectedVendor}
+                <button
+                  onClick={() => {
+                    setSelectedVendor("");
+                    setVendorSearch("");
+                  }}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            </div>
+          )}
         </div>
 
         <div>

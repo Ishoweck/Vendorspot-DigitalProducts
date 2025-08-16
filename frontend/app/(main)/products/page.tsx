@@ -2,12 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { Search, Filter, Grid3X3, List } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ProductSidebar } from "@/components/products/ProductSidebar";
 import { ProductCard } from "@/components/products/ProductCard";
 import { SortDropdown } from "@/components/products/SortDropdown";
 import { useProducts, useCategories } from "@/hooks/useAPI";
 
 export default function ProductsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,8 +33,10 @@ export default function ProductsPage() {
     limit: productsPerPage,
     category: selectedCategoryId,
     search: searchQuery,
-    minPrice: appliedPriceRange[0],
-    maxPrice: appliedPriceRange[1],
+    minPrice: appliedPriceRange[0] > 0 ? appliedPriceRange[0] : undefined,
+    maxPrice: appliedPriceRange[1] < 100000 ? appliedPriceRange[1] : undefined,
+    minRating: minRating > 0 ? minRating : undefined,
+    vendor: selectedVendor || undefined,
     sortBy:
       sortBy === "newest"
         ? "createdAt"
@@ -51,18 +57,29 @@ export default function ProductsPage() {
   const totalPages = productsData?.data?.pagination?.totalPages || 1;
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const categoryParam = params.get("category");
-    if (categoryParam && categories.length > 0) {
-      const matchingCategory = categories.find(
-        (cat: any) => cat.slug === categoryParam
-      );
-      if (matchingCategory) {
-        setSelectedCategory(matchingCategory.name);
-        setSelectedCategoryId(matchingCategory._id);
+    if (categories.length > 0) {
+      const categoryParam = searchParams.get("category");
+      if (categoryParam) {
+        const matchingCategory = categories.find(
+          (cat: any) => cat.slug === categoryParam
+        );
+        if (matchingCategory) {
+          setSelectedCategory(matchingCategory.name);
+          setSelectedCategoryId(matchingCategory._id);
+        }
       }
     }
-  }, [categories]);
+  }, [categories, searchParams]);
+
+  const updateURL = (categorySlug?: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (categorySlug) {
+      params.set("category", categorySlug);
+    } else {
+      params.delete("category");
+    }
+    router.push(`/products?${params.toString()}`);
+  };
 
   const handleApplyPriceFilter = () => {
     setAppliedPriceRange(priceRange);
@@ -77,12 +94,14 @@ export default function ProductsPage() {
     setSelectedCategory(category);
     if (category === "All Categories") {
       setSelectedCategoryId("");
+      updateURL();
     } else {
       const matchingCategory = categories.find(
         (cat: any) => cat.name === category
       );
       if (matchingCategory) {
         setSelectedCategoryId(matchingCategory._id);
+        updateURL(matchingCategory.slug);
       }
     }
     setCurrentPage(1);
@@ -90,6 +109,11 @@ export default function ProductsPage() {
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
+    setCurrentPage(1);
+  };
+
+  const handleVendorChange = (vendor: string) => {
+    setSelectedVendor(vendor);
     setCurrentPage(1);
   };
 
@@ -112,7 +136,7 @@ export default function ProductsPage() {
             searchQuery={searchQuery}
             setSearchQuery={handleSearchChange}
             selectedVendor={selectedVendor}
-            setSelectedVendor={setSelectedVendor}
+            setSelectedVendor={handleVendorChange}
             priceRange={priceRange}
             setPriceRange={setPriceRange}
             minRating={minRating}
@@ -121,6 +145,7 @@ export default function ProductsPage() {
             setShowFilters={setShowFilters}
             onApplyPriceFilter={handleApplyPriceFilter}
             onResetRating={handleResetRating}
+            products={products}
           />
 
           <main className="flex-1">

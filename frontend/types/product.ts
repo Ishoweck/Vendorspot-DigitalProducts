@@ -38,11 +38,12 @@ export interface SidebarProps {
   setShowFilters: (show: boolean) => void;
   onApplyPriceFilter: () => void;
   onResetRating: () => void;
+  products: any[];
 }
 
 export interface ProductCardProps {
   product: Product;
-  viewMode: 'grid' | 'list';
+  viewMode: "grid" | "list";
 }
 
 export interface SortDropdownProps {

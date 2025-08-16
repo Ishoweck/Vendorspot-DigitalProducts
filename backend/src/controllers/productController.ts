@@ -7,42 +7,96 @@ import { SocketService } from "@/services/SocketService";
 
 export const getProducts = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const skip = (page - 1) * limit;
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
 
-    const query: any = { isActive: true, isApproved: true };
+      const query: any = { isActive: true, isApproved: true };
 
-    if (req.query.search) {
-      query.$or = [
-        { name: { $regex: req.query.search, $options: "i" } },
-        { description: { $regex: req.query.search, $options: "i" } },
-      ];
+      if (req.query.search) {
+        query.$or = [
+          { name: { $regex: req.query.search, $options: "i" } },
+          { description: { $regex: req.query.search, $options: "i" } },
+        ];
+      }
+
+      if (req.query.category) {
+        query.categoryId = req.query.category;
+      }
+
+      if (req.query.vendor) {
+        const vendors = await Vendor.find({
+          businessName: { $regex: req.query.vendor, $options: "i" },
+        });
+        if (vendors.length > 0) {
+          query.vendorId = { $in: vendors.map((v) => v._id) };
+        } else {
+          return res.status(200).json({
+            success: true,
+            data: [],
+            pagination: {
+              total: 0,
+              page,
+              limit,
+              totalPages: 0,
+            },
+          });
+        }
+      }
+
+      if (req.query.minPrice || req.query.maxPrice) {
+        query.price = {};
+        if (req.query.minPrice) {
+          query.price.$gte = parseFloat(req.query.minPrice as string);
+        }
+        if (req.query.maxPrice) {
+          query.price.$lte = parseFloat(req.query.maxPrice as string);
+        }
+      }
+
+      if (req.query.minRating) {
+        query.rating = { $gte: parseFloat(req.query.minRating as string) };
+      }
+
+      let sortOptions: any = { createdAt: -1 };
+      if (req.query.sortBy) {
+        const sortBy = req.query.sortBy as string;
+        const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+
+        if (sortBy === "price") {
+          sortOptions = { price: sortOrder };
+        } else if (sortBy === "rating") {
+          sortOptions = { rating: sortOrder };
+        } else if (sortBy === "soldCount") {
+          sortOptions = { soldCount: sortOrder };
+        } else if (sortBy === "createdAt") {
+          sortOptions = { createdAt: sortOrder };
+        }
+      }
+
+      const products = await Product.find(query)
+        .populate("vendorId", "businessName")
+        .populate("categoryId", "name")
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limit);
+
+      const total = await Product.countDocuments(query);
+
+      return res.status(200).json({
+        success: true,
+        data: products,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+    } catch (error) {
+      return next(error);
     }
-
-    if (req.query.category) {
-      query.categoryId = req.query.category;
-    }
-
-    const products = await Product.find(query)
-      .populate("vendorId", "businessName")
-      .populate("categoryId", "name")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    const total = await Product.countDocuments(query);
-
-    res.status(200).json({
-      success: true,
-      data: products,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
   }
 );
 

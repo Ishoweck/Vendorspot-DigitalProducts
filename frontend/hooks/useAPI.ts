@@ -130,6 +130,12 @@ export const useProducts = (params?: {
   limit?: number;
   category?: string;
   search?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minRating?: number;
+  vendor?: string;
+  sortBy?: string;
+  sortOrder?: string;
 }) => {
   return useQuery(["products", params], () => productsAPI.getAll(params), {
     keepPreviousData: true,

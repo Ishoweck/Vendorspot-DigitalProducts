@@ -6,7 +6,13 @@ export const productsAPI = {
     limit?: number;
     category?: string;
     search?: string;
-  }) => api.get<{ data: any[]; total: number }>("/products", { params }),
+    minPrice?: number;
+    maxPrice?: number;
+    minRating?: number;
+    vendor?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }) => api.get<{ data: any[]; pagination: any }>("/products", { params }),
 
   getById: (id: string) => api.get<any>(`/products/${id}`),
 
