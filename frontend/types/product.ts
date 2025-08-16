@@ -32,6 +32,7 @@ export interface SidebarProps {
   setSelectedVendor: (vendor: string) => void;
   priceRange: [number, number];
   setPriceRange: (range: [number, number]) => void;
+  onPriceRangeChange?: (index: number, value: number) => void;
   minRating: number;
   setMinRating: (rating: number) => void;
   showFilters: boolean;

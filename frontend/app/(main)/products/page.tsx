@@ -86,6 +86,21 @@ export default function ProductsPage() {
     setCurrentPage(1);
   };
 
+  const handlePriceRangeChange = (index: number, value: number) => {
+    const newRange = [...priceRange] as [number, number];
+    newRange[index] = value;
+    setPriceRange(newRange);
+    
+    const newAppliedRange = [...appliedPriceRange] as [number, number];
+    if (index === 0) {
+      newAppliedRange[0] = value;
+    } else {
+      newAppliedRange[1] = value;
+    }
+    setAppliedPriceRange(newAppliedRange);
+    setCurrentPage(1);
+  };
+
   const handleResetRating = () => {
     setMinRating(0);
   };
@@ -117,6 +132,11 @@ export default function ProductsPage() {
     setCurrentPage(1);
   };
 
+  const handleVendorSearch = (query: string) => {
+    setSelectedVendor(query);
+    setCurrentPage(1);
+  };
+
   const handleSortChange = (sort: string) => {
     setSortBy(sort);
     setCurrentPage(1);
@@ -136,9 +156,10 @@ export default function ProductsPage() {
             searchQuery={searchQuery}
             setSearchQuery={handleSearchChange}
             selectedVendor={selectedVendor}
-            setSelectedVendor={handleVendorChange}
+            setSelectedVendor={handleVendorSearch}
             priceRange={priceRange}
             setPriceRange={setPriceRange}
+            onPriceRangeChange={handlePriceRangeChange}
             minRating={minRating}
             setMinRating={setMinRating}
             showFilters={showFilters}

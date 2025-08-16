@@ -13,7 +13,10 @@
     "clear:users": "node scripts/clear-users.js",
     "clear:products": "node scripts/clear-products.js",
     "clear:cloudinary": "node scripts/clear-cloudinary.js",
-    "clear:all": "node scripts/clear-all.js"
+    "clear:all": "node scripts/clear-all.js",
+    "seed:categories": "node scripts/seed-categories.js",
+    "seed:products": "node scripts/seed-products.js",
+    "approve:products": "node scripts/approve-products.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

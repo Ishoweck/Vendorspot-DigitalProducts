@@ -15,6 +15,7 @@ export function ProductSidebar({
   setSelectedVendor,
   priceRange,
   setPriceRange,
+  onPriceRangeChange,
   minRating,
   setMinRating,
   showFilters,
@@ -42,6 +43,16 @@ export function ProductSidebar({
   const filteredVendors = vendors.filter((vendor) =>
     vendor.toLowerCase().includes(vendorSearch.toLowerCase())
   );
+
+  const handlePriceRangeChange = (index: number, value: number) => {
+    if (onPriceRangeChange) {
+      onPriceRangeChange(index, value);
+    } else {
+      const newRange = [...priceRange] as [number, number];
+      newRange[index] = value;
+      setPriceRange(newRange);
+    }
+  };
 
   return (
     <>
@@ -118,6 +129,7 @@ export function ProductSidebar({
               value={vendorSearch}
               onChange={(e) => setVendorSearch(e.target.value)}
               onFocus={() => setShowVendorDropdown(true)}
+              onBlur={() => setTimeout(() => setShowVendorDropdown(false), 200)}
               className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7195B] focus:border-[#D7195B] text-sm"
             />
             {(vendorSearch || selectedVendor) && (
@@ -133,19 +145,25 @@ export function ProductSidebar({
             )}
             {showVendorDropdown && vendorSearch && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
-                {filteredVendors.map((vendor) => (
-                  <button
-                    key={vendor}
-                    onClick={() => {
-                      setSelectedVendor(vendor);
-                      setVendorSearch(vendor);
-                      setShowVendorDropdown(false);
-                    }}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
-                  >
-                    {vendor}
-                  </button>
-                ))}
+                {filteredVendors.length > 0 ? (
+                  filteredVendors.map((vendor) => (
+                    <button
+                      key={vendor}
+                      onClick={() => {
+                        setSelectedVendor(vendor);
+                        setVendorSearch(vendor);
+                        setShowVendorDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                    >
+                      {vendor}
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-sm text-gray-500">
+                    No vendors found
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -174,9 +192,7 @@ export function ProductSidebar({
                 type="number"
                 placeholder="Min"
                 value={priceRange[0]}
-                onChange={(e) =>
-                  setPriceRange([Number(e.target.value), priceRange[1]])
-                }
+                onChange={(e) => handlePriceRangeChange(0, Number(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7195B] focus:border-[#D7195B] text-sm"
               />
               <span className="text-gray-500 text-sm">to</span>
@@ -184,9 +200,7 @@ export function ProductSidebar({
                 type="number"
                 placeholder="Max"
                 value={priceRange[1]}
-                onChange={(e) =>
-                  setPriceRange([priceRange[0], Number(e.target.value)])
-                }
+                onChange={(e) => handlePriceRangeChange(1, Number(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7195B] focus:border-[#D7195B] text-sm"
               />
             </div>
