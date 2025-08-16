@@ -274,7 +274,27 @@ export const deleteProduct = asyncHandler(
       return next(createError("Product not found", 404));
     }
 
+    const urlsToDelete: string[] = [];
+
+    if (product.fileUrl) {
+      urlsToDelete.push(product.fileUrl);
+    }
+
+    if (product.thumbnail) {
+      urlsToDelete.push(product.thumbnail);
+    }
+
+    if (product.images && product.images.length > 0) {
+      urlsToDelete.push(...product.images);
+    }
+
     await Product.findByIdAndDelete(req.params.id);
+
+    if (urlsToDelete.length > 0) {
+      cloudinaryService.deleteMultipleFiles(urlsToDelete).catch((error) => {
+        console.error("Failed to delete files from Cloudinary:", error);
+      });
+    }
 
     try {
       const io = SocketService.getIO();

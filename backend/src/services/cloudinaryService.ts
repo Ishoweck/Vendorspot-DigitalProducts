@@ -33,4 +33,35 @@ export const cloudinaryService = {
       console.error("Failed to delete file from Cloudinary:", error);
     }
   },
+
+  extractPublicId: (url: string): string | null => {
+    try {
+      const urlParts = url.split('/');
+      const uploadIndex = urlParts.findIndex(part => part === 'upload');
+      if (uploadIndex === -1) return null;
+      
+      const pathAfterUpload = urlParts.slice(uploadIndex + 1);
+      if (pathAfterUpload[0] && pathAfterUpload[0].startsWith('v')) {
+        pathAfterUpload.shift();
+      }
+      
+      const publicIdWithExt = pathAfterUpload.join('/');
+      const lastDotIndex = publicIdWithExt.lastIndexOf('.');
+      return lastDotIndex > 0 ? publicIdWithExt.substring(0, lastDotIndex) : publicIdWithExt;
+    } catch (error) {
+      console.error("Failed to extract public ID from URL:", error);
+      return null;
+    }
+  },
+
+  deleteMultipleFiles: async (urls: string[]) => {
+    const deletePromises = urls.map(async (url) => {
+      const publicId = cloudinaryService.extractPublicId(url);
+      if (publicId) {
+        await cloudinaryService.deleteFile(publicId);
+      }
+    });
+    
+    await Promise.allSettled(deletePromises);
+  },
 };

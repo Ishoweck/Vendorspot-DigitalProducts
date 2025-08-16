@@ -22,6 +22,8 @@ function VendorProductsContent() {
     productId: "",
     productName: "",
   });
+  const [showLeftIndicator, setShowLeftIndicator] = useState(false);
+  const [showRightIndicator, setShowRightIndicator] = useState(false);
 
   const { data: productsData, isLoading } = useVendorProducts({
     page: currentPage,
@@ -43,6 +45,27 @@ function VendorProductsContent() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLDivElement;
+    const { scrollLeft, scrollWidth, clientWidth } = target;
+
+    setShowLeftIndicator(scrollLeft > 0);
+    setShowRightIndicator(scrollLeft < scrollWidth - clientWidth - 1);
+  };
+
+  const scrollTable = (direction: "left" | "right") => {
+    const tableContainer = document.querySelector(
+      ".table-scroll-container"
+    ) as HTMLDivElement;
+    if (tableContainer) {
+      const scrollAmount = 200;
+      tableContainer.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
 
   const products = productsData?.data?.data || [];
   const pagination = productsData?.data?.pagination;
@@ -212,11 +235,64 @@ function VendorProductsContent() {
 
                   <div className="hidden md:block">
                     <div
-                      className="border border-gray-200 rounded-lg overflow-hidden"
+                      className="border border-gray-200 rounded-lg overflow-hidden relative"
                       style={{ height: "200px" }}
                     >
-                      <div className="h-full overflow-y-auto">
-                        <table className="w-full divide-y divide-gray-200">
+                      {/* Left scroll indicator */}
+                      {showLeftIndicator && (
+                        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-20 flex items-center justify-start pl-1">
+                          <button
+                            onClick={() => scrollTable("left")}
+                            className="w-6 h-6 bg-white border border-gray-300 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+                            title="Scroll left"
+                          >
+                            <svg
+                              className="w-3 h-3 text-gray-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 19l-7-7 7-7"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Right scroll indicator */}
+                      {showRightIndicator && (
+                        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-20 flex items-center justify-end pr-1">
+                          <button
+                            onClick={() => scrollTable("right")}
+                            className="w-6 h-6 bg-white border border-gray-300 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+                            title="Scroll right"
+                          >
+                            <svg
+                              className="w-3 h-3 text-gray-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+
+                      <div
+                        className="h-full overflow-auto table-scroll-container"
+                        onScroll={handleTableScroll}
+                      >
+                        <table className="w-full divide-y divide-gray-200 min-w-[800px]">
                           <thead className="bg-gray-50 sticky top-0 z-10">
                             <tr>
                               <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
