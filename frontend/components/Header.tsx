@@ -73,7 +73,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50">
+    <header className="sticky top-0 z-[60]">
       <div
         className={`bg-[#FC5991] text-white text-center px-4 text-sm flex items-center justify-center transition-all duration-300 ease-out overflow-hidden ${
           advertState === "expanded"

@@ -34,13 +34,13 @@ export function ProductSidebar({
     <>
       {showFilters && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-[45] lg:hidden"
           onClick={() => setShowFilters(false)}
         />
       )}
 
       <aside
-        className={`fixed lg:static top-0 left-0 h-full lg:h-auto w-80 bg-white shadow-lg lg:shadow-sm lg:rounded-lg p-4 lg:p-6 space-y-4 lg:space-y-6 z-50 transform transition-transform duration-300 overflow-y-auto ${
+        className={`fixed lg:static top-0 left-0 h-full lg:h-auto w-80 bg-white shadow-lg lg:shadow-sm lg:rounded-lg p-4 lg:p-6 space-y-4 lg:space-y-6 lg:z-0 z-[70] transform transition-transform duration-300 overflow-y-auto ${
           showFilters ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >

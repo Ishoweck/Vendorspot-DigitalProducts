@@ -177,7 +177,7 @@ function VendorProductsContent() {
                                     <MoreVertical className="w-4 h-4" />
                                   </button>
                                   {activeDropdown === product._id && (
-                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-40">
                                       <Link
                                         href={`/products/${product._id}`}
                                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
