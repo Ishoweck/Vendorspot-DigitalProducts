@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Search,
   X,
@@ -19,16 +20,23 @@ import {
 } from "lucide-react";
 import { useUserProfile, useLogout, useCategories } from "@/hooks/useAPI";
 import MobileSidebar from "./MobileSidebar";
+import { performGlobalSearch, SearchResult } from "@/lib/utils/searchUtils";
 
 export default function Header() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCategoriesDropdownOpen, setIsCategoriesDropdownOpen] =
     useState(false);
   const [advertState, setAdvertState] = useState<
     "expanded" | "compact" | "hidden"
   >("expanded");
+
+  const searchRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const { data: userProfile } = useUserProfile();
   const { data: categoriesData } = useCategories();
@@ -57,6 +65,9 @@ export default function Header() {
       if (!target.closest(".categories-dropdown")) {
         setIsCategoriesDropdownOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(target)) {
+        setShowSearchDropdown(false);
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -68,8 +79,59 @@ export default function Header() {
     };
   }, []);
 
+  useEffect(() => {
+    const searchTimeout = setTimeout(async () => {
+      if (searchValue.trim()) {
+        setIsSearching(true);
+        try {
+          const results = await performGlobalSearch(searchValue);
+          setSearchResults(results);
+          setShowSearchDropdown(true);
+        } catch (error) {
+          console.error("Search error:", error);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchResults([]);
+        setShowSearchDropdown(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(searchTimeout);
+  }, [searchValue]);
+
   const clearSearch = () => {
     setSearchValue("");
+    setSearchResults([]);
+    setShowSearchDropdown(false);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchValue.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchValue.trim())}`);
+      setShowSearchDropdown(false);
+    }
+  };
+
+  const handleResultClick = (result: SearchResult) => {
+    router.push(result.url);
+    setSearchValue("");
+    setShowSearchDropdown(false);
+  };
+
+  const getResultIcon = (type: string) => {
+    switch (type) {
+      case "product":
+        return <Package className="w-4 h-4" />;
+      case "category":
+        return <Menu className="w-4 h-4" />;
+      case "vendor":
+        return <Users className="w-4 h-4" />;
+      default:
+        return <Search className="w-4 h-4" />;
+    }
   };
 
   return (
@@ -278,26 +340,73 @@ export default function Header() {
       <div className="bg-nav-bg text-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-center py-3">
-            <div className="flex-1 max-w-2xl flex items-center space-x-2">
-              <div className="relative flex-1">
+            <div className="flex-1 max-w-2xl flex items-center space-x-2" ref={searchRef}>
+              <form onSubmit={handleSearchSubmit} className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
                 <input
                   type="text"
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   placeholder="Search for products, brand, categories and vendors"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-black"
                 />
                 {searchValue && (
                   <button
+                    type="button"
                     onClick={clearSearch}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 )}
-              </div>
-              <button className="bg-search-btn text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors">
+                
+                {showSearchDropdown && (searchResults.length > 0 || isSearching) && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto z-50">
+                    {isSearching ? (
+                      <div className="p-4 text-center text-gray-500">
+                        Searching...
+                      </div>
+                    ) : (
+                      <>
+                        {searchResults.map((result, index) => (
+                          <button
+                            key={`${result.type}-${result.id}-${index}`}
+                            onClick={() => handleResultClick(result)}
+                            className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 flex items-center gap-3"
+                          >
+                            <div className="text-gray-400">
+                              {getResultIcon(result.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-gray-900 text-sm">
+                                {result.name}
+                              </div>
+                              {result.description && (
+                                <div className="text-xs text-gray-500 truncate">
+                                  {result.description}
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                        <div className="p-2 border-t border-gray-100">
+                          <button
+                            type="submit"
+                            className="w-full text-center text-sm text-[#D7195B] hover:text-[#b8154d] font-medium"
+                          >
+                            View all results for "{searchValue}"
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </form>
+              <button 
+                type="submit"
+                onClick={handleSearchSubmit}
+                className="bg-search-btn text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors"
+              >
                 Search
               </button>
             </div>

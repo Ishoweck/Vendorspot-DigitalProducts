@@ -23,6 +23,7 @@ export function ProductSidebar({
   onApplyPriceFilter,
   onResetRating,
   products,
+  isPriceRangeChanged,
 }: SidebarProps) {
   const [vendorSearch, setVendorSearch] = useState("");
   const [showVendorDropdown, setShowVendorDropdown] = useState(false);
@@ -64,11 +65,11 @@ export function ProductSidebar({
       )}
 
       <aside
-        className={`fixed lg:static top-0 left-0 h-full lg:h-auto w-80 bg-white shadow-lg lg:shadow-sm lg:rounded-lg p-4 lg:p-6 space-y-4 lg:space-y-6 lg:z-0 z-[70] transform transition-transform duration-300 overflow-y-auto ${
+        className={`fixed lg:static top-0 left-0 h-full lg:h-auto w-80 bg-white shadow-lg lg:shadow-sm lg:rounded-lg p-4 lg:p-6 space-y-4 lg:space-y-5 lg:z-0 z-[70] transform transition-transform duration-300 overflow-y-auto ${
           showFilters ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
-        <div className="flex items-center justify-between lg:hidden">
+        <div className="flex items-center justify-between lg:hidden border-b border-gray-200 pb-4">
           <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
           <button
             onClick={() => setShowFilters(false)}
@@ -78,7 +79,7 @@ export function ProductSidebar({
           </button>
         </div>
 
-        <div>
+        <div className="border-b border-gray-200 pb-4">
           <h3 className="font-medium text-gray-900 mb-3">Categories</h3>
           <div className="space-y-1">
             {allCategories.map((category) => (
@@ -97,7 +98,7 @@ export function ProductSidebar({
           </div>
         </div>
 
-        <div>
+        <div className="border-b border-gray-200 pb-4">
           <h3 className="font-medium text-gray-900 mb-3">Search</h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -119,7 +120,7 @@ export function ProductSidebar({
           </div>
         </div>
 
-        <div>
+        <div className="border-b border-gray-200 pb-4">
           <h3 className="font-medium text-gray-900 mb-3">Vendor</h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -184,30 +185,35 @@ export function ProductSidebar({
           )}
         </div>
 
-        <div>
+        <div className="border-b border-gray-200 pb-4">
           <h3 className="font-medium text-gray-900 mb-3">Price Range</h3>
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <input
                 type="number"
                 placeholder="Min"
-                value={priceRange[0]}
-                onChange={(e) => handlePriceRangeChange(0, Number(e.target.value))}
+                value={priceRange[0] || ""}
+                onChange={(e) =>
+                  handlePriceRangeChange(0, Number(e.target.value) || 0)
+                }
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7195B] focus:border-[#D7195B] text-sm"
               />
               <span className="text-gray-500 text-sm">to</span>
               <input
                 type="number"
                 placeholder="Max"
-                value={priceRange[1]}
-                onChange={(e) => handlePriceRangeChange(1, Number(e.target.value))}
+                value={priceRange[1] || ""}
+                onChange={(e) =>
+                  handlePriceRangeChange(1, Number(e.target.value) || 100000)
+                }
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7195B] focus:border-[#D7195B] text-sm"
               />
             </div>
             <div className="flex justify-end">
               <button
                 onClick={onApplyPriceFilter}
-                className="px-4 py-1 bg-[#D7195B] text-white rounded text-sm hover:bg-[#b8154d]"
+                disabled={!isPriceRangeChanged}
+                className="px-4 py-1 bg-[#D7195B] text-white rounded text-sm hover:bg-[#b8154d] disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 Apply
               </button>

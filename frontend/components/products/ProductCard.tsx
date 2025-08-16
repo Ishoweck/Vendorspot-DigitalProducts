@@ -2,21 +2,42 @@
 
 import { useState } from "react";
 import { Heart, ShoppingCart } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { ProductCardProps } from "@/types/product";
 import { StarRating } from "./StarRating";
+import { useUserProfile } from "@/hooks/useAPI";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function ProductCard({ product, viewMode }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const router = useRouter();
+  const { data: userProfile } = useUserProfile();
+  const user = userProfile?.data?.data;
+  const isVendor = user?.role === "VENDOR";
+
+  const handleCardClick = () => {
+    router.push(`/products/${product._id}`);
+  };
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
 
   if (viewMode === "list") {
     return (
-      <div className="bg-white border border-gray-100 rounded-lg hover:shadow-md transition-shadow">
+      <div
+        className="bg-white border border-gray-100 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+        onClick={handleCardClick}
+      >
         <div className="flex gap-3 p-3">
           <div className="relative">
+            {!imageLoaded && <Skeleton className="w-20 h-16 rounded" />}
             <img
               src={product.thumbnail || "/api/placeholder/200/150"}
               alt={product.name}
-              className="w-20 h-16 object-cover rounded flex-shrink-0"
+              className={`w-20 h-16 object-cover rounded flex-shrink-0 ${!imageLoaded ? "hidden" : ""}`}
+              onLoad={handleImageLoad}
             />
           </div>
           <div className="flex-1 min-w-0">
@@ -43,22 +64,32 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
 
   return (
     <div
-      className={`bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 ${
+      className={`bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer ${
         isHovered ? "transform scale-105" : ""
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
     >
       <div className="relative">
+        {!imageLoaded && <Skeleton className="w-full h-40" />}
         <img
           src={product.thumbnail || "/api/placeholder/200/150"}
           alt={product.name}
-          className="w-full h-40 object-cover"
+          className={`w-full h-40 object-cover ${!imageLoaded ? "hidden" : ""}`}
+          onLoad={handleImageLoad}
         />
 
-        <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors">
-          <Heart className="w-4 h-4 text-gray-600" />
-        </button>
+        {!isVendor && (
+          <button
+            className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <Heart className="w-4 h-4 text-gray-600" />
+          </button>
+        )}
       </div>
 
       <div className="p-4 relative">
@@ -77,8 +108,13 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
           ₦{product.price.toLocaleString()}
         </p>
 
-        {isHovered && (
-          <button className="w-full bg-[#D7195B] text-white py-2 px-4 rounded-lg hover:bg-[#b8154d] transition-colors text-sm font-medium flex items-center justify-center gap-2">
+        {isHovered && !isVendor && (
+          <button
+            className="w-full bg-[#D7195B] text-white py-2 px-4 rounded-lg hover:bg-[#b8154d] transition-colors text-sm font-medium flex items-center justify-center gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
             <ShoppingCart className="w-4 h-4" />
             Add to Cart
           </button>

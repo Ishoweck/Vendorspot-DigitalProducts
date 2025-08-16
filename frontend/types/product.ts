@@ -40,6 +40,7 @@ export interface SidebarProps {
   onApplyPriceFilter: () => void;
   onResetRating: () => void;
   products: any[];
+  isPriceRangeChanged?: boolean;
 }
 
 export interface ProductCardProps {

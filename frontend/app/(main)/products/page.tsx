@@ -19,6 +19,7 @@ export default function ProductsPage() {
   const [appliedPriceRange, setAppliedPriceRange] = useState<[number, number]>([
     0, 100000,
   ]);
+  const [isPriceRangeChanged, setIsPriceRangeChanged] = useState(false);
   const [minRating, setMinRating] = useState(0);
   const [selectedVendor, setSelectedVendor] = useState("");
   const [sortBy, setSortBy] = useState("newest");
@@ -81,24 +82,20 @@ export default function ProductsPage() {
     router.push(`/products?${params.toString()}`);
   };
 
-  const handleApplyPriceFilter = () => {
-    setAppliedPriceRange(priceRange);
-    setCurrentPage(1);
-  };
-
   const handlePriceRangeChange = (index: number, value: number) => {
     const newRange = [...priceRange] as [number, number];
     newRange[index] = value;
     setPriceRange(newRange);
     
-    const newAppliedRange = [...appliedPriceRange] as [number, number];
-    if (index === 0) {
-      newAppliedRange[0] = value;
-    } else {
-      newAppliedRange[1] = value;
-    }
-    setAppliedPriceRange(newAppliedRange);
+    const defaultRange: [number, number] = [0, 100000];
+    const hasChanged = newRange[0] !== defaultRange[0] || newRange[1] !== defaultRange[1];
+    setIsPriceRangeChanged(hasChanged);
+  };
+
+  const handleApplyPriceFilter = () => {
+    setAppliedPriceRange(priceRange);
     setCurrentPage(1);
+    setIsPriceRangeChanged(false);
   };
 
   const handleResetRating = () => {
@@ -167,6 +164,7 @@ export default function ProductsPage() {
             onApplyPriceFilter={handleApplyPriceFilter}
             onResetRating={handleResetRating}
             products={products}
+            isPriceRangeChanged={isPriceRangeChanged}
           />
 
           <main className="flex-1">
