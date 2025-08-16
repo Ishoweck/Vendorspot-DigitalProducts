@@ -177,7 +177,7 @@ function VendorProductsContent() {
                                     <MoreVertical className="w-4 h-4" />
                                   </button>
                                   {activeDropdown === product._id && (
-                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-40">
+                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-[60]">
                                       <Link
                                         href={`/products/${product._id}`}
                                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -235,8 +235,8 @@ function VendorProductsContent() {
 
                   <div className="hidden md:block">
                     <div
-                      className="border border-gray-200 rounded-lg overflow-hidden relative"
-                      style={{ height: "200px" }}
+                      className="border border-gray-200 rounded-lg relative"
+                      style={{ maxHeight: "400px", minHeight: "200px" }}
                     >
                       {/* Left scroll indicator */}
                       {showLeftIndicator && (

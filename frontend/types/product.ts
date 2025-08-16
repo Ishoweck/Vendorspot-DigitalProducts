@@ -1,14 +1,20 @@
 export interface Product {
-  id: number;
+  _id: string;
   name: string;
   price: number;
-  category: string;
-  vendor: string;
+  categoryId: string | { _id: string; name: string };
+  vendorId: string | { _id: string; businessName: string };
   rating: number;
-  reviews: number;
   soldCount: number;
-  thumbnail: string;
+  thumbnail?: string;
+  images: string[];
   description: string;
+  tags: string[];
+  isActive: boolean;
+  isApproved: boolean;
+  approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface SortOption {
@@ -17,6 +23,7 @@ export interface SortOption {
 }
 
 export interface SidebarProps {
+  categories: any[];
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
   searchQuery: string;

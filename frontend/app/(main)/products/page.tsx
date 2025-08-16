@@ -5,10 +5,11 @@ import { Search, Filter, Grid3X3, List } from "lucide-react";
 import { ProductSidebar } from "@/components/products/ProductSidebar";
 import { ProductCard } from "@/components/products/ProductCard";
 import { SortDropdown } from "@/components/products/SortDropdown";
-import { products, categories } from "@/data/products";
+import { useProducts, useCategories } from "@/hooks/useAPI";
 
 export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [appliedPriceRange, setAppliedPriceRange] = useState<[number, number]>([
@@ -22,72 +23,80 @@ export default function ProductsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const productsPerPage = 20;
 
+  const { data: categoriesData } = useCategories();
+  const { data: productsData, isLoading } = useProducts({
+    page: currentPage,
+    limit: productsPerPage,
+    category: selectedCategoryId,
+    search: searchQuery,
+    minPrice: appliedPriceRange[0],
+    maxPrice: appliedPriceRange[1],
+    sortBy:
+      sortBy === "newest"
+        ? "createdAt"
+        : sortBy === "popular"
+          ? "soldCount"
+          : sortBy.includes("price")
+            ? "price"
+            : "rating",
+    sortOrder:
+      sortBy === "price-high" || sortBy === "rating" || sortBy === "popular"
+        ? "desc"
+        : "asc",
+  });
+
+  const categories = categoriesData?.data?.data || [];
+  const products = productsData?.data?.data || [];
+  const totalProducts = productsData?.data?.pagination?.total || 0;
+  const totalPages = productsData?.data?.pagination?.totalPages || 1;
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const categoryParam = params.get("category");
-    if (categoryParam) {
-      const formattedCategory =
-        categoryParam.charAt(0).toUpperCase() +
-        categoryParam.slice(1).toLowerCase();
+    if (categoryParam && categories.length > 0) {
       const matchingCategory = categories.find(
-        (cat) => cat.toLowerCase() === formattedCategory.toLowerCase()
+        (cat: any) => cat.slug === categoryParam
       );
       if (matchingCategory) {
-        setSelectedCategory(matchingCategory);
+        setSelectedCategory(matchingCategory.name);
+        setSelectedCategoryId(matchingCategory._id);
       }
     }
-  }, []);
+  }, [categories]);
 
   const handleApplyPriceFilter = () => {
     setAppliedPriceRange(priceRange);
+    setCurrentPage(1);
   };
 
   const handleResetRating = () => {
     setMinRating(0);
   };
 
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory =
-      selectedCategory === "All Categories" ||
-      product.category === selectedCategory;
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesPrice =
-      product.price >= appliedPriceRange[0] &&
-      product.price <= appliedPriceRange[1];
-    const matchesRating = product.rating >= minRating;
-    const matchesVendor = !selectedVendor || product.vendor === selectedVendor;
-
-    return (
-      matchesCategory &&
-      matchesSearch &&
-      matchesPrice &&
-      matchesRating &&
-      matchesVendor
-    );
-  });
-
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (sortBy) {
-      case "price-low":
-        return a.price - b.price;
-      case "price-high":
-        return b.price - a.price;
-      case "rating":
-        return b.rating - a.rating;
-      case "popular":
-        return b.soldCount - a.soldCount;
-      default:
-        return 0;
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    if (category === "All Categories") {
+      setSelectedCategoryId("");
+    } else {
+      const matchingCategory = categories.find(
+        (cat: any) => cat.name === category
+      );
+      if (matchingCategory) {
+        setSelectedCategoryId(matchingCategory._id);
+      }
     }
-  });
+    setCurrentPage(1);
+  };
 
-  const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
-  const paginatedProducts = sortedProducts.slice(
-    (currentPage - 1) * productsPerPage,
-    currentPage * productsPerPage
-  );
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (sort: string) => {
+    setSortBy(sort);
+    setCurrentPage(1);
+  };
 
   const categoryName =
     selectedCategory === "All Categories" ? "Products" : selectedCategory;
@@ -97,10 +106,11 @@ export default function ProductsPage() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex gap-6">
           <ProductSidebar
+            categories={categories}
             selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
+            setSelectedCategory={handleCategoryChange}
             searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
+            setSearchQuery={handleSearchChange}
             selectedVendor={selectedVendor}
             setSelectedVendor={setSelectedVendor}
             priceRange={priceRange}
@@ -127,7 +137,7 @@ export default function ProductsPage() {
                     </button>
                     <h1 className="text-lg font-semibold text-gray-900">
                       <span className="font-bold">{categoryName}</span> (
-                      {filteredProducts.length} products found)
+                      {totalProducts} products found)
                     </h1>
                   </div>
 
@@ -155,13 +165,25 @@ export default function ProductsPage() {
                       </button>
                     </div>
 
-                    <SortDropdown sortBy={sortBy} setSortBy={setSortBy} />
+                    <SortDropdown
+                      sortBy={sortBy}
+                      setSortBy={handleSortChange}
+                    />
                   </div>
                 </div>
               </div>
 
               <div className="p-4">
-                {paginatedProducts.length === 0 ? (
+                {isLoading ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
+                      <Search className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Loading products...
+                    </h3>
+                  </div>
+                ) : products.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
                       <Search className="w-8 h-8 text-gray-400" />
@@ -176,10 +198,10 @@ export default function ProductsPage() {
                 ) : (
                   <>
                     {viewMode === "grid" ? (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-                        {paginatedProducts.map((product) => (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                        {products.map((product) => (
                           <ProductCard
-                            key={product.id}
+                            key={product._id}
                             product={product}
                             viewMode={viewMode}
                           />
@@ -187,9 +209,9 @@ export default function ProductsPage() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {paginatedProducts.map((product) => (
+                        {products.map((product) => (
                           <ProductCard
-                            key={product.id}
+                            key={product._id}
                             product={product}
                             viewMode={viewMode}
                           />

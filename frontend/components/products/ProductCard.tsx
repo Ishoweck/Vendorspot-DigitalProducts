@@ -14,7 +14,7 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
         <div className="flex gap-3 p-3">
           <div className="relative">
             <img
-              src={product.thumbnail}
+              src={product.thumbnail || "/api/placeholder/200/150"}
               alt={product.name}
               className="w-20 h-16 object-cover rounded flex-shrink-0"
             />
@@ -29,7 +29,7 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
             <div className="flex items-center gap-3 text-xs text-gray-600">
               <div className="flex items-center gap-1">
                 <StarRating rating={product.rating} />
-                <span>({product.reviews})</span>
+                <span>({product.soldCount || 0})</span>
               </div>
               <p className="font-semibold text-[#D7195B]">
                 ₦{product.price.toLocaleString()}
@@ -43,42 +43,46 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
 
   return (
     <div
-      className="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-md transition-all duration-200"
+      className={`bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 ${
+        isHovered ? "transform scale-105" : ""
+      }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative">
         <img
-          src={product.thumbnail}
+          src={product.thumbnail || "/api/placeholder/200/150"}
           alt={product.name}
-          className="w-full h-32 object-cover"
+          className="w-full h-40 object-cover"
         />
 
-        {isHovered && (
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center gap-2">
-            <button className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors">
-              <Heart className="w-4 h-4 text-gray-600" />
-            </button>
-            <button className="p-2 bg-[#D7195B] text-white rounded-full hover:bg-[#b8154d] transition-colors">
-              <ShoppingCart className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+        <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors">
+          <Heart className="w-4 h-4 text-gray-600" />
+        </button>
       </div>
 
-      <div className="p-3">
-        <h3 className="font-medium text-gray-900 mb-1 text-sm line-clamp-2 min-h-[2.5rem]">
+      <div className="p-4 relative">
+        <h3 className="font-medium text-gray-900 mb-2 text-sm line-clamp-2 min-h-[2.5rem]">
           {product.name}
         </h3>
 
         <div className="flex items-center gap-1 mb-2">
           <StarRating rating={product.rating} />
-          <span className="text-xs text-gray-600">({product.reviews})</span>
+          <span className="text-xs text-gray-600">
+            ({product.soldCount || 0})
+          </span>
         </div>
 
-        <p className="font-semibold text-[#D7195B] text-sm">
+        <p className="font-semibold text-[#D7195B] text-base mb-3">
           ₦{product.price.toLocaleString()}
         </p>
+
+        {isHovered && (
+          <button className="w-full bg-[#D7195B] text-white py-2 px-4 rounded-lg hover:bg-[#b8154d] transition-colors text-sm font-medium flex items-center justify-center gap-2">
+            <ShoppingCart className="w-4 h-4" />
+            Add to Cart
+          </button>
+        )}
       </div>
     </div>
   );

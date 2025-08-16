@@ -8,7 +8,9 @@ export const useSocket = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    SocketService.connect();
+    if (!SocketService.isConnected()) {
+      SocketService.connect();
+    }
 
     const handleProductCreated = (data: any) => {
       console.log("🔔 Product created event received:", data);
@@ -28,7 +30,6 @@ export const useSocket = () => {
       queryClient.invalidateQueries(["products"]);
     };
 
-    // Register event listeners immediately
     SocketService.on("product:created", handleProductCreated);
     SocketService.on("product:updated", handleProductUpdated);
     SocketService.on("product:deleted", handleProductDeleted);
@@ -40,7 +41,7 @@ export const useSocket = () => {
       SocketService.off("product:deleted", handleProductDeleted);
       console.log("🎧 Socket event listeners removed");
     };
-  }, [queryClient]);
+  }, []);
 
   return SocketService;
 };
