@@ -10,88 +10,35 @@ export const useSocket = () => {
   useEffect(() => {
     SocketService.connect();
 
-    const handleProductViewed = (data: {
-      productId: string;
-      viewCount: number;
-    }) => {
-      queryClient.setQueryData(["product", data.productId], (oldData: any) => {
-        if (oldData?.data?.data) {
-          return {
-            ...oldData,
-            data: {
-              ...oldData.data,
-              data: {
-                ...oldData.data.data,
-                viewCount: data.viewCount,
-              },
-            },
-          };
-        }
-        return oldData;
-      });
-
-      queryClient.setQueryData(["vendor-products"], (oldData: any) => {
-        if (oldData?.data?.data) {
-          const updatedProducts = oldData.data.data.map((product: any) =>
-            product._id === data.productId
-              ? { ...product, viewCount: data.viewCount }
-              : product
-          );
-          return {
-            ...oldData,
-            data: {
-              ...oldData.data,
-              data: updatedProducts,
-            },
-          };
-        }
-        return oldData;
-      });
-
-      queryClient.setQueryData(["products"], (oldData: any) => {
-        if (oldData?.data?.data) {
-          const updatedProducts = oldData.data.data.map((product: any) =>
-            product._id === data.productId
-              ? { ...product, viewCount: data.viewCount }
-              : product
-          );
-          return {
-            ...oldData,
-            data: {
-              ...oldData.data,
-              data: updatedProducts,
-            },
-          };
-        }
-        return oldData;
-      });
-    };
-
-    const handleProductCreated = () => {
+    const handleProductCreated = (data: any) => {
+      console.log("🔔 Product created event received:", data);
       queryClient.invalidateQueries(["vendor-products"]);
       queryClient.invalidateQueries(["products"]);
     };
 
-    const handleProductUpdated = () => {
+    const handleProductUpdated = (data: any) => {
+      console.log("🔔 Product updated event received:", data);
       queryClient.invalidateQueries(["vendor-products"]);
       queryClient.invalidateQueries(["products"]);
     };
 
-    const handleProductDeleted = () => {
+    const handleProductDeleted = (data: any) => {
+      console.log("🔔 Product deleted event received:", data);
       queryClient.invalidateQueries(["vendor-products"]);
       queryClient.invalidateQueries(["products"]);
     };
 
-    SocketService.on("product:viewed", handleProductViewed);
+    // Register event listeners immediately
     SocketService.on("product:created", handleProductCreated);
     SocketService.on("product:updated", handleProductUpdated);
     SocketService.on("product:deleted", handleProductDeleted);
+    console.log("🎧 Socket event listeners registered");
 
     return () => {
-      SocketService.off("product:viewed", handleProductViewed);
       SocketService.off("product:created", handleProductCreated);
       SocketService.off("product:updated", handleProductUpdated);
       SocketService.off("product:deleted", handleProductDeleted);
+      console.log("🎧 Socket event listeners removed");
     };
   }, [queryClient]);
 

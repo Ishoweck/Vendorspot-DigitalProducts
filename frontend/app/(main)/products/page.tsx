@@ -39,7 +39,7 @@ const products = [
     vendor: "TechDesigns",
     rating: 4.8,
     reviews: 156,
-    downloads: 542,
+    soldCount: 542,
     thumbnail: "/api/placeholder/200/150",
     description:
       "Fully responsive e-commerce template with modern design and clean code",
@@ -52,7 +52,7 @@ const products = [
     vendor: "CreativeStudio",
     rating: 4.6,
     reviews: 89,
-    downloads: 324,
+    soldCount: 324,
     thumbnail: "/api/placeholder/200/150",
     description:
       "Collection of 50+ professional logo designs for various industries",
@@ -65,7 +65,7 @@ const products = [
     vendor: "LearnHub",
     rating: 4.9,
     reviews: 234,
-    downloads: 167,
+    soldCount: 167,
     thumbnail: "/api/placeholder/200/150",
     description:
       "Complete digital marketing course with practical examples and case studies",
@@ -78,7 +78,7 @@ const products = [
     vendor: "DataSoft",
     rating: 4.7,
     reviews: 78,
-    downloads: 89,
+    soldCount: 89,
     thumbnail: "/api/placeholder/200/150",
     description:
       "Interactive dashboard template for business analytics and reporting",
@@ -91,7 +91,7 @@ const products = [
     vendor: "BrandMasters",
     rating: 4.5,
     reviews: 112,
-    downloads: 445,
+    soldCount: 445,
     thumbnail: "/api/placeholder/200/150",
     description: "Comprehensive guide to building a strong brand identity",
   },
@@ -103,7 +103,7 @@ const products = [
     vendor: "SocialDesigns",
     rating: 4.8,
     reviews: 198,
-    downloads: 623,
+    soldCount: 623,
     thumbnail: "/api/placeholder/200/150",
     description:
       "200+ social media post templates for Instagram, Facebook, and Twitter",
@@ -545,7 +545,7 @@ export default function ProductsPage() {
       case "rating":
         return b.rating - a.rating;
       case "popular":
-        return b.downloads - a.downloads;
+        return b.soldCount - a.soldCount;
       default:
         return 0;
     }

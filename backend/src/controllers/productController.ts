@@ -56,27 +56,9 @@ export const getProductById = asyncHandler(
       return next(createError("Product not found", 404));
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      { $inc: { viewCount: 1 } },
-      { new: true }
-    )
-      .populate("vendorId", "businessName")
-      .populate("categoryId", "name");
-
-    try {
-      const io = SocketService.getIO();
-      io.emit("product:viewed", {
-        productId: req.params.id,
-        viewCount: updatedProduct?.viewCount || product.viewCount + 1,
-      });
-    } catch (error) {
-      console.log("Socket emit error:", error);
-    }
-
     res.status(200).json({
       success: true,
-      data: updatedProduct || product,
+      data: product,
     });
   }
 );

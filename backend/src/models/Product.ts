@@ -13,8 +13,7 @@ export interface IProduct extends Document {
   isActive: boolean;
   isApproved: boolean;
   approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
-  viewCount: number;
-  downloadCount: number;
+  soldCount: number;
   rating: number;
   createdAt: Date;
   updatedAt: Date;
@@ -63,11 +62,7 @@ const productSchema = new Schema<IProduct>(
       enum: ["PENDING", "APPROVED", "REJECTED"],
       default: "PENDING",
     },
-    viewCount: {
-      type: Number,
-      default: 0,
-    },
-    downloadCount: {
+    soldCount: {
       type: Number,
       default: 0,
     },

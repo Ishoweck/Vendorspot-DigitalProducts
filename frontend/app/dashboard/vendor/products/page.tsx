@@ -33,7 +33,7 @@ function VendorProductsContent() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest('.dropdown-container')) {
+      if (!target.closest(".dropdown-container")) {
         setActiveDropdown(null);
       }
     };
@@ -142,10 +142,7 @@ function VendorProductsContent() {
                                       ₦{product.price.toLocaleString()}
                                     </span>
                                     <span className="whitespace-nowrap">
-                                      {product.viewCount} views
-                                    </span>
-                                    <span className="whitespace-nowrap">
-                                      {product.downloadCount} downloads
+                                      {product.soldCount || 0} sold
                                     </span>
                                   </div>
                                 </div>
@@ -195,12 +192,13 @@ function VendorProductsContent() {
                               </div>
                               <div className="mt-3">
                                 <span
-                                  className={`px-2 py-1 rounded-full text-xs font-medium ${product.approvalStatus === "APPROVED"
-                                    ? "bg-green-100 text-green-800"
-                                    : product.approvalStatus === "PENDING"
-                                      ? "bg-yellow-100 text-yellow-800"
-                                      : "bg-red-100 text-red-800"
-                                    }`}
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    product.approvalStatus === "APPROVED"
+                                      ? "bg-green-100 text-green-800"
+                                      : product.approvalStatus === "PENDING"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-red-100 text-red-800"
+                                  }`}
                                 >
                                   {product.approvalStatus}
                                 </span>
@@ -231,10 +229,7 @@ function VendorProductsContent() {
                                 Status
                               </th>
                               <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
-                                Views
-                              </th>
-                              <th className="text-left py-4 px-6 font-semibold text-gray-900 border-r border-gray-200">
-                                Downloads
+                                Sold
                               </th>
                               <th className="text-center py-4 px-6 font-semibold text-gray-900">
                                 Actions
@@ -277,73 +272,49 @@ function VendorProductsContent() {
                                 </td>
                                 <td className="py-4 px-6 border-r border-gray-200">
                                   <span
-                                    className={`px-3 py-1 rounded-full text-xs font-medium ${product.approvalStatus === "APPROVED"
-                                      ? "bg-green-100 text-green-800"
-                                      : product.approvalStatus === "PENDING"
-                                        ? "bg-yellow-100 text-yellow-800"
-                                        : "bg-red-100 text-red-800"
-                                      }`}
+                                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                      product.approvalStatus === "APPROVED"
+                                        ? "bg-green-100 text-green-800"
+                                        : product.approvalStatus === "PENDING"
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : "bg-red-100 text-red-800"
+                                    }`}
                                   >
                                     {product.approvalStatus}
                                   </span>
                                 </td>
                                 <td className="py-4 px-6 text-gray-600 border-r border-gray-200">
-                                  {product.viewCount}
-                                </td>
-                                <td className="py-4 px-6 text-gray-600 border-r border-gray-200">
-                                  {product.downloadCount}
+                                  {product.soldCount || 0}
                                 </td>
                                 <td className="py-4 px-6">
-                                  <div className="flex items-center justify-center">
-                                    <div className="relative dropdown-container">
-                                      <button
-                                        onClick={() =>
-                                          toggleDropdown(product._id)
-                                        }
-                                        className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                                      >
-                                        <MoreVertical className="w-4 h-4" />
-                                      </button>
-                                      {activeDropdown === product._id && (
-                                        <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-40">
-                                          <Link
-                                            href={`/products/${product._id}`}
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                            onClick={() =>
-                                              setActiveDropdown(null)
-                                            }
-                                          >
-                                            <Eye className="w-4 h-4" />
-                                            View Product
-                                          </Link>
-                                          <Link
-                                            href={`/dashboard/vendor/products/${product._id}/edit`}
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                            onClick={() =>
-                                              setActiveDropdown(null)
-                                            }
-                                          >
-                                            <Edit className="w-4 h-4" />
-                                            Edit Product
-                                          </Link>
-                                          <button
-                                            onClick={() =>
-                                              handleDeleteProduct(
-                                                product._id,
-                                                product.name
-                                              )
-                                            }
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
-                                            disabled={
-                                              deleteProductMutation.isLoading
-                                            }
-                                          >
-                                            <Trash2 className="w-4 h-4" />
-                                            Delete Product
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
+                                  <div className="flex items-center justify-center gap-2">
+                                    <Link
+                                      href={`/products/${product._id}`}
+                                      className="p-2 text-gray-600 hover:text-[#D7195B] transition-colors rounded-lg hover:bg-gray-100"
+                                      title="View Product"
+                                    >
+                                      <Eye className="w-4 h-4" />
+                                    </Link>
+                                    <Link
+                                      href={`/dashboard/vendor/products/${product._id}/edit`}
+                                      className="p-2 text-gray-600 hover:text-[#D7195B] transition-colors rounded-lg hover:bg-gray-100"
+                                      title="Edit Product"
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                    </Link>
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteProduct(
+                                          product._id,
+                                          product.name
+                                        )
+                                      }
+                                      className="p-2 text-gray-600 hover:text-red-600 transition-colors rounded-lg hover:bg-gray-100"
+                                      disabled={deleteProductMutation.isLoading}
+                                      title="Delete Product"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
                                   </div>
                                 </td>
                               </tr>
@@ -374,10 +345,11 @@ function VendorProductsContent() {
                           <button
                             key={page}
                             onClick={() => setCurrentPage(page)}
-                            className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === page
-                              ? "bg-[#D7195B] text-white"
-                              : "text-gray-600 hover:bg-gray-100"
-                              }`}
+                            className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                              currentPage === page
+                                ? "bg-[#D7195B] text-white"
+                                : "text-gray-600 hover:bg-gray-100"
+                            }`}
                           >
                             {page}
                           </button>

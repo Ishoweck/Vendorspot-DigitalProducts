@@ -24,6 +24,12 @@ export default function EditProductForm({ product }: EditProductFormProps) {
   const router = useRouter();
   const updateProductMutation = useUpdateProduct();
 
+  useEffect(() => {
+    if (updateProductMutation.isSuccess && !updateProductMutation.isLoading) {
+      router.push("/dashboard/vendor/products");
+    }
+  }, [updateProductMutation.isSuccess, updateProductMutation.isLoading, router]);
+
   const [formData, setFormData] = useState({
     name: product.name || "",
     description: product.description || "",
@@ -122,17 +128,10 @@ export default function EditProductForm({ product }: EditProductFormProps) {
       submitData.append("images", image);
     });
 
-    try {
-      await updateProductMutation.mutateAsync({
-        id: product._id,
-        data: submitData,
-      });
-      toast.success("Product updated successfully!");
-      router.push("/dashboard/vendor/products");
-    } catch (error: any) {
-      console.error("Update error:", error);
-      toast.error(error?.response?.data?.message || "Failed to update product");
-    }
+    updateProductMutation.mutate({
+      id: product._id,
+      data: submitData,
+    });
   };
 
   return (

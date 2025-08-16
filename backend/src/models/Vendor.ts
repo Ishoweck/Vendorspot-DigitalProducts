@@ -80,8 +80,7 @@ const vendorSchema = new Schema<IVendor>({
   timestamps: true
 });
 
-// Create indexes
-vendorSchema.index({ userId: 1 });
+// Create indexes (userId already has unique index from schema definition)
 vendorSchema.index({ verificationStatus: 1 });
 vendorSchema.index({ isActive: 1 });
 

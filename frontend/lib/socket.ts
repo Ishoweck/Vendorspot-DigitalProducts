@@ -21,21 +21,36 @@ class SocketService {
         process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") ||
         "http://localhost:5000";
 
+      console.log("Connecting to socket server:", serverUrl);
+
       this.socket = io(serverUrl, {
         transports: ["websocket", "polling"],
         timeout: 20000,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        forceNew: false,
+        autoConnect: true,
       });
 
       this.socket.on("connect", () => {
-        console.log("Connected to server:", this.socket?.id);
+        console.log("✅ Connected to server:", this.socket?.id);
       });
 
-      this.socket.on("disconnect", () => {
-        console.log("Disconnected from server");
+      this.socket.on("disconnect", (reason) => {
+        console.log("❌ Disconnected from server:", reason);
       });
 
       this.socket.on("connect_error", (error: unknown) => {
-        console.error("Connection error:", error);
+        console.error("🔥 Connection error:", error);
+      });
+
+      this.socket.on("reconnect", (attemptNumber) => {
+        console.log("🔄 Reconnected after", attemptNumber, "attempts");
+      });
+
+      this.socket.on("reconnect_error", (error) => {
+        console.error("🔥 Reconnection error:", error);
       });
     }
   }

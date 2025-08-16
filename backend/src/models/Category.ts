@@ -44,7 +44,6 @@ const categorySchema = new Schema<ICategory>(
   }
 );
 
-categorySchema.index({ slug: 1 });
 categorySchema.index({ isActive: 1 });
 categorySchema.index({ sortOrder: 1 });
 

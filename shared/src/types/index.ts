@@ -37,8 +37,7 @@ export interface Product {
   isActive: boolean;
   isApproved: boolean;
   approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
-  viewCount: number;
-  downloadCount: number;
+  soldCount: number;
   rating: number;
   createdAt: string;
   updatedAt: string;
@@ -146,7 +145,7 @@ export interface ProductQuery {
   search?: string;
   minPrice?: number;
   maxPrice?: number;
-  sortBy?: "createdAt" | "price" | "rating" | "downloads";
+  sortBy?: "createdAt" | "price" | "rating" | "soldCount";
   sortOrder?: "asc" | "desc";
   isActive?: boolean;
   isFeatured?: boolean;

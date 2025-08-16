@@ -1,20 +1,8 @@
 const mongoose = require("mongoose");
+const path = require("path");
 require("dotenv").config();
 
-const categorySchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true },
-    description: String,
-    image: String,
-    parentId: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-    isActive: { type: Boolean, default: true },
-    sortOrder: { type: Number, default: 0 },
-  },
-  { timestamps: true }
-);
-
-const Category = mongoose.model("Category", categorySchema);
+const { Category } = require(path.join(__dirname, "../dist/models/Category.js"));
 
 const categories = [
   {

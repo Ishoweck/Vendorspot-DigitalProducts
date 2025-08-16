@@ -94,7 +94,9 @@ export default function Footer() {
             </div>
             <div className="flex space-x-4 mt-6">
               <a
-                href="#"
+                href="https://x.com/vendorsspot?s=21"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-neutral-400 hover:text-primary-500 transition-colors"
                 aria-label="X (Twitter)"
               >
@@ -107,14 +109,18 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://www.facebook.com/onlinetradefair"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-neutral-400 hover:text-primary-500 transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://www.tiktok.com/@vendorsspot"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-neutral-400 hover:text-primary-500 transition-colors"
                 aria-label="TikTok"
               >
@@ -127,14 +133,18 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/vendorsspot"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-neutral-400 hover:text-primary-500 transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://www.linkedin.com/company/vendorspot"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-neutral-400 hover:text-primary-500 transition-colors"
                 aria-label="LinkedIn"
               >
