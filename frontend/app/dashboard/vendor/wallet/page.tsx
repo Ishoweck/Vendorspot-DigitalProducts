@@ -5,12 +5,11 @@ import {
   Wallet,
   TrendingUp,
   Download,
-  ChevronLeft,
-  ChevronRight,
   Calendar,
 } from "lucide-react";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
+import Pagination from "@/components/ui/Pagination";
 
 const mockWalletData = {
   availableBalance: 125450,
@@ -129,7 +128,7 @@ export default function VendorWalletPage() {
                       <select
                         value={dateFilter}
                         onChange={(e) => setDateFilter(e.target.value)}
-                        className="border border-gray-300 rounded-md px-2 py-1 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#D7195B]"
+                        className="border border-gray-300 rounded-md px-3 py-1 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#D7195B] pr-8"
                       >
                         <option value="all">All Time</option>
                         <option value="today">Today</option>
@@ -186,40 +185,13 @@ export default function VendorWalletPage() {
                     </div>
 
                     {totalTransactionPages > 1 && (
-                      <div className="flex items-center justify-center gap-2 mt-4 md:mt-6">
-                        <button
-                          onClick={() =>
-                            setCurrentTransactionPage(
-                              Math.max(1, currentTransactionPage - 1)
-                            )
-                          }
-                          disabled={currentTransactionPage === 1}
-                          className="p-2 text-gray-600 hover:text-[#D7195B] disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-
-                        <span className="text-sm text-gray-600">
-                          Page {currentTransactionPage} of{" "}
-                          {totalTransactionPages}
-                        </span>
-
-                        <button
-                          onClick={() =>
-                            setCurrentTransactionPage(
-                              Math.min(
-                                totalTransactionPages,
-                                currentTransactionPage + 1
-                              )
-                            )
-                          }
-                          disabled={
-                            currentTransactionPage === totalTransactionPages
-                          }
-                          className="p-2 text-gray-600 hover:text-[#D7195B] disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
+                      <div className="mt-4 md:mt-6">
+                        <Pagination
+                          currentPage={currentTransactionPage}
+                          totalPages={totalTransactionPages}
+                          onPageChange={setCurrentTransactionPage}
+                          showPageNumbers={false}
+                        />
                       </div>
                     )}
                   </>

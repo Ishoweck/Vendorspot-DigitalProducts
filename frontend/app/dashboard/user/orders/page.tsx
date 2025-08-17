@@ -141,7 +141,7 @@ export default function OrdersPage() {
         <div className="max-w-7xl mx-auto px-2 md:px-4">
           <div className="flex gap-4 md:gap-8">
             <UserSidebar />
-            <main className="flex-1 bg-white rounded-lg shadow p-3 md:p-6">
+            <main className="flex-1 bg-white rounded-lg shadow p-3 md:p-6 overflow-hidden">
               <div className="mb-4 md:mb-6">
                 <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
                   Orders
@@ -153,24 +153,26 @@ export default function OrdersPage() {
 
               <div className="bg-white rounded-lg border border-gray-200 mb-4 md:mb-6">
                 <div className="border-b border-gray-200">
-                  <nav className="flex space-x-4 md:space-x-8 px-4 md:px-6 overflow-x-auto">
-                    {tabs.map((tab) => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`py-3 md:py-4 px-1 border-b-2 font-medium text-xs md:text-sm transition-colors duration-200 whitespace-nowrap ${
-                          activeTab === tab.id
-                            ? "border-[#D7195B] text-[#D7195B]"
-                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                        }`}
-                      >
-                        {tab.label}
-                        <span className="ml-1 md:ml-2 px-1.5 md:px-2 py-0.5 md:py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                          {tab.count}
-                        </span>
-                      </button>
-                    ))}
-                  </nav>
+                <div className="overflow-x-auto scrollbar-hide">
+                    <nav className="flex space-x-4 md:space-x-8 px-4 md:px-6 min-w-max">
+                      {tabs.map((tab) => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id)}
+                          className={`py-3 md:py-4 px-1 border-b-2 font-medium text-xs md:text-sm transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
+                            activeTab === tab.id
+                              ? "border-[#D7195B] text-[#D7195B]"
+                              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                          }`}
+                        >
+                          {tab.label}
+                          <span className="ml-1 md:ml-2 px-1.5 md:px-2 py-0.5 md:py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                            {tab.count}
+                          </span>
+                        </button>
+                      ))}
+                    </nav>
+                  </div>
                 </div>
               </div>
 

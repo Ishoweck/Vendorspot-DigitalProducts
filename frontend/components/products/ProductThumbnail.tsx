@@ -23,8 +23,8 @@ export function ProductThumbnail({
   return (
     <Link
       href={`/products/${product._id}`}
-      className={`w-full bg-white rounded-[5px] overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200 h-80 sm:h-96 md:h-[420px] block ${className}`}
-      style={{ aspectRatio: "255/374" }}
+      className={`w-full bg-white rounded-[5px] overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200 h-64 sm:h-80 md:h-96 block ${className}`}
+      style={{ aspectRatio: "255/320" }}
     >
       <div className="bg-[#FFDD00] relative w-full" style={{ height: "72.2%" }}>
         {!imageLoaded && <Skeleton className="w-full h-full" />}

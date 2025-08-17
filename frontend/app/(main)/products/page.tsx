@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ProductSidebar } from "@/components/products/ProductSidebar";
 import { ProductCard } from "@/components/products/ProductCard";
 import { SortDropdown } from "@/components/products/SortDropdown";
+import Pagination from "@/components/ui/Pagination";
 import { useProducts, useCategories } from "@/hooks/useAPI";
 
 export default function ProductsPage() {
@@ -265,61 +266,12 @@ export default function ProductsPage() {
                     )}
 
                     {totalPages > 1 && (
-                      <div className="flex items-center justify-center gap-2 mt-8">
-                        <button
-                          onClick={() =>
-                            setCurrentPage(Math.max(1, currentPage - 1))
-                          }
-                          disabled={currentPage === 1}
-                          className="px-4 py-2 text-gray-600 hover:text-[#D7195B] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                        >
-                          Previous
-                        </button>
-
-                        <div className="flex items-center gap-1">
-                          {Array.from(
-                            { length: Math.min(totalPages, 5) },
-                            (_, i) => {
-                              let page;
-                              if (totalPages <= 5) {
-                                page = i + 1;
-                              } else if (currentPage <= 3) {
-                                page = i + 1;
-                              } else if (currentPage >= totalPages - 2) {
-                                page = totalPages - 4 + i;
-                              } else {
-                                page = currentPage - 2 + i;
-                              }
-
-                              return (
-                                <button
-                                  key={page}
-                                  onClick={() => setCurrentPage(page)}
-                                  className={`w-8 h-8 rounded-lg text-xs font-medium transition-colors ${
-                                    currentPage === page
-                                      ? "bg-[#D7195B] text-white"
-                                      : "text-gray-600 hover:bg-gray-100"
-                                  }`}
-                                >
-                                  {page}
-                                </button>
-                              );
-                            }
-                          )}
-                        </div>
-
-                        <button
-                          onClick={() =>
-                            setCurrentPage(
-                              Math.min(totalPages, currentPage + 1)
-                            )
-                          }
-                          disabled={currentPage === totalPages}
-                          className="px-4 py-2 text-gray-600 hover:text-[#D7195B] disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                        >
-                          Next
-                        </button>
-                      </div>
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        className="mt-8"
+                      />
                     )}
                   </>
                 )}

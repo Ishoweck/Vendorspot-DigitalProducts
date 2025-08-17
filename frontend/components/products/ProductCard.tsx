@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, ShoppingCart } from "lucide-react";
+import { Heart, ShoppingCart, Minus, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ProductCardProps } from "@/types/product";
 import { StarRating } from "./StarRating";
@@ -24,7 +24,7 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
   const user = userProfile?.data?.data;
   const isVendor = user?.role === "VENDOR";
 
-  const { savedItems, cartItems, addSavedItem, removeSavedItem, addCartItem } =
+  const { savedItems, cartItems, addSavedItem, removeSavedItem, addCartItem, updateCartQuantity } =
     useTempStore();
   const isSaved = savedItems.includes(product._id);
   const cartItem = cartItems.find((item) => item.productId === product._id);
@@ -187,13 +187,37 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
           </p>
 
           {isHovered && !isVendor && (
-            <button
-              className="w-full bg-[#D7195B] text-white py-2 px-4 rounded-lg hover:bg-[#b8154d] transition-colors text-sm font-medium flex items-center justify-center gap-2"
-              onClick={handleAddToCart}
-            >
-              <ShoppingCart className="w-4 h-4" />
-              {cartItem ? "Added to Cart" : "Add to Cart"}
-            </button>
+            cartItem ? (
+              <div className="flex items-center justify-center gap-2 bg-[#D7195B] text-white py-2 px-4 rounded-lg text-sm font-medium">
+                <button
+                  className="p-1 hover:bg-white/20 rounded transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateCartQuantity(product._id, cartItem.quantity - 1);
+                  }}
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <span className="min-w-[20px] text-center">{cartItem.quantity}</span>
+                <button
+                  className="p-1 hover:bg-white/20 rounded transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateCartQuantity(product._id, cartItem.quantity + 1);
+                  }}
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                className="w-full bg-[#D7195B] text-white py-2 px-4 rounded-lg hover:bg-[#b8154d] transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                onClick={handleAddToCart}
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Add to Cart
+              </button>
+            )
           )}
         </div>
       </div>

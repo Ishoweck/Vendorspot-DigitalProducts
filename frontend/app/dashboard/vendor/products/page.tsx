@@ -8,6 +8,7 @@ import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import AuthWrapper from "@/components/auth/AuthWrapper";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import Pagination from "@/components/ui/Pagination";
 import { useSocket } from "@/hooks/useSocket";
 
 function VendorProductsContent() {
@@ -235,62 +236,59 @@ function VendorProductsContent() {
 
                   <div className="hidden md:block">
                     <div
-                      className="border border-gray-200 rounded-lg relative group"
-                      style={{ maxHeight: "400px", minHeight: "200px" }}
+                      className="border border-gray-200 rounded-lg relative group overflow-hidden overflow-y-auto"
+                      style={{ maxHeight: "400px", minHeight: "200px", scrollbarWidth: "thin", scrollBehavior: "smooth", scrollbarColor: "#D7195B transparent" }}
                     >
-                      {/* Left scroll indicator */}
-                      {showLeftIndicator && (
-                        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-20 flex items-center justify-start pl-1">
-                          <button
-                            onClick={() => scrollTable("left")}
-                            className="w-6 h-6 bg-white border border-gray-300 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
-                            title="Scroll left"
+                      {/* Left scroll indicator - always visible on hover */}
+                      <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-20 flex items-center justify-start pl-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button
+                          onClick={() => scrollTable("left")}
+                          className="w-6 h-6 bg-white border border-gray-300 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+                          title="Scroll left"
+                        >
+                          <svg
+                            className="w-3 h-3 text-gray-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                           >
-                            <svg
-                              className="w-3 h-3 text-gray-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 19l-7-7 7-7"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 19l-7-7 7-7"
+                            />
+                          </svg>
+                        </button>
+                      </div>
 
-                      {/* Right scroll indicator */}
-                      {showRightIndicator && (
-                        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-20 flex items-center justify-end pr-1">
-                          <button
-                            onClick={() => scrollTable("right")}
-                            className="w-6 h-6 bg-white border border-gray-300 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
-                            title="Scroll right"
+                      {/* Right scroll indicator - always visible on hover */}
+                      <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-20 flex items-center justify-end pr-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button
+                          onClick={() => scrollTable("right")}
+                          className="w-6 h-6 bg-white border border-gray-300 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+                          title="Scroll right"
+                        >
+                          <svg
+                            className="w-3 h-3 text-gray-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                           >
-                            <svg
-                              className="w-3 h-3 text-gray-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 5l7 7-7 7"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </button>
+                      </div>
 
                       <div
                         className="h-full overflow-auto table-scroll-container"
                         onScroll={handleTableScroll}
+                        style={{ scrollbarWidth: "thin", scrollBehavior: "smooth", scrollbarColor: "#D7195B transparent" }}
                       >
                         <table className="w-full divide-y divide-gray-200 min-w-[800px]">
                           <thead className="bg-gray-50 sticky top-0 z-10">
@@ -402,48 +400,12 @@ function VendorProductsContent() {
                   </div>
 
                   {pagination && pagination.totalPages > 1 && (
-                    <div className="flex items-center justify-center gap-2 mt-6">
-                      <button
-                        onClick={() =>
-                          setCurrentPage(Math.max(1, currentPage - 1))
-                        }
-                        disabled={currentPage === 1}
-                        className="px-3 py-2 text-gray-600 hover:text-[#D7195B] disabled:opacity-50"
-                      >
-                        Previous
-                      </button>
-
-                      <div className="flex items-center gap-1">
-                        {Array.from(
-                          { length: pagination.totalPages },
-                          (_, i) => i + 1
-                        ).map((page) => (
-                          <button
-                            key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                              currentPage === page
-                                ? "bg-[#D7195B] text-white"
-                                : "text-gray-600 hover:bg-gray-100"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        ))}
-                      </div>
-
-                      <button
-                        onClick={() =>
-                          setCurrentPage(
-                            Math.min(pagination.totalPages, currentPage + 1)
-                          )
-                        }
-                        disabled={currentPage === pagination.totalPages}
-                        className="px-3 py-2 text-gray-600 hover:text-[#D7195B] disabled:opacity-50"
-                      >
-                        Next
-                      </button>
-                    </div>
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={pagination.totalPages}
+                      onPageChange={setCurrentPage}
+                      className="mt-6"
+                    />
                   )}
                 </>
               )}
