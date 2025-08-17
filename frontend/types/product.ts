@@ -41,6 +41,7 @@ export interface SidebarProps {
   onResetRating: () => void;
   products: any[];
   isPriceRangeChanged?: boolean;
+  setIsPriceRangeChanged?: (changed: boolean) => void;
 }
 
 export interface ProductCardProps {

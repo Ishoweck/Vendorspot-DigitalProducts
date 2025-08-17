@@ -15,9 +15,11 @@ export interface Category {
   description?: string;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
 export const searchProducts = async (query: string): Promise<SearchResult[]> => {
   try {
-    const response = await fetch(`/api/products?search=${encodeURIComponent(query)}&limit=5`);
+    const response = await fetch(`${API_BASE_URL}/products?search=${encodeURIComponent(query)}&limit=5`);
     const data = await response.json();
     
     if (data.success && data.data) {
@@ -38,7 +40,7 @@ export const searchProducts = async (query: string): Promise<SearchResult[]> => 
 
 export const searchCategories = async (query: string): Promise<SearchResult[]> => {
   try {
-    const response = await fetch(`/api/categories?search=${encodeURIComponent(query)}`);
+    const response = await fetch(`${API_BASE_URL}/categories`);
     const data = await response.json();
     
     if (data.success && data.data) {
@@ -63,7 +65,7 @@ export const searchCategories = async (query: string): Promise<SearchResult[]> =
 
 export const searchVendors = async (query: string): Promise<SearchResult[]> => {
   try {
-    const response = await fetch(`/api/products?vendor=${encodeURIComponent(query)}&limit=5`);
+    const response = await fetch(`${API_BASE_URL}/products?vendor=${encodeURIComponent(query)}&limit=5`);
     const data = await response.json();
     
     if (data.success && data.data) {

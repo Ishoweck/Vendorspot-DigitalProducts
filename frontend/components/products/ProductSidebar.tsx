@@ -24,6 +24,7 @@ export function ProductSidebar({
   onResetRating,
   products,
   isPriceRangeChanged,
+  setIsPriceRangeChanged,
 }: SidebarProps) {
   const [vendorSearch, setVendorSearch] = useState("");
   const [showVendorDropdown, setShowVendorDropdown] = useState(false);
@@ -209,7 +210,16 @@ export function ProductSidebar({
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7195B] focus:border-[#D7195B] text-sm"
               />
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-between">
+              <button
+                onClick={() => {
+                  setPriceRange([0, 100000]);
+                  {setIsPriceRangeChanged && setIsPriceRangeChanged(false);}
+                }}
+                className="px-4 py-1 text-gray-600 border border-gray-300 rounded text-sm hover:bg-gray-50"
+              >
+                Reset
+              </button>
               <button
                 onClick={onApplyPriceFilter}
                 disabled={!isPriceRangeChanged}

@@ -165,6 +165,7 @@ export default function ProductsPage() {
             onResetRating={handleResetRating}
             products={products}
             isPriceRangeChanged={isPriceRangeChanged}
+            setIsPriceRangeChanged={setIsPriceRangeChanged}
           />
 
           <main className="flex-1">
