@@ -1,66 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { useTempStore } from "@/stores/tempStore";
+import { useProducts } from "@/hooks/useAPI";
+import { useUserProfile } from "@/hooks/useAPI";
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      product: {
-        id: 1,
-        name: "Premium WordPress Theme",
-        vendor: "TechVendor",
-        price: 29.99,
-        originalPrice: 49.99,
-        image:
-          "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop",
-        category: "Web Templates",
-      },
-      quantity: 1,
-    },
-    {
-      id: 2,
-      product: {
-        id: 2,
-        name: "Digital Marketing Course",
-        vendor: "EduPro",
-        price: 99.99,
-        originalPrice: 199.99,
-        image:
-          "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop",
-        category: "Courses",
-      },
-      quantity: 1,
-    },
-  ]);
+  const { cartItems, updateCartQuantity, removeCartItem } = useTempStore();
+  const { data: userProfile } = useUserProfile();
+  const user = userProfile?.data?.data;
 
-  const updateQuantity = (itemId: number, newQuantity: number) => {
-    if (newQuantity === 0) {
-      removeItem(itemId);
-      return;
+  const [cartProducts, setCartProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { data: productsData } = useProducts({
+    page: 1,
+    limit: 100,
+  });
+
+  useEffect(() => {
+    if (productsData?.data?.data && cartItems.length > 0) {
+      const products = productsData.data.data;
+      const cartProductData = cartItems
+        .map((cartItem) => {
+          const product = products.find((p) => p._id === cartItem.productId);
+          return product ? { ...product, quantity: cartItem.quantity } : null;
+        })
+        .filter(Boolean);
+
+      setCartProducts(cartProductData);
+    } else {
+      setCartProducts([]);
     }
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
+    setIsLoading(false);
+  }, [cartItems, productsData]);
 
-  const removeItem = (itemId: number) => {
-    setCartItems((items) => items.filter((item) => item.id !== itemId));
-  };
-
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
+  const subtotal = cartProducts.reduce(
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const tax = subtotal * 0.075; // 7.5% VAT
+  const tax = subtotal * 0.075;
   const total = subtotal + tax;
 
-  if (cartItems.length === 0) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-neutral-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-16">
+            <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-6 animate-pulse"></div>
+            <div className="h-8 bg-gray-200 rounded mx-auto mb-4 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded mx-auto mb-8 animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (cartProducts.length === 0) {
     return (
       <div className="min-h-screen bg-neutral-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -90,50 +89,53 @@ export default function CartPage() {
             Shopping Cart
           </h1>
           <p className="text-neutral-600">
-            {cartItems.length} {cartItems.length === 1 ? "item" : "items"} in
-            your cart
+            {cartProducts.length} {cartProducts.length === 1 ? "item" : "items"}{" "}
+            in your cart
           </p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-sm">
-              {cartItems.map((item, index) => (
+              {cartProducts.map((item, index) => (
                 <div
-                  key={item.id}
-                  className={`p-6 ${index !== cartItems.length - 1 ? "border-b border-neutral-200" : ""}`}
+                  key={item._id}
+                  className={`p-6 ${index !== cartProducts.length - 1 ? "border-b border-neutral-200" : ""}`}
                 >
                   <div className="flex items-center space-x-4">
                     <div className="relative w-20 h-20 flex-shrink-0">
                       <Image
-                        src={item.product.image}
-                        alt={item.product.name}
+                        src={item.thumbnail || "/api/placeholder/200/150"}
+                        alt={item.name}
                         fill
                         className="object-cover rounded-lg"
                       />
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <Link href={`/products/${item.product.id}`}>
+                      <Link href={`/products/${item._id}`}>
                         <h3 className="font-semibold text-neutral-900 hover:text-primary-500 transition-colors duration-200">
-                          {item.product.name}
+                          {item.name}
                         </h3>
                       </Link>
                       <p className="text-sm text-neutral-500 mb-1">
-                        by {item.product.vendor}
+                        by{" "}
+                        {typeof item.vendorId === "object"
+                          ? item.vendorId.businessName
+                          : "Unknown Vendor"}
                       </p>
                       <p className="text-sm text-neutral-400">
-                        {item.product.category}
+                        {typeof item.categoryId === "object"
+                          ? item.categoryId.name
+                          : "Digital Product"}
                       </p>
                     </div>
 
                     <div className="flex items-center space-x-3">
-                      {/* Quantity Controls */}
                       <div className="flex items-center border border-neutral-200 rounded-lg">
                         <button
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
+                            updateCartQuantity(item._id, item.quantity - 1)
                           }
                           className="p-2 hover:bg-neutral-50 transition-colors duration-200"
                         >
@@ -144,7 +146,7 @@ export default function CartPage() {
                         </span>
                         <button
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
+                            updateCartQuantity(item._id, item.quantity + 1)
                           }
                           className="p-2 hover:bg-neutral-50 transition-colors duration-200"
                         >
@@ -152,27 +154,14 @@ export default function CartPage() {
                         </button>
                       </div>
 
-                      {/* Price */}
                       <div className="text-right min-w-0">
                         <div className="font-semibold text-neutral-900">
-                          ₦
-                          {(
-                            item.product.price * item.quantity
-                          ).toLocaleString()}
+                          ₦{(item.price * item.quantity).toLocaleString()}
                         </div>
-                        {item.product.originalPrice && (
-                          <div className="text-sm text-neutral-500 line-through">
-                            ₦
-                            {(
-                              item.product.originalPrice * item.quantity
-                            ).toLocaleString()}
-                          </div>
-                        )}
                       </div>
 
-                      {/* Remove Button */}
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeCartItem(item._id)}
                         className="p-2 text-neutral-400 hover:text-error-500 transition-colors duration-200"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -184,7 +173,6 @@ export default function CartPage() {
             </div>
           </div>
 
-          {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-8">
               <h2 className="text-xl font-semibold text-neutral-900 mb-6">
@@ -214,10 +202,13 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <button className="w-full btn-primary mb-4">
+              <Link
+                href="/checkout"
+                className="w-full btn-primary mb-4 block text-center"
+              >
                 Proceed to Checkout
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </button>
+                <ArrowRight className="ml-2 w-5 h-5 inline" />
+              </Link>
 
               <Link
                 href="/products"
@@ -226,7 +217,6 @@ export default function CartPage() {
                 Continue Shopping
               </Link>
 
-              {/* Security Badge */}
               <div className="mt-6 p-4 bg-neutral-50 rounded-lg">
                 <div className="flex items-center text-sm text-neutral-600">
                   <svg

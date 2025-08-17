@@ -21,6 +21,7 @@ import {
 import { useUserProfile, useLogout, useCategories } from "@/hooks/useAPI";
 import MobileSidebar from "./MobileSidebar";
 import { performGlobalSearch, SearchResult } from "@/lib/utils/searchUtils";
+import { useTempStore } from "@/stores/tempStore";
 
 export default function Header() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -43,6 +44,12 @@ export default function Header() {
   const logoutMutation = useLogout();
   const user = userProfile?.data?.data;
   const categories = categoriesData?.data?.data || [];
+
+  const { cartItems } = useTempStore();
+  const cartItemCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -326,9 +333,11 @@ export default function Header() {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <span className="absolute -top-2 -right-2 bg-primary-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    3
-                  </span>
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-primary-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {cartItemCount > 99 ? "99+" : cartItemCount}
+                    </span>
+                  )}
                 </div>
                 <span className="hidden sm:inline font-medium">Cart</span>
               </Link>
@@ -340,7 +349,10 @@ export default function Header() {
       <div className="bg-nav-bg text-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-center py-3">
-            <div className="flex-1 max-w-2xl flex items-center space-x-2" ref={searchRef}>
+            <div
+              className="flex-1 max-w-2xl flex items-center space-x-2"
+              ref={searchRef}
+            >
               <form onSubmit={handleSearchSubmit} className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
                 <input
@@ -359,50 +371,51 @@ export default function Header() {
                     <X className="w-5 h-5" />
                   </button>
                 )}
-                
-                {showSearchDropdown && (searchResults.length > 0 || isSearching) && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto z-50">
-                    {isSearching ? (
-                      <div className="p-4 text-center text-gray-500">
-                        Searching...
-                      </div>
-                    ) : (
-                      <>
-                        {searchResults.map((result, index) => (
-                          <button
-                            key={`${result.type}-${result.id}-${index}`}
-                            onClick={() => handleResultClick(result)}
-                            className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 flex items-center gap-3"
-                          >
-                            <div className="text-gray-400">
-                              {getResultIcon(result.type)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-gray-900 text-sm">
-                                {result.name}
-                              </div>
-                              {result.description && (
-                                <div className="text-xs text-gray-500 truncate">
-                                  {result.description}
-                                </div>
-                              )}
-                            </div>
-                          </button>
-                        ))}
-                        <div className="p-2 border-t border-gray-100">
-                          <button
-                            type="submit"
-                            className="w-full text-center text-sm text-[#D7195B] hover:text-[#b8154d] font-medium"
-                          >
-                            View all results for "{searchValue}"
-                          </button>
+
+                {showSearchDropdown &&
+                  (searchResults.length > 0 || isSearching) && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto z-50">
+                      {isSearching ? (
+                        <div className="p-4 text-center text-gray-500">
+                          Searching...
                         </div>
-                      </>
-                    )}
-                  </div>
-                )}
+                      ) : (
+                        <>
+                          {searchResults.map((result, index) => (
+                            <button
+                              key={`${result.type}-${result.id}-${index}`}
+                              onClick={() => handleResultClick(result)}
+                              className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 flex items-center gap-3"
+                            >
+                              <div className="text-gray-400">
+                                {getResultIcon(result.type)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-gray-900 text-sm">
+                                  {result.name}
+                                </div>
+                                {result.description && (
+                                  <div className="text-xs text-gray-500 truncate">
+                                    {result.description}
+                                  </div>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                          <div className="p-2 border-t border-gray-100">
+                            <button
+                              type="submit"
+                              className="w-full text-center text-sm text-[#D7195B] hover:text-[#b8154d] font-medium"
+                            >
+                              View all results for "{searchValue}"
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
               </form>
-              <button 
+              <button
                 type="submit"
                 onClick={handleSearchSubmit}
                 className="bg-search-btn text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors"

@@ -24,11 +24,11 @@ export default function VendorSidebar() {
       icon: Package,
       label: "Products",
     },
-    {
-      href: "/dashboard/vendor/orders",
-      icon: ShoppingBag,
-      label: "Orders",
-    },
+    // {
+    //   href: "/dashboard/vendor/orders",
+    //   icon: ShoppingBag,
+    //   label: "Orders",
+    // },
     {
       href: "/dashboard/vendor/notifications",
       icon: Bell,

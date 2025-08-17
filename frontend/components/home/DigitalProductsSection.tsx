@@ -1,23 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useProducts } from "@/hooks/useAPI";
 import { ProductThumbnail } from "@/components/products/ProductThumbnail";
 
 export default function DigitalProductsSection() {
-  const [productCount, setProductCount] = useState(8);
-  
   const { data: productsData } = useProducts({
     page: 1,
-    limit: productCount,
+    limit: 8,
   });
 
   const products = productsData?.data?.data || [];
-
-  const handleViewMore = () => {
-    setProductCount(prev => Math.min(prev + 8, 24));
-  };
 
   return (
     <section className="py-8 sm:py-12 md:py-16 bg-[#D7195B]">
@@ -39,12 +32,12 @@ export default function DigitalProductsSection() {
       </div>
 
       <div className="text-center">
-        <button
-          onClick={handleViewMore}
+        <Link
+          href="/view-products"
           className="inline-block bg-transparent text-white border-2 border-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-medium hover:bg-white hover:text-[#D7195B] transition-colors duration-200 text-sm sm:text-base"
         >
           View More
-        </button>
+        </Link>
       </div>
     </section>
   );
