@@ -41,9 +41,29 @@ export default function ShippingAddressPage() {
   };
 
   const handleEditAddress = (id: number) => {
-    setEditingId(id);
-    setShowAddForm(true);
+    const addressToEdit = shippingAddresses.find((addr) => addr.id === id);
+    if (addressToEdit) {
+      setEditingId(id);
+      setFormData({
+        name: addressToEdit.name,
+        address: addressToEdit.address,
+        city: addressToEdit.city,
+        state: addressToEdit.state,
+        zipCode: addressToEdit.zipCode,
+        phone: addressToEdit.phone,
+      });
+      setShowAddForm(true);
+    }
   };
+
+  const [formData, setFormData] = useState({
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    phone: "",
+  });
 
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean;
@@ -78,9 +98,9 @@ export default function ShippingAddressPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex gap-8">
             <UserSidebar />
-            <main className="flex-1 bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">
+            <main className="flex-1 bg-white rounded-lg shadow p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
                   Shipping Address
                 </h1>
                 <button

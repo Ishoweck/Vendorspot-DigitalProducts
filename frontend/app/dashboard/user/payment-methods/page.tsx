@@ -41,9 +41,23 @@ export default function PaymentMethodsPage() {
   };
 
   const handleEditPaymentMethod = (id: number) => {
-    setEditingId(id);
-    setShowAddForm(true);
+    const methodToEdit = paymentMethods.find((method) => method.id === id);
+    if (methodToEdit) {
+      setEditingId(id);
+      setFormData({
+        cardNumber: `**** **** **** ${methodToEdit.last4}`,
+        expiryDate: `${methodToEdit.expiryMonth}/${methodToEdit.expiryYear}`,
+        cvv: "",
+      });
+      setShowAddForm(true);
+    }
   };
+
+  const [formData, setFormData] = useState({
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+  });
 
   const handleDeletePaymentMethod = (id: number) => {
     setDeleteConfirm({ isOpen: true, methodId: id });
@@ -51,7 +65,7 @@ export default function PaymentMethodsPage() {
 
   const confirmDelete = () => {
     if (deleteConfirm.methodId) {
-      setPaymentMethods((prev) => 
+      setPaymentMethods((prev) =>
         prev.filter((method) => method.id !== deleteConfirm.methodId)
       );
       setDeleteConfirm({ isOpen: false, methodId: null });
@@ -73,9 +87,9 @@ export default function PaymentMethodsPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex gap-8">
             <UserSidebar />
-            <main className="flex-1 bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">
+            <main className="flex-1 bg-white rounded-lg shadow p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
                   Payment Methods
                 </h1>
                 <button
@@ -159,7 +173,7 @@ export default function PaymentMethodsPage() {
               )}
 
               {showAddForm && (
-                <div 
+                <div
                   className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70]"
                   onClick={(e) => {
                     if (e.target === e.currentTarget) {
@@ -231,7 +245,9 @@ export default function PaymentMethodsPage() {
                 confirmLabel="Delete"
                 cancelLabel="Cancel"
                 onConfirm={confirmDelete}
-                onCancel={() => setDeleteConfirm({ isOpen: false, methodId: null })}
+                onCancel={() =>
+                  setDeleteConfirm({ isOpen: false, methodId: null })
+                }
               />
             </main>
           </div>

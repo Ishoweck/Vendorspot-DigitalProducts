@@ -38,8 +38,8 @@ export default function NotificationsPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex gap-8">
             <UserSidebar />
-            <main className="flex-1 bg-white rounded-lg shadow p-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">
+            <main className="flex-1 bg-white rounded-lg shadow p-4 sm:p-6">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
                 Notifications
               </h1>
 
