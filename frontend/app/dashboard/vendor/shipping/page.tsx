@@ -32,19 +32,11 @@ const mockShippingRates = [
 export default function VendorShippingPage() {
   const [shippingRates, setShippingRates] = useState(mockShippingRates);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editValues, setEditValues] = useState({
-    name: "",
-    description: "",
-    price: "",
-  });
+  const [editPrice, setEditPrice] = useState("");
 
   const handleEdit = (rate: any) => {
     setEditingId(rate.id);
-    setEditValues({
-      name: rate.name,
-      description: rate.description,
-      price: rate.price.toString(),
-    });
+    setEditPrice(rate.price.toString());
   };
 
   const handleSave = (id: number) => {
@@ -53,20 +45,18 @@ export default function VendorShippingPage() {
         rate.id === id
           ? {
               ...rate,
-              name: editValues.name,
-              description: editValues.description,
-              price: parseFloat(editValues.price),
+              price: parseFloat(editPrice),
             }
           : rate
       )
     );
     setEditingId(null);
-    setEditValues({ name: "", description: "", price: "" });
+    setEditPrice("");
   };
 
   const handleCancel = () => {
     setEditingId(null);
-    setEditValues({ name: "", description: "", price: "" });
+    setEditPrice("");
   };
 
   const toggleActive = (id: number) => {
@@ -79,76 +69,47 @@ export default function VendorShippingPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <SectionWrapper className="pt-8 pb-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex gap-8">
+      <SectionWrapper className="pt-4 pb-4 md:pt-8 md:pb-8">
+        <div className="max-w-7xl mx-auto px-2 md:px-4">
+          <div className="flex gap-4 md:gap-8">
             <VendorSidebar />
-            <main className="flex-1 bg-white rounded-lg shadow p-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">
+            <main className="flex-1 bg-white rounded-lg shadow p-3 md:p-6">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
                 Shipping Management
               </h1>
 
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+                <h3 className="font-semibold text-gray-900 mb-4 text-sm md:text-base">
                   Shipping Rates
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {shippingRates.map((rate) => (
                     <div
                       key={rate.id}
-                      className="flex items-center justify-between py-3 border-b border-gray-100"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 border-b border-gray-100 gap-3"
                     >
                       <div className="flex-1">
-                        {editingId === rate.id ? (
-                          <div className="space-y-2">
-                            <input
-                              type="text"
-                              value={editValues.name}
-                              onChange={(e) =>
-                                setEditValues((prev) => ({
-                                  ...prev,
-                                  name: e.target.value,
-                                }))
-                              }
-                              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D7195B]"
-                            />
-                            <input
-                              type="text"
-                              value={editValues.description}
-                              onChange={(e) =>
-                                setEditValues((prev) => ({
-                                  ...prev,
-                                  description: e.target.value,
-                                }))
-                              }
-                              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D7195B]"
-                            />
-                            <input
-                              type="number"
-                              value={editValues.price}
-                              onChange={(e) =>
-                                setEditValues((prev) => ({
-                                  ...prev,
-                                  price: e.target.value,
-                                }))
-                              }
-                              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D7195B]"
-                            />
-                          </div>
-                        ) : (
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {rate.name}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {rate.description}
-                            </p>
-                          </div>
-                        )}
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm md:text-base">
+                            {rate.name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {rate.description}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 md:gap-3">
                         {editingId === rate.id ? (
                           <>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-600">₦</span>
+                              <input
+                                type="number"
+                                value={editPrice}
+                                onChange={(e) => setEditPrice(e.target.value)}
+                                className="w-20 md:w-24 border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#D7195B]"
+                              />
+                            </div>
                             <button
                               onClick={() => handleSave(rate.id)}
                               className="text-green-600 hover:text-green-700"
@@ -164,7 +125,7 @@ export default function VendorShippingPage() {
                           </>
                         ) : (
                           <>
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium text-gray-900 text-sm md:text-base">
                               ₦{rate.price.toLocaleString()}
                             </span>
                             <button
@@ -191,11 +152,11 @@ export default function VendorShippingPage() {
                 </div>
               </div>
 
-              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-2">
+              <div className="mt-4 md:mt-6 bg-[#D7195B]/10 border border-[#D7195B]/20 rounded-lg p-4">
+                <h4 className="font-medium text-[#D7195B] mb-2 text-sm md:text-base">
                   Shipping Tips
                 </h4>
-                <ul className="text-sm text-blue-700 space-y-1">
+                <ul className="text-sm text-[#D7195B]/80 space-y-1">
                   <li>• Set competitive rates to attract more customers</li>
                   <li>
                     • Offer multiple delivery options for better customer

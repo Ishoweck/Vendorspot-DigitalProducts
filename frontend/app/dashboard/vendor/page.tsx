@@ -7,6 +7,7 @@ import {
   Package,
   Star,
   DollarSign,
+  ShoppingCart,
 } from "lucide-react";
 import Link from "next/link";
 import AuthWrapper from "@/components/auth/AuthWrapper";
@@ -48,51 +49,47 @@ function VendorDashboardContent() {
               )}
 
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
-                <div className="bg-gray-50 rounded-lg p-3 md:p-6 border border-gray-200">
+                <div className="bg-gradient-to-r from-[#D7195B] to-[#B01548] text-white rounded-lg p-3 md:p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900 text-sm md:text-base">
+                    <h3 className="font-semibold text-white text-sm md:text-base">
                       Total Sales
                     </h3>
-                    <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-[#D7195B]" />
+                    <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
-                  <p className="text-xl md:text-3xl font-bold text-[#D7195B]">
-                    ₦0
+                  <p className="text-xl md:text-3xl font-bold text-white">
+                    ₦125,450
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-3 md:p-6 border border-gray-200">
+                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-3 md:p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900 text-sm md:text-base">
+                    <h3 className="font-semibold text-white text-sm md:text-base">
                       Orders
                     </h3>
-                    <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-[#D7195B]" />
+                    <ShoppingCart className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
-                  <p className="text-xl md:text-3xl font-bold text-[#D7195B]">
-                    0
-                  </p>
+                  <p className="text-xl md:text-3xl font-bold text-white">45</p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-3 md:p-6 border border-gray-200">
+                <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-3 md:p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900 text-sm md:text-base">
+                    <h3 className="font-semibold text-white text-sm md:text-base">
                       Products
                     </h3>
-                    <Package className="w-4 h-4 md:w-5 md:h-5 text-[#D7195B]" />
+                    <Package className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
-                  <p className="text-xl md:text-3xl font-bold text-[#D7195B]">
-                    0
-                  </p>
+                  <p className="text-xl md:text-3xl font-bold text-white">15</p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-3 md:p-6 border border-gray-200">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-3 md:p-6 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900 text-sm md:text-base">
+                    <h3 className="font-semibold text-white text-sm md:text-base">
                       Rating
                     </h3>
-                    <Star className="w-4 h-4 md:w-5 md:h-5 text-[#D7195B]" />
+                    <Star className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
-                  <p className="text-xl md:text-3xl font-bold text-[#D7195B]">
-                    0.0
+                  <p className="text-xl md:text-3xl font-bold text-white">
+                    4.8
                   </p>
                 </div>
               </div>

@@ -1,6 +1,14 @@
 "use client";
 
-import { Wallet, TrendingUp, Download } from "lucide-react";
+import { useState } from "react";
+import {
+  Wallet,
+  TrendingUp,
+  Download,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+} from "lucide-react";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 
@@ -36,99 +44,191 @@ const mockWalletData = {
       timestamp: "3 days ago",
       isPositive: false,
     },
+    {
+      id: 4,
+      type: "payment_received",
+      title: "Payment Received",
+      description: "Order #VS-2024-003",
+      amount: 35000,
+      timestamp: "1 week ago",
+      isPositive: true,
+    },
+    {
+      id: 5,
+      type: "withdrawal",
+      title: "Withdrawal",
+      description: "Bank transfer",
+      amount: 75000,
+      timestamp: "2 weeks ago",
+      isPositive: false,
+    },
   ],
 };
 
 export default function VendorWalletPage() {
+  const [currentTransactionPage, setCurrentTransactionPage] = useState(1);
+  const [dateFilter, setDateFilter] = useState("all");
+  const transactionsPerPage = 3;
+  const totalTransactionPages = Math.ceil(
+    mockWalletData.transactions.length / transactionsPerPage
+  );
+
+  const startIndex = (currentTransactionPage - 1) * transactionsPerPage;
+  const endIndex = startIndex + transactionsPerPage;
+  const currentTransactions = mockWalletData.transactions.slice(
+    startIndex,
+    endIndex
+  );
+
   return (
     <div className="bg-gray-50 min-h-screen">
-      <SectionWrapper className="pt-8 pb-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex gap-8">
+      <SectionWrapper className="pt-4 pb-4 md:pt-8 md:pb-8">
+        <div className="max-w-7xl mx-auto px-2 md:px-4">
+          <div className="flex gap-4 md:gap-8">
             <VendorSidebar />
-            <main className="flex-1 bg-white rounded-lg shadow p-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-6">Wallet</h1>
+            <main className="flex-1 bg-white rounded-lg shadow p-3 md:p-6">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
+                Wallet
+              </h1>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="bg-gradient-to-r from-[#D7195B] to-[#B01548] text-white rounded-lg p-6">
-                  <h3 className="font-semibold mb-2">Available Balance</h3>
-                  <p className="text-3xl font-bold">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-4 md:mb-6">
+                <div className="bg-gradient-to-r from-[#D7195B] to-[#B01548] text-white rounded-lg p-4 md:p-6">
+                  <h3 className="font-semibold mb-2 text-sm md:text-base">
+                    Available Balance
+                  </h3>
+                  <p className="text-2xl md:text-3xl font-bold">
                     ₦{mockWalletData.availableBalance.toLocaleString()}
                   </p>
                 </div>
-                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-6">
-                  <h3 className="font-semibold mb-2">This Month</h3>
-                  <p className="text-3xl font-bold">
+                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-4 md:p-6">
+                  <h3 className="font-semibold mb-2 text-sm md:text-base">
+                    This Month
+                  </h3>
+                  <p className="text-2xl md:text-3xl font-bold">
                     ₦{mockWalletData.thisMonth.toLocaleString()}
                   </p>
                 </div>
-                <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-6">
-                  <h3 className="font-semibold mb-2">Total Earnings</h3>
-                  <p className="text-3xl font-bold">
+                <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-4 md:p-6">
+                  <h3 className="font-semibold mb-2 text-sm md:text-base">
+                    Total Earnings
+                  </h3>
+                  <p className="text-2xl md:text-3xl font-bold">
                     ₦{mockWalletData.totalEarnings.toLocaleString()}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900">
+              <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+                  <h3 className="font-semibold text-gray-900 text-sm md:text-base">
                     Recent Transactions
                   </h3>
-                  <button className="text-[#D7195B] hover:text-[#B01548] text-sm font-medium">
-                    View All
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                      <select
+                        value={dateFilter}
+                        onChange={(e) => setDateFilter(e.target.value)}
+                        className="border border-gray-300 rounded-md px-2 py-1 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#D7195B]"
+                      >
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
 
-                {mockWalletData.transactions.length === 0 ? (
+                {currentTransactions.length === 0 ? (
                   <div className="text-center py-8">
-                    <Wallet className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <Wallet className="w-12 h-12 md:w-16 md:h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
                       No transactions yet
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-sm md:text-base text-gray-600">
                       Your transaction history will appear here.
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {mockWalletData.transactions.map((transaction) => (
-                      <div
-                        key={transaction.id}
-                        className="flex items-center justify-between py-3 border-b border-gray-100"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {transaction.title}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {transaction.description}
-                          </p>
+                  <>
+                    <div className="space-y-3 md:space-y-4">
+                      {currentTransactions.map((transaction) => (
+                        <div
+                          key={transaction.id}
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 border-b border-gray-100 gap-2"
+                        >
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm md:text-base">
+                              {transaction.title}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {transaction.description}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span
+                              className={`font-medium text-sm md:text-base ${
+                                transaction.isPositive
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }`}
+                            >
+                              {transaction.isPositive ? "+" : "-"}₦
+                              {transaction.amount.toLocaleString()}
+                            </span>
+                            <p className="text-xs text-gray-500">
+                              {transaction.timestamp}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <span
-                            className={`font-medium ${
-                              transaction.isPositive
-                                ? "text-green-600"
-                                : "text-red-600"
-                            }`}
-                          >
-                            {transaction.isPositive ? "+" : "-"}₦
-                            {transaction.amount.toLocaleString()}
-                          </span>
-                          <p className="text-xs text-gray-500">
-                            {transaction.timestamp}
-                          </p>
-                        </div>
+                      ))}
+                    </div>
+
+                    {totalTransactionPages > 1 && (
+                      <div className="flex items-center justify-center gap-2 mt-4 md:mt-6">
+                        <button
+                          onClick={() =>
+                            setCurrentTransactionPage(
+                              Math.max(1, currentTransactionPage - 1)
+                            )
+                          }
+                          disabled={currentTransactionPage === 1}
+                          className="p-2 text-gray-600 hover:text-[#D7195B] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+
+                        <span className="text-sm text-gray-600">
+                          Page {currentTransactionPage} of{" "}
+                          {totalTransactionPages}
+                        </span>
+
+                        <button
+                          onClick={() =>
+                            setCurrentTransactionPage(
+                              Math.min(
+                                totalTransactionPages,
+                                currentTransactionPage + 1
+                              )
+                            )
+                          }
+                          disabled={
+                            currentTransactionPage === totalTransactionPages
+                          }
+                          className="p-2 text-gray-600 hover:text-[#D7195B] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 )}
               </div>
 
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="mt-4 md:mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-900 mb-2">
+                  <h4 className="font-medium text-blue-900 mb-2 text-sm md:text-base">
                     Quick Actions
                   </h4>
                   <div className="space-y-2">
@@ -145,7 +245,7 @@ export default function VendorWalletPage() {
                 </div>
 
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h4 className="font-medium text-green-900 mb-2">
+                  <h4 className="font-medium text-green-900 mb-2 text-sm md:text-base">
                     Earnings Tips
                   </h4>
                   <ul className="text-sm text-green-700 space-y-1">

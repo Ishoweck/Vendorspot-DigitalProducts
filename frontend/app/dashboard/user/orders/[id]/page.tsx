@@ -89,13 +89,13 @@ export default function OrderDetailsPage({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "DELIVERED":
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />;
       case "PROCESSING":
-        return <Clock className="w-5 h-5 text-yellow-500" />;
+        return <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />;
       case "CANCELLED":
-        return <XCircle className="w-5 h-5 text-red-500" />;
+        return <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />;
       default:
-        return <Package className="w-5 h-5 text-gray-500" />;
+        return <Package className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />;
     }
   };
 
@@ -126,55 +126,55 @@ export default function OrderDetailsPage({
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <SectionWrapper className="pt-8 pb-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex gap-8">
+      <SectionWrapper className="pt-4 pb-4 md:pt-8 md:pb-8">
+        <div className="max-w-7xl mx-auto px-2 md:px-4">
+          <div className="flex gap-4 md:gap-8">
             <UserSidebar />
             <main className="flex-1">
-              <div className="mb-6">
+              <div className="mb-4 md:mb-6">
                 <Link
                   href="/dashboard/user/orders"
-                  className="inline-flex items-center text-[#D7195B] hover:text-[#B01548] mb-4"
+                  className="inline-flex items-center text-[#D7195B] hover:text-[#B01548] mb-3 md:mb-4 text-sm md:text-base"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  <ArrowLeft className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                   Back to Orders
                 </Link>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">
                   Order #{order.orderNumber}
                 </h1>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center space-x-3">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                <div className="lg:col-span-2 space-y-4 md:space-y-6">
+                  <div className="bg-white rounded-lg shadow p-4 md:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 md:mb-6 gap-3">
+                      <div className="flex items-center space-x-2 md:space-x-3">
                         {getStatusIcon(order.status)}
                         <div>
-                          <h2 className="font-semibold text-gray-900">
+                          <h2 className="font-semibold text-gray-900 text-sm md:text-base">
                             {order.status}
                           </h2>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-xs md:text-sm text-gray-500">
                             Order placed on{" "}
                             {new Date(order.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
                       <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}
+                        className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium ${getStatusColor(order.status)}`}
                       >
                         {order.status}
                       </span>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-3 md:space-y-4">
                       {order.items.map((item) => (
                         <div
                           key={item.id}
-                          className="border border-gray-200 rounded-lg p-4"
+                          className="border border-gray-200 rounded-lg p-3 md:p-4"
                         >
-                          <div className="flex items-start space-x-4">
-                            <div className="relative w-20 h-20 flex-shrink-0">
+                          <div className="flex flex-col sm:flex-row sm:items-start gap-3 md:gap-4">
+                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
                               <Image
                                 src={item.product.image}
                                 alt={item.product.name}
@@ -183,16 +183,16 @@ export default function OrderDetailsPage({
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-medium text-gray-900">
+                              <h3 className="font-medium text-gray-900 text-sm md:text-base">
                                 {item.product.name}
                               </h3>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-xs md:text-sm text-gray-500">
                                 by {item.product.vendor}
                               </p>
-                              <p className="text-sm text-gray-600 mt-1">
+                              <p className="text-xs md:text-sm text-gray-600 mt-1">
                                 {item.product.description}
                               </p>
-                              <div className="mt-2 text-sm text-gray-500">
+                              <div className="mt-2 text-xs md:text-sm text-gray-500">
                                 <span>Quantity: {item.quantity}</span>
                                 <span className="mx-2">•</span>
                                 <span>
@@ -201,13 +201,13 @@ export default function OrderDetailsPage({
                                 </span>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <div className="font-medium text-gray-900">
+                            <div className="flex flex-col items-end gap-2">
+                              <div className="font-medium text-gray-900 text-sm md:text-base">
                                 ₦{item.total.toLocaleString()}
                               </div>
                               {order.status === "DELIVERED" &&
                                 item.downloadUrl && (
-                                  <div className="mt-2 space-y-2">
+                                  <div className="space-y-2">
                                     <button
                                       onClick={() =>
                                         handleDownload(
@@ -219,16 +219,16 @@ export default function OrderDetailsPage({
                                         downloading === item.id ||
                                         item.downloadCount >= item.maxDownloads
                                       }
-                                      className="w-full inline-flex items-center justify-center px-3 py-1 border border-[#D7195B] rounded-md text-sm font-medium text-[#D7195B] hover:bg-[#D7195B] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                      className="w-full inline-flex items-center justify-center px-2 md:px-3 py-1 border border-[#D7195B] rounded-md text-xs md:text-sm font-medium text-[#D7195B] hover:bg-[#D7195B] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                       {downloading === item.id ? (
                                         <>
-                                          <Clock className="w-4 h-4 mr-2 animate-spin" />
+                                          <Clock className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2 animate-spin" />
                                           Downloading...
                                         </>
                                       ) : (
                                         <>
-                                          <Download className="w-4 h-4 mr-2" />
+                                          <Download className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                                           Download
                                         </>
                                       )}
@@ -249,26 +249,30 @@ export default function OrderDetailsPage({
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">
+                <div className="space-y-4 md:space-y-6">
+                  <div className="bg-white rounded-lg shadow p-4 md:p-6">
+                    <h3 className="font-semibold text-gray-900 mb-3 md:mb-4 text-sm md:text-base">
                       Order Summary
                     </h3>
-                    <div className="space-y-3">
+                    <div className="space-y-2 md:space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Subtotal</span>
-                        <span className="font-medium">
+                        <span className="text-gray-600 text-xs md:text-sm">
+                          Subtotal
+                        </span>
+                        <span className="font-medium text-xs md:text-sm">
                           ₦{order.subtotal.toLocaleString()}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Tax</span>
-                        <span className="font-medium">
+                        <span className="text-gray-600 text-xs md:text-sm">
+                          Tax
+                        </span>
+                        <span className="font-medium text-xs md:text-sm">
                           ₦{order.tax.toLocaleString()}
                         </span>
                       </div>
-                      <div className="border-t border-gray-200 pt-3 flex justify-between">
-                        <span className="font-semibold text-gray-900">
+                      <div className="border-t border-gray-200 pt-2 md:pt-3 flex justify-between">
+                        <span className="font-semibold text-gray-900 text-sm md:text-base">
                           Total
                         </span>
                         <span className="font-bold text-lg text-[#D7195B]">
@@ -278,46 +282,46 @@ export default function OrderDetailsPage({
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">
+                  <div className="bg-white rounded-lg shadow p-4 md:p-6">
+                    <h3 className="font-semibold text-gray-900 mb-3 md:mb-4 text-sm md:text-base">
                       Payment Information
                     </h3>
-                    <div className="space-y-3">
+                    <div className="space-y-2 md:space-y-3">
                       <div className="flex items-center space-x-2">
-                        <CreditCard className="w-4 h-4 text-gray-500" />
-                        <span className="text-gray-600">
+                        <CreditCard className="w-3 h-3 md:w-4 md:h-4 text-gray-500" />
+                        <span className="text-gray-600 text-xs md:text-sm">
                           {order.paymentMethod}
                         </span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Calendar className="w-4 h-4 text-gray-500" />
-                        <span className="text-gray-600">
+                        <Calendar className="w-3 h-3 md:w-4 md:h-4 text-gray-500" />
+                        <span className="text-gray-600 text-xs md:text-sm">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">
+                  <div className="bg-white rounded-lg shadow p-4 md:p-6">
+                    <h3 className="font-semibold text-gray-900 mb-3 md:mb-4 text-sm md:text-base">
                       Shipping Address
                     </h3>
                     <div className="space-y-2">
                       <div className="flex items-start space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
+                        <MapPin className="w-3 h-3 md:w-4 md:h-4 text-gray-500 mt-0.5" />
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900 text-xs md:text-sm">
                             {order.shippingAddress.name}
                           </p>
-                          <p className="text-gray-600">
+                          <p className="text-gray-600 text-xs md:text-sm">
                             {order.shippingAddress.address}
                           </p>
-                          <p className="text-gray-600">
+                          <p className="text-gray-600 text-xs md:text-sm">
                             {order.shippingAddress.city},{" "}
                             {order.shippingAddress.state}{" "}
                             {order.shippingAddress.zipCode}
                           </p>
-                          <p className="text-gray-600">
+                          <p className="text-gray-600 text-xs md:text-sm">
                             {order.shippingAddress.phone}
                           </p>
                         </div>

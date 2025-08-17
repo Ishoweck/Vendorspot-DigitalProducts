@@ -160,14 +160,35 @@ export const createProduct = asyncHandler(
       return next(createError("Vendor not found", 404));
     }
 
-    const { name, description, price, categoryId, tags } = req.body;
+    const {
+      name,
+      description,
+      shortDescription,
+      price,
+      originalPrice,
+      discountPercentage,
+      categoryId,
+      tags,
+      features,
+      requirements,
+      instructions,
+      licenseType,
+      licenseDuration,
+      downloadLimit,
+    } = req.body;
 
     if (!name || !description || !price || !categoryId) {
       return next(createError("All required fields must be provided", 400));
     }
 
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
     let fileUrl = "";
     let thumbnail = "";
+    let previewUrl = "";
     const images: string[] = [];
 
     if (req.files) {
@@ -189,6 +210,14 @@ export const createProduct = asyncHandler(
         thumbnail = thumbnailUpload.url;
       }
 
+      if (files.preview && files.preview[0]) {
+        const previewUpload = await cloudinaryService.uploadFile(
+          files.preview[0],
+          "products/previews"
+        );
+        previewUrl = previewUpload.url;
+      }
+
       if (files.images) {
         for (const image of files.images) {
           const imageUpload = await cloudinaryService.uploadFile(
@@ -204,12 +233,26 @@ export const createProduct = asyncHandler(
       vendorId: vendor._id,
       categoryId,
       name,
+      slug,
       description,
+      shortDescription,
       price: parseFloat(price),
+      originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
+      discountPercentage: discountPercentage
+        ? parseFloat(discountPercentage)
+        : undefined,
+      isDigital: true,
       fileUrl,
       thumbnail,
+      previewUrl,
       images,
       tags: tags ? JSON.parse(tags) : [],
+      features: features ? JSON.parse(features) : [],
+      requirements,
+      instructions,
+      licenseType,
+      licenseDuration: licenseDuration ? parseInt(licenseDuration) : undefined,
+      downloadLimit: downloadLimit ? parseInt(downloadLimit) : -1,
     });
 
     try {
@@ -249,7 +292,22 @@ export const updateProduct = asyncHandler(
       return next(createError("Product not found", 404));
     }
 
-    const { name, description, price, categoryId, tags } = req.body;
+    const {
+      name,
+      description,
+      shortDescription,
+      price,
+      originalPrice,
+      discountPercentage,
+      categoryId,
+      tags,
+      features,
+      requirements,
+      instructions,
+      licenseType,
+      licenseDuration,
+      downloadLimit,
+    } = req.body;
 
     if (req.files) {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -270,6 +328,14 @@ export const updateProduct = asyncHandler(
         product.thumbnail = thumbnailUpload.url;
       }
 
+      if (files.preview && files.preview[0]) {
+        const previewUpload = await cloudinaryService.uploadFile(
+          files.preview[0],
+          "products/previews"
+        );
+        product.previewUrl = previewUpload.url;
+      }
+
       if (files.images) {
         const newImages: string[] = [];
         for (const image of files.images) {
@@ -283,11 +349,37 @@ export const updateProduct = asyncHandler(
       }
     }
 
-    if (name) product.name = name;
+    if (name) {
+      product.name = name;
+      product.slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    }
     if (description) product.description = description;
+    if (shortDescription !== undefined)
+      product.shortDescription = shortDescription;
     if (price) product.price = parseFloat(price);
+    if (originalPrice !== undefined)
+      product.originalPrice = originalPrice
+        ? parseFloat(originalPrice)
+        : undefined;
+    if (discountPercentage !== undefined)
+      product.discountPercentage = discountPercentage
+        ? parseFloat(discountPercentage)
+        : undefined;
     if (categoryId) product.categoryId = categoryId;
     if (tags) product.tags = JSON.parse(tags);
+    if (features) product.features = JSON.parse(features);
+    if (requirements !== undefined) product.requirements = requirements;
+    if (instructions !== undefined) product.instructions = instructions;
+    if (licenseType) product.licenseType = licenseType;
+    if (licenseDuration !== undefined)
+      product.licenseDuration = licenseDuration
+        ? parseInt(licenseDuration)
+        : undefined;
+    if (downloadLimit !== undefined)
+      product.downloadLimit = downloadLimit ? parseInt(downloadLimit) : -1;
 
     await product.save();
 

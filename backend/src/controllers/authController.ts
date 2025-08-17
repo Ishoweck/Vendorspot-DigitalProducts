@@ -476,7 +476,6 @@ export const resendVerificationOTP = asyncHandler(
       return next(createError("Email is already verified", 400));
     }
 
-    // Generate new 6-digit OTP
     const verificationOTP = Math.floor(
       100000 + Math.random() * 900000
     ).toString();

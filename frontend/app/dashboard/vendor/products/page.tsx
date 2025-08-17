@@ -27,7 +27,7 @@ function VendorProductsContent() {
 
   const { data: productsData, isLoading } = useVendorProducts({
     page: currentPage,
-    limit: 10,
+    limit: 5,
   });
   const deleteProductMutation = useDeleteProduct();
   useSocket();
@@ -235,7 +235,7 @@ function VendorProductsContent() {
 
                   <div className="hidden md:block">
                     <div
-                      className="border border-gray-200 rounded-lg relative"
+                      className="border border-gray-200 rounded-lg relative group"
                       style={{ maxHeight: "400px", minHeight: "200px" }}
                     >
                       {/* Left scroll indicator */}
@@ -316,7 +316,7 @@ function VendorProductsContent() {
                             {products.map((product: any) => (
                               <tr
                                 key={product._id}
-                                className="hover:bg-gray-50 transition-colors"
+                                className="hover:bg-gray-50 transition-colors group/row"
                               >
                                 <td className="py-4 px-6 border-r border-gray-200">
                                   <div className="flex items-center gap-4">
@@ -363,7 +363,7 @@ function VendorProductsContent() {
                                   {product.soldCount || 0}
                                 </td>
                                 <td className="py-4 px-6">
-                                  <div className="flex items-center justify-center gap-2">
+                                  <div className="flex items-center justify-center gap-2 opacity-0 group-hover/row:opacity-100 transition-opacity">
                                     <Link
                                       href={`/products/${product._id}`}
                                       className="p-2 text-gray-600 hover:text-[#D7195B] transition-colors rounded-lg hover:bg-gray-100"
