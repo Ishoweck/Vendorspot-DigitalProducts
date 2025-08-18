@@ -36,7 +36,7 @@ export default function BasicInfoStep() {
     <div className="space-y-6">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Product Name
+          Product Name <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -49,7 +49,7 @@ export default function BasicInfoStep() {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Description
+          Description <span className="text-red-500">*</span>
         </label>
         <textarea
           value={formData.description}
@@ -60,23 +60,12 @@ export default function BasicInfoStep() {
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Short Description
-        </label>
-        <input
-          type="text"
-          value={formData.shortDescription}
-          onChange={(e) => updateFormData({ shortDescription: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
-          placeholder="Brief product summary"
-        />
-      </div>
+      {/* Short Description temporarily disabled */}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Price (₦)
+            Price (₦) <span className="text-red-500">*</span>
           </label>
           <input
             type="number"
@@ -93,7 +82,7 @@ export default function BasicInfoStep() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Category
+            Category <span className="text-red-500">*</span>
           </label>
           <select
             value={formData.categoryId}

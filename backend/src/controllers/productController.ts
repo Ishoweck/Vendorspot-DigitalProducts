@@ -163,7 +163,6 @@ export const createProduct = asyncHandler(
     const {
       name,
       description,
-      shortDescription,
       price,
       originalPrice,
       discountPercentage,
@@ -235,7 +234,6 @@ export const createProduct = asyncHandler(
       name,
       slug,
       description,
-      shortDescription,
       price: parseFloat(price),
       originalPrice: originalPrice ? parseFloat(originalPrice) : undefined,
       discountPercentage: discountPercentage
@@ -295,7 +293,6 @@ export const updateProduct = asyncHandler(
     const {
       name,
       description,
-      shortDescription,
       price,
       originalPrice,
       discountPercentage,
@@ -357,8 +354,6 @@ export const updateProduct = asyncHandler(
         .replace(/(^-|-$)/g, "");
     }
     if (description) product.description = description;
-    if (shortDescription !== undefined)
-      product.shortDescription = shortDescription;
     if (price) product.price = parseFloat(price);
     if (originalPrice !== undefined)
       product.originalPrice = originalPrice

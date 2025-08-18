@@ -67,15 +67,15 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen bg-neutral-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-48 mb-8"></div>
-            <div className="grid lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                <div className="h-32 bg-gray-200 rounded-xl"></div>
-                <div className="h-32 bg-gray-200 rounded-xl"></div>
-                <div className="h-32 bg-gray-200 rounded-xl"></div>
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-40" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="space-y-4 lg:col-span-2">
+                <div className="h-32 bg-gray-200 rounded" />
+                <div className="h-32 bg-gray-200 rounded" />
+                <div className="h-32 bg-gray-200 rounded" />
               </div>
-              <div className="h-96 bg-gray-200 rounded-xl"></div>
+              <div className="h-72 bg-gray-200 rounded" />
             </div>
           </div>
         </div>
@@ -113,8 +113,8 @@ export default function CheckoutPage() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
@@ -223,7 +223,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-1 lg:order-2">
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-8">
               <h2 className="text-xl font-semibold text-neutral-900 mb-6">
                 Order Summary

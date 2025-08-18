@@ -47,12 +47,24 @@ export function ProductThumbnail({
           >
             {product.name}
           </h3>
-          <p
-            className="text-black font-inter font-medium"
-            style={{ fontSize: "14px", lineHeight: "120%" }}
-          >
-            ₦{product.price.toLocaleString()}
-          </p>
+          <div className="flex items-center gap-2">
+            <span
+              className="text-black font-inter font-medium"
+              style={{ fontSize: "14px", lineHeight: "120%" }}
+            >
+              ₦{product.price.toLocaleString()}
+            </span>
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span className="text-gray-400 line-through" style={{ fontSize: "12px" }}>
+                ₦{product.originalPrice.toLocaleString()}
+              </span>
+            )}
+            {product.discountPercentage && product.discountPercentage > 0 && (
+              <span className="text-green-600" style={{ fontSize: "10px" }}>
+                -{product.discountPercentage}%
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
@@ -82,7 +94,7 @@ export function ProductThumbnail({
             className="text-[#000000B2] font-inter font-medium leading-none"
             style={{ fontSize: "8px", lineHeight: "100%" }}
           >
-            {product.soldCount || 0} sold
+            {product.reviewCount || 0} reviews
           </span>
         </div>
       </div>

@@ -11,6 +11,7 @@ import {
   vendorsAPI,
   categoriesAPI,
 } from "@/lib/api";
+import { useTempStore } from "@/stores/tempStore";
 
 // Auth hooks
 export const useLogin = () => {
@@ -31,6 +32,10 @@ export const useLogin = () => {
           data.data.data.refreshToken,
           refreshExpiry
         );
+        // Transfer any guest pending items to the logged-in user's temp store
+        try {
+          useTempStore.getState().transferPendingToUser();
+        } catch (e) {}
         queryClient.invalidateQueries(["user"]);
         toast.success("Login successful!");
         window.location.href = "/dashboard";

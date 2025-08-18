@@ -61,7 +61,6 @@ export default function EditProductForm({ product }: EditProductFormProps) {
   const [formData, setFormData] = useState({
     name: product.name || "",
     description: product.description || "",
-    shortDescription: product.shortDescription || "",
     price: product.price || "",
     originalPrice: product.originalPrice || "",
     discountPercentage: product.discountPercentage || "",
@@ -150,7 +149,6 @@ export default function EditProductForm({ product }: EditProductFormProps) {
     const submitData = new FormData();
     submitData.append("name", formData.name);
     submitData.append("description", formData.description);
-    submitData.append("shortDescription", formData.shortDescription);
     submitData.append("price", formData.price.toString());
     submitData.append("originalPrice", formData.originalPrice.toString());
     submitData.append("discountPercentage", formData.discountPercentage.toString());
@@ -210,7 +208,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Product Name *
+              Product Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -225,7 +223,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Price (₦) *
+              Price (₦) <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -278,7 +276,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
 
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Description *
+            Description <span className="text-red-500">*</span>
           </label>
           <textarea
             name="description"
@@ -291,19 +289,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
           />
         </div>
 
-        <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Short Description
-          </label>
-          <input
-            type="text"
-            name="shortDescription"
-            value={formData.shortDescription}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
-            placeholder="Brief product summary"
-          />
-        </div>
+        {/* Short Description disabled */}
 
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -435,7 +421,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Thumbnail (optional - only upload if you want to replace)
+              Thumbnail <span className="text-red-500">*</span>
             </label>
             <input
               type="file"

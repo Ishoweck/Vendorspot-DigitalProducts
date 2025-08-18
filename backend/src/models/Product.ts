@@ -6,7 +6,6 @@ export interface IProduct extends Document {
   name: string;
   slug: string;
   description: string;
-  shortDescription?: string;
   price: number;
   originalPrice?: number;
   discountPercentage?: number;
@@ -69,7 +68,6 @@ const productSchema = new Schema<IProduct>(
       type: String,
       required: true,
     },
-    shortDescription: String,
     price: {
       type: Number,
       required: true,

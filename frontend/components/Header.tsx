@@ -35,7 +35,7 @@ export default function Header() {
   const [advertState, setAdvertState] = useState<
     "expanded" | "compact" | "hidden"
   >("expanded");
-  const [isIndexPage, setIsIndexPage] = useState(false);
+  const [showBanner, setShowBanner] = useState(true);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -53,9 +53,9 @@ export default function Header() {
   );
 
   useEffect(() => {
-    // Check if we're on the index page
     const pathname = window.location.pathname;
-    setIsIndexPage(pathname === "/");
+    const hideOn = [/^\/dashboard\//, /^\/cart(\/|$)/, /^\/checkout(\/|$)/];
+    setShowBanner(!hideOn.some((re) => re.test(pathname)));
 
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -148,7 +148,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-[60]">
-      {isIndexPage && (
+      {showBanner && (
         <div
           className={`bg-[#FC5991] text-white text-center px-4 text-sm flex items-center justify-center transition-all duration-300 ease-out overflow-hidden ${
             advertState === "expanded"

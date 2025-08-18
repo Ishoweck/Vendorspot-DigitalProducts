@@ -136,7 +136,7 @@ export default function FilesStep() {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Thumbnail (Optional)
+          Thumbnail <span className="text-red-500">*</span>
         </label>
         <div
           onClick={() => thumbnailInputRef.current?.click()}
@@ -195,7 +195,7 @@ export default function FilesStep() {
           ) : (
             <div>
               <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Upload a thumbnail image</p>
+              <p className="text-gray-600">Upload a thumbnail image (required)</p>
               <p className="text-sm text-gray-500 mt-1">
                 JPG, PNG (recommended: 400x300px)
               </p>

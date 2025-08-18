@@ -42,7 +42,7 @@ export default function CreateProductForm() {
 
     submitData.append("name", formData.name);
     submitData.append("description", formData.description);
-    submitData.append("shortDescription", formData.shortDescription);
+    // submitData.append("shortDescription", formData.shortDescription);
     submitData.append("price", formData.price.toString());
     submitData.append("originalPrice", formData.originalPrice.toString());
     submitData.append("discountPercentage", formData.discountPercentage.toString());

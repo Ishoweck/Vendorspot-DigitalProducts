@@ -109,9 +109,6 @@ NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=your-paystack-public-key
 ## Documentation
 
 - [API Documentation](./docs/api.md)
-- [Deployment Guide](./docs/deployment.md)
-- [Database Schema](./docs/database.md)
-- [Security Guidelines](./docs/security.md)
 
 ## Contributing
 
@@ -120,11 +117,3 @@ NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=your-paystack-public-key
 3. Make your changes
 4. Add tests
 5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-For support, email support@vendorspot.com or create an issue in this repository.

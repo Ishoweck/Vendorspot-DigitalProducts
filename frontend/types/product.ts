@@ -5,7 +5,6 @@ export interface Product {
   name: string;
   slug: string;
   description: string;
-  shortDescription?: string;
   price: number;
   originalPrice?: number;
   discountPercentage?: number;

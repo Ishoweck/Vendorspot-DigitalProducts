@@ -63,14 +63,7 @@ export default function ReviewStep() {
               </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Short Description
-              </label>
-              <p className="text-gray-900 break-words">
-                {formData.shortDescription}
-              </p>
-            </div>
+            {/* Short Description disabled */}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
@@ -199,7 +192,7 @@ export default function ReviewStep() {
                 className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
               />
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-gray-900">Thumbnail</p>
+                <p className="font-medium text-gray-900">Thumbnail (required)</p>
                 <p className="text-sm text-gray-600 break-words">
                   {formData.thumbnail.name}
                 </p>

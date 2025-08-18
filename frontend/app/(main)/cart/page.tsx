@@ -49,10 +49,10 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-neutral-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-16">
-            <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-6 animate-pulse"></div>
-            <div className="h-8 bg-gray-200 rounded mx-auto mb-4 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded mx-auto mb-8 animate-pulse"></div>
+          <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-24 bg-gray-200 rounded animate-pulse" />
+            ))}
           </div>
         </div>
       </div>
@@ -94,8 +94,8 @@ export default function CartPage() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2 order-2 lg:order-1">
             <div className="bg-white rounded-xl shadow-sm">
               {cartProducts.map((item, index) => (
                 <div
@@ -173,7 +173,7 @@ export default function CartPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-1 lg:order-2">
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-8">
               <h2 className="text-xl font-semibold text-neutral-900 mb-6">
                 Order Summary

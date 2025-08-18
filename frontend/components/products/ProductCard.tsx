@@ -48,6 +48,8 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
     e.stopPropagation();
 
     if (!user) {
+      // mark pending to transfer after login
+      useTempStore.getState().markPendingFromGuest();
       router.push("/login");
       return;
     }
@@ -70,6 +72,8 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
     e.stopPropagation();
 
     if (!user) {
+      // mark pending to transfer after login
+      useTempStore.getState().markPendingFromGuest();
       router.push("/login");
       return;
     }
@@ -177,14 +181,22 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
 
           <div className="flex items-center gap-1 mb-2">
             <StarRating rating={product.rating} />
-            <span className="text-xs text-gray-600">
-              ({product.soldCount || 0})
-            </span>
+            <span className="text-xs text-gray-600">({product.reviewCount || 0})</span>
           </div>
 
-          <p className="font-semibold text-[#D7195B] text-base mb-3">
-            ₦{product.price.toLocaleString()}
-          </p>
+          <div className="mb-3">
+            <span className="font-semibold text-[#D7195B] text-base">₦{product.price.toLocaleString()}</span>
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span className="text-xs text-gray-500 line-through ml-2">
+                ₦{product.originalPrice.toLocaleString()}
+              </span>
+            )}
+            {product.discountPercentage && product.discountPercentage > 0 && (
+              <span className="ml-2 text-xs text-green-600 font-medium">
+                -{product.discountPercentage}%
+              </span>
+            )}
+          </div>
 
           {isHovered && !isVendor && (
             cartItem ? (

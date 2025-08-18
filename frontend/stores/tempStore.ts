@@ -4,6 +4,8 @@ import { persist } from 'zustand/middleware';
 interface TempStore {
   savedItems: string[];
   cartItems: { productId: string; quantity: number }[];
+  pendingSaved: string[];
+  pendingCart: { productId: string; quantity: number }[];
   addSavedItem: (productId: string) => void;
   removeSavedItem: (productId: string) => void;
   addCartItem: (productId: string, quantity?: number) => void;
@@ -12,6 +14,8 @@ interface TempStore {
   clearSavedItems: () => void;
   clearCart: () => void;
   clearAll: () => void;
+  markPendingFromGuest: () => void;
+  transferPendingToUser: () => void;
 }
 
 export const useTempStore = create<TempStore>()(
@@ -19,6 +23,8 @@ export const useTempStore = create<TempStore>()(
     (set, get) => ({
       savedItems: [],
       cartItems: [],
+      pendingSaved: [],
+      pendingCart: [],
 
       addSavedItem: (productId: string) => {
         set((state) => ({
@@ -78,6 +84,29 @@ export const useTempStore = create<TempStore>()(
       clearSavedItems: () => set({ savedItems: [] }),
       clearCart: () => set({ cartItems: [] }),
       clearAll: () => set({ savedItems: [], cartItems: [] }),
+      markPendingFromGuest: () => {
+        set((state) => ({
+          pendingSaved: [...state.savedItems],
+          pendingCart: [...state.cartItems],
+          savedItems: [],
+          cartItems: [],
+        }));
+      },
+
+      transferPendingToUser: () => {
+        set((state) => ({
+          savedItems: Array.from(new Set([...(state.savedItems || []), ...state.pendingSaved])),
+          cartItems: (() => {
+            const map = new Map<string, number>();
+            [...state.cartItems, ...state.pendingCart].forEach((it) => {
+              map.set(it.productId, (map.get(it.productId) || 0) + it.quantity);
+            });
+            return Array.from(map.entries()).map(([productId, quantity]) => ({ productId, quantity }));
+          })(),
+          pendingSaved: [],
+          pendingCart: [],
+        }));
+      },
     }),
     {
       name: 'temp-store',

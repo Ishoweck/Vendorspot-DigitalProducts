@@ -115,7 +115,6 @@ export const useProductFormStore = create<ProductFormStore>()(
             return (
               formData.name.trim() !== "" &&
               formData.description.trim() !== "" &&
-              formData.shortDescription.trim() !== "" &&
               formData.price > 0 &&
               formData.categoryId !== ""
             );
