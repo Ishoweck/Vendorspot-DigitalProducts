@@ -84,6 +84,7 @@ export default function ProductsView() {
             totalPages={totalPages}
             onPageChange={handlePageChange}
             className="text-white"
+            textColor="text-white hover:text-black"
           />
         )}
       </section>

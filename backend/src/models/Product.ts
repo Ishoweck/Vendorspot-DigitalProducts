@@ -159,7 +159,6 @@ const productSchema = new Schema<IProduct>(
   }
 );
 
-productSchema.index({ slug: 1 });
 productSchema.index({ vendorId: 1 });
 productSchema.index({ categoryId: 1 });
 productSchema.index({ isActive: 1, isApproved: 1 });

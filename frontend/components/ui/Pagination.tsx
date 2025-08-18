@@ -9,6 +9,7 @@ interface PaginationProps {
   className?: string;
   showPageNumbers?: boolean;
   maxVisiblePages?: number;
+  textColor?: string;
 }
 
 export default function Pagination({
@@ -18,6 +19,7 @@ export default function Pagination({
   className = "",
   showPageNumbers = true,
   maxVisiblePages = 5,
+  textColor = "text-gray-600",
 }: PaginationProps) {
   if (totalPages <= 1) return null;
 
@@ -52,7 +54,7 @@ export default function Pagination({
       <button
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
-        className="flex items-center gap-1 px-3 py-2 text-gray-600 hover:text-[#D7195B] disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors"
+        className={`flex items-center gap-1 px-3 py-2 ${textColor} hover:text-[#D7195B] disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors`}
       >
         <ChevronLeft className="w-4 h-4" />
         <span className="hidden sm:inline">Previous</span>
@@ -74,7 +76,7 @@ export default function Pagination({
                   ? "bg-[#D7195B] text-white"
                   : page === "..."
                     ? "text-gray-400 cursor-default"
-                    : "text-gray-600 hover:bg-gray-100"
+                    : `${textColor} hover:bg-gray-100`
               }`}
             >
               {page}
@@ -86,7 +88,7 @@ export default function Pagination({
       <button
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage === totalPages}
-        className="flex items-center gap-1 px-3 py-2 text-gray-600 hover:text-[#D7195B] disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors"
+        className={`flex items-center gap-1 px-3 py-2 ${textColor} hover:text-[#D7195B] disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-colors`}
       >
         <span className="hidden sm:inline">Next</span>
         <ChevronRight className="w-4 h-4" />

@@ -8,6 +8,7 @@ export default function FilesStep() {
   const { formData, updateFormData } = useProductFormStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
+  const previewInputRef = useRef<HTMLInputElement>(null);
   const imagesInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,6 +22,13 @@ export default function FilesStep() {
     const file = e.target.files?.[0];
     if (file) {
       updateFormData({ thumbnail: file });
+    }
+  };
+
+  const handlePreviewChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      updateFormData({ preview: file });
     }
   };
 
@@ -198,6 +206,83 @@ export default function FilesStep() {
           ref={thumbnailInputRef}
           type="file"
           onChange={handleThumbnailChange}
+          className="hidden"
+          accept="image/*"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Preview Image (Optional)
+        </label>
+        <div
+          onClick={() => previewInputRef.current?.click()}
+          className="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-[#D7195B] transition-colors"
+        >
+          {formData.preview && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                updateFormData({ preview: null, previewMetadata: null });
+              }}
+              className="absolute top-1 right-1 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors z-10"
+            >
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
+          )}
+
+          {formData.preview ? (
+            <div className="flex items-center justify-center gap-3">
+              <img
+                src={URL.createObjectURL(formData.preview)}
+                alt="Preview"
+                className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-gray-900 break-words">
+                  {truncateFileName(formData.preview.name)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {(formData.preview.size / 1024).toFixed(2)} KB
+                </p>
+              </div>
+            </div>
+          ) : formData.previewMetadata && !formData.preview ? (
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <RefreshCw className="w-6 h-6 text-orange-500" />
+                <Image className="w-8 h-8 text-gray-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-orange-600 break-words">
+                  Re-upload required:{" "}
+                  {truncateFileName(formData?.previewMetadata?.name || "")}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {formData?.previewMetadata?.size !== undefined
+                    ? (formData.previewMetadata.size / 1024).toFixed(2)
+                    : "N/A"}{" "}
+                  KB (previous)
+                </p>
+                <p className="text-xs text-orange-500 mt-1">
+                  Files need to be re-uploaded after page refresh
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">Upload a preview image</p>
+              <p className="text-sm text-gray-500 mt-1">
+                JPG, PNG (recommended: 800x600px)
+              </p>
+            </div>
+          )}
+        </div>
+        <input
+          ref={previewInputRef}
+          type="file"
+          onChange={handlePreviewChange}
           className="hidden"
           accept="image/*"
         />

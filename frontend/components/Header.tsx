@@ -35,6 +35,7 @@ export default function Header() {
   const [advertState, setAdvertState] = useState<
     "expanded" | "compact" | "hidden"
   >("expanded");
+  const [isIndexPage, setIsIndexPage] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -52,6 +53,10 @@ export default function Header() {
   );
 
   useEffect(() => {
+    // Check if we're on the index page
+    const pathname = window.location.pathname;
+    setIsIndexPage(pathname === "/");
+
     const handleScroll = () => {
       const scrollY = window.scrollY;
 
@@ -143,17 +148,19 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-[60]">
-      <div
-        className={`bg-[#FC5991] text-white text-center px-4 text-sm flex items-center justify-center transition-all duration-300 ease-out overflow-hidden ${
-          advertState === "expanded"
-            ? "h-[60px]"
-            : advertState === "compact"
-              ? "h-[40px]"
-              : "h-0"
-        }`}
-      >
-        <p className="font-medium whitespace-nowrap">Advert Banner</p>
-      </div>
+      {isIndexPage && (
+        <div
+          className={`bg-[#FC5991] text-white text-center px-4 text-sm flex items-center justify-center transition-all duration-300 ease-out overflow-hidden ${
+            advertState === "expanded"
+              ? "h-[60px]"
+              : advertState === "compact"
+                ? "h-[40px]"
+                : "h-0"
+          }`}
+        >
+          <p className="font-medium whitespace-nowrap">Advert Banner</p>
+        </div>
+      )}
 
       <div className="bg-main-bg">
         <div className="max-w-7xl mx-auto px-4">
@@ -374,7 +381,14 @@ export default function Header() {
 
                 {showSearchDropdown &&
                   (searchResults.length > 0 || isSearching) && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto z-50">
+                    <div
+                      className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto z-50"
+                      style={{
+                        scrollbarWidth: "thin",
+                        scrollBehavior: "smooth",
+                        scrollbarColor: "#D7195B transparent",
+                      }}
+                    >
                       {isSearching ? (
                         <div className="p-4 text-center text-gray-500">
                           Searching...

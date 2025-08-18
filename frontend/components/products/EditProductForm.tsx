@@ -7,13 +7,41 @@ import { toast } from "react-hot-toast";
 
 interface Product {
   _id: string;
+  vendorId: string | { _id: string; businessName: string };
+  categoryId: string | { _id: string; name: string };
   name: string;
+  slug: string;
   description: string;
+  shortDescription?: string;
   price: number;
-  categoryId: string | { _id: string };
-  tags: string[];
+  originalPrice?: number;
+  discountPercentage?: number;
+  isDigital: boolean;
+  fileUrl?: string;
+  fileSize?: number;
+  fileType?: string;
+  previewUrl?: string;
   thumbnail?: string;
-  images?: string[];
+  images: string[];
+  tags: string[];
+  features: string[];
+  requirements?: string;
+  instructions?: string;
+  licenseType?: "SINGLE_USE" | "MULTIPLE_USE" | "UNLIMITED" | "TIME_LIMITED" | "SUBSCRIPTION";
+  licenseDuration?: number;
+  downloadLimit?: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  isApproved: boolean;
+  approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
+  rejectionReason?: string;
+  viewCount: number;
+  downloadCount: number;
+  soldCount: number;
+  rating: number;
+  reviewCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface EditProductFormProps {
@@ -33,19 +61,30 @@ export default function EditProductForm({ product }: EditProductFormProps) {
   const [formData, setFormData] = useState({
     name: product.name || "",
     description: product.description || "",
+    shortDescription: product.shortDescription || "",
     price: product.price || "",
+    originalPrice: product.originalPrice || "",
+    discountPercentage: product.discountPercentage || "",
     categoryId: typeof product.categoryId === 'string' ? product.categoryId : product.categoryId?._id || "",
     tags: product.tags?.join(", ") || "",
+    features: product.features?.join(", ") || "",
+    requirements: product.requirements || "",
+    instructions: product.instructions || "",
+    licenseType: product.licenseType || "MULTIPLE_USE",
+    licenseDuration: product.licenseDuration || "",
+    downloadLimit: product.downloadLimit || "",
   });
 
   const [files, setFiles] = useState({
     file: null as File | null,
     thumbnail: null as File | null,
+    preview: null as File | null,
     images: [] as File[],
   });
 
   const [previews, setPreviews] = useState({
     thumbnail: product.thumbnail || "",
+    preview: product.previewUrl || "",
     images: product.images || [],
   });
 
@@ -91,6 +130,12 @@ export default function EditProductForm({ product }: EditProductFormProps) {
           thumbnail: URL.createObjectURL(file),
         }));
       }
+      if (name === "preview" && file) {
+        setPreviews((prev) => ({
+          ...prev,
+          preview: URL.createObjectURL(file),
+        }));
+      }
     }
   };
 
@@ -105,7 +150,10 @@ export default function EditProductForm({ product }: EditProductFormProps) {
     const submitData = new FormData();
     submitData.append("name", formData.name);
     submitData.append("description", formData.description);
+    submitData.append("shortDescription", formData.shortDescription);
     submitData.append("price", formData.price.toString());
+    submitData.append("originalPrice", formData.originalPrice.toString());
+    submitData.append("discountPercentage", formData.discountPercentage.toString());
     submitData.append("categoryId", formData.categoryId);
 
     if (formData.tags) {
@@ -116,12 +164,30 @@ export default function EditProductForm({ product }: EditProductFormProps) {
       submitData.append("tags", JSON.stringify(tagsArray));
     }
 
+    if (formData.features) {
+      const featuresArray = formData.features
+        .split(",")
+        .map((feature: string) => feature.trim())
+        .filter((feature: string) => feature.length > 0);
+      submitData.append("features", JSON.stringify(featuresArray));
+    }
+
+    submitData.append("requirements", formData.requirements);
+    submitData.append("instructions", formData.instructions);
+    submitData.append("licenseType", formData.licenseType);
+    submitData.append("licenseDuration", formData.licenseDuration.toString());
+    submitData.append("downloadLimit", formData.downloadLimit.toString());
+
     if (files.file) {
       submitData.append("file", files.file);
     }
 
     if (files.thumbnail) {
       submitData.append("thumbnail", files.thumbnail);
+    }
+
+    if (files.preview) {
+      submitData.append("preview", files.preview);
     }
 
     files.images.forEach((image) => {
@@ -175,6 +241,41 @@ export default function EditProductForm({ product }: EditProductFormProps) {
           </div>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Original Price (₦)
+            </label>
+            <input
+              type="number"
+              name="originalPrice"
+              value={formData.originalPrice}
+              onChange={handleInputChange}
+              min="0"
+              step="0.01"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+              placeholder="0.00"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Discount Percentage (%)
+            </label>
+            <input
+              type="number"
+              name="discountPercentage"
+              value={formData.discountPercentage}
+              onChange={handleInputChange}
+              min="0"
+              max="100"
+              step="0.01"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+              placeholder="0"
+            />
+          </div>
+        </div>
+
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Description *
@@ -187,6 +288,114 @@ export default function EditProductForm({ product }: EditProductFormProps) {
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
             placeholder="Describe your product..."
+          />
+        </div>
+
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Short Description
+          </label>
+          <input
+            type="text"
+            name="shortDescription"
+            value={formData.shortDescription}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+            placeholder="Brief product summary"
+          />
+        </div>
+
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Features (comma-separated)
+          </label>
+          <input
+            type="text"
+            name="features"
+            value={formData.features}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+            placeholder="e.g., responsive, SEO optimized, mobile friendly"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Requirements
+            </label>
+            <input
+              type="text"
+              name="requirements"
+              value={formData.requirements}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+              placeholder="e.g., WordPress 5.0+, PHP 7.4+"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              License Type
+            </label>
+            <select
+              name="licenseType"
+              value={formData.licenseType}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent cursor-pointer"
+            >
+              <option value="MULTIPLE_USE">Multiple Use</option>
+              <option value="SINGLE_USE">Single Use</option>
+              <option value="UNLIMITED">Unlimited</option>
+              <option value="TIME_LIMITED">Time Limited</option>
+              <option value="SUBSCRIPTION">Subscription</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              License Duration (days)
+            </label>
+            <input
+              type="number"
+              name="licenseDuration"
+              value={formData.licenseDuration}
+              onChange={handleInputChange}
+              min="0"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+              placeholder="365"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Download Limit
+            </label>
+            <input
+              type="number"
+              name="downloadLimit"
+              value={formData.downloadLimit}
+              onChange={handleInputChange}
+              min="-1"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+              placeholder="-1 for unlimited"
+            />
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Instructions
+          </label>
+          <textarea
+            name="instructions"
+            value={formData.instructions}
+            onChange={handleInputChange}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+            placeholder="Installation or usage instructions"
           />
         </div>
 
@@ -240,6 +449,28 @@ export default function EditProductForm({ product }: EditProductFormProps) {
                 <img
                   src={previews.thumbnail}
                   alt="Thumbnail preview"
+                  className="w-32 h-32 object-cover rounded-lg border"
+                />
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Preview Image (optional - only upload if you want to replace)
+            </label>
+            <input
+              type="file"
+              name="preview"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+            />
+            {previews.preview && (
+              <div className="mt-2">
+                <img
+                  src={previews.preview}
+                  alt="Preview image"
                   className="w-32 h-32 object-cover rounded-lg border"
                 />
               </div>

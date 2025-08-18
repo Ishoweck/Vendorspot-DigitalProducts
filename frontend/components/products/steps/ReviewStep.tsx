@@ -35,42 +35,142 @@ export default function ReviewStep() {
               </label>
               <p className="text-gray-900">
                 ₦{formData.price.toLocaleString()}
+                {formData.originalPrice > 0 && (
+                  <span className="text-sm text-gray-500 ml-2">
+                    (was ₦{formData.originalPrice.toLocaleString()})
+                  </span>
+                )}
               </p>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <p className="text-gray-900 break-words">{formData.description}</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category
+                Discount
               </label>
               <p className="text-gray-900">
-                {selectedCategory?.name || "Category not found"}
+                {formData.discountPercentage > 0
+                  ? `${formData.discountPercentage}% off`
+                  : "No discount"}
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tags
+                Description
               </label>
-              <div className="flex flex-wrap gap-2">
-                {formData.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="bg-[#D7195B] text-white px-2 py-1 rounded-full text-xs break-words"
-                  >
-                    {tag}
-                  </span>
-                ))}
+              <p className="text-gray-900 break-words">
+                {formData.description}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Short Description
+              </label>
+              <p className="text-gray-900 break-words">
+                {formData.shortDescription}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Category
+                </label>
+                <p className="text-gray-900">
+                  {selectedCategory?.name || "Category not found"}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tags
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {formData.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="bg-[#D7195B] text-white px-2 py-1 rounded-full text-xs break-words"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Features
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {formData.features.map((feature) => (
+                    <span
+                      key={feature}
+                      className="bg-[#D7195B] text-white px-2 py-1 rounded-full text-xs break-words"
+                    >
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  License Type
+                </label>
+                <p className="text-gray-900">
+                  {formData.licenseType.replace("_", " ")}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  License Duration
+                </label>
+                <p className="text-gray-900">
+                  {formData.licenseDuration > 0
+                    ? `${formData.licenseDuration} days`
+                    : "Lifetime"}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Download Limit
+                </label>
+                <p className="text-gray-900">
+                  {formData.downloadLimit === -1
+                    ? "Unlimited"
+                    : `${formData.downloadLimit} downloads`}
+                </p>
+              </div>
+            </div>
+
+            {formData.requirements && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Requirements
+                </label>
+                <p className="text-gray-900 break-words">
+                  {formData.requirements}
+                </p>
+              </div>
+            )}
+
+            {formData.instructions && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Instructions
+                </label>
+                <p className="text-gray-900 break-words">
+                  {formData.instructions}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -102,6 +202,22 @@ export default function ReviewStep() {
                 <p className="font-medium text-gray-900">Thumbnail</p>
                 <p className="text-sm text-gray-600 break-words">
                   {formData.thumbnail.name}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {formData.preview && (
+            <div className="flex items-center gap-3 p-3 bg-white rounded-lg">
+              <img
+                src={URL.createObjectURL(formData.preview)}
+                alt="Preview"
+                className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-gray-900">Preview Image</p>
+                <p className="text-sm text-gray-600 break-words">
+                  {formData.preview.name}
                 </p>
               </div>
             </div>

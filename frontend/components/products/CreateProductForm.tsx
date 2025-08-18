@@ -42,15 +42,27 @@ export default function CreateProductForm() {
 
     submitData.append("name", formData.name);
     submitData.append("description", formData.description);
+    submitData.append("shortDescription", formData.shortDescription);
     submitData.append("price", formData.price.toString());
+    submitData.append("originalPrice", formData.originalPrice.toString());
+    submitData.append("discountPercentage", formData.discountPercentage.toString());
     submitData.append("categoryId", formData.categoryId);
     submitData.append("tags", JSON.stringify(formData.tags));
+    submitData.append("features", JSON.stringify(formData.features));
+    submitData.append("requirements", formData.requirements);
+    submitData.append("instructions", formData.instructions);
+    submitData.append("licenseType", formData.licenseType);
+    submitData.append("licenseDuration", formData.licenseDuration.toString());
+    submitData.append("downloadLimit", formData.downloadLimit.toString());
 
     if (formData.file) {
       submitData.append("file", formData.file);
     }
     if (formData.thumbnail) {
       submitData.append("thumbnail", formData.thumbnail);
+    }
+    if (formData.preview) {
+      submitData.append("preview", formData.preview);
     }
     formData.images.forEach((image) => {
       submitData.append("images", image);
