@@ -1,0 +1,436 @@
+import { Request, Response, NextFunction } from "express";
+import { Vendor } from "@/models/Vendor";
+import { User } from "@/models/User";
+import { Product } from "@/models/Product";
+import { Order } from "@/models/Order";
+import { cloudinaryService } from "@/services/cloudinaryService";
+import { asyncHandler, createError } from "@/middleware/errorHandler";
+import { SocketService } from "@/services/SocketService";
+
+export const createVendorProfile = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const {
+      businessName,
+      businessDescription,
+      businessAddress,
+      businessPhone,
+      businessEmail,
+      website,
+      taxId,
+      bankName,
+      bankAccountNumber,
+      bankAccountName,
+    } = req.body;
+
+    if (!businessName) {
+      return next(createError("Business name is required", 400));
+    }
+
+    const existingVendor = await Vendor.findOne({ userId: user._id });
+    if (existingVendor) {
+      return next(createError("Vendor profile already exists", 400));
+    }
+
+    let logoUrl = "";
+    let bannerUrl = "";
+    const verificationDocuments: string[] = [];
+
+    if (req.files) {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+      if (files.logo && files.logo[0]) {
+        const logoUpload = await cloudinaryService.uploadFile(
+          files.logo[0],
+          "vendors/logos"
+        );
+        logoUrl = logoUpload.url;
+      }
+
+      if (files.banner && files.banner[0]) {
+        const bannerUpload = await cloudinaryService.uploadFile(
+          files.banner[0],
+          "vendors/banners"
+        );
+        bannerUrl = bannerUpload.url;
+      }
+
+      if (files.documents) {
+        for (const doc of files.documents) {
+          const docUpload = await cloudinaryService.uploadFile(
+            doc,
+            "vendors/documents"
+          );
+          verificationDocuments.push(docUpload.url);
+        }
+      }
+    }
+
+    const vendor = await Vendor.create({
+      userId: user._id,
+      businessName,
+      businessDescription,
+      businessAddress,
+      businessPhone,
+      businessEmail,
+      website,
+      logo: logoUrl,
+      banner: bannerUrl,
+      taxId,
+      bankName,
+      bankAccountNumber,
+      bankAccountName,
+      verificationDocuments,
+    });
+
+    await User.findByIdAndUpdate(user._id, { role: "VENDOR" });
+
+    res.status(201).json({
+      success: true,
+      message: "Vendor profile created successfully",
+      data: vendor,
+    });
+  }
+);
+
+export const getVendorProfile = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+
+    const vendor = await Vendor.findOne({ userId: user._id }).populate(
+      "userId",
+      "firstName lastName email"
+    );
+    if (!vendor) {
+      return next(createError("Vendor profile not found", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      data: vendor,
+    });
+  }
+);
+
+export const updateVendorProfile = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const {
+      businessName,
+      businessDescription,
+      businessAddress,
+      businessPhone,
+      businessEmail,
+      website,
+      bankName,
+      bankAccountNumber,
+      bankAccountName,
+    } = req.body;
+
+    const vendor = await Vendor.findOne({ userId: user._id });
+    if (!vendor) {
+      return next(createError("Vendor profile not found", 404));
+    }
+
+    if (req.files) {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+      if (files.logo && files.logo[0]) {
+        const logoUpload = await cloudinaryService.uploadFile(
+          files.logo[0],
+          "vendors/logos"
+        );
+        if (vendor.logo) {
+          cloudinaryService.deleteFile(vendor.logo).catch(console.error);
+        }
+        vendor.logo = logoUpload.url;
+      }
+
+      if (files.banner && files.banner[0]) {
+        const bannerUpload = await cloudinaryService.uploadFile(
+          files.banner[0],
+          "vendors/banners"
+        );
+        if (vendor.banner) {
+          cloudinaryService.deleteFile(vendor.banner).catch(console.error);
+        }
+        vendor.banner = bannerUpload.url;
+      }
+    }
+
+    if (businessName) vendor.businessName = businessName;
+    if (businessDescription) vendor.businessDescription = businessDescription;
+    if (businessAddress) vendor.businessAddress = businessAddress;
+    if (businessPhone) vendor.businessPhone = businessPhone;
+    if (businessEmail) vendor.businessEmail = businessEmail;
+    if (website) vendor.website = website;
+    if (bankName) vendor.bankName = bankName;
+    if (bankAccountNumber) vendor.bankAccountNumber = bankAccountNumber;
+    if (bankAccountName) vendor.bankAccountName = bankAccountName;
+
+    await vendor.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Vendor profile updated successfully",
+      data: vendor,
+    });
+  }
+);
+
+export const getVendorDashboard = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+
+    const vendor = await Vendor.findOne({ userId: user._id });
+    if (!vendor) {
+      return next(createError("Vendor profile not found", 404));
+    }
+
+    const totalProducts = await Product.countDocuments({
+      vendorId: vendor._id,
+    });
+    const activeProducts = await Product.countDocuments({
+      vendorId: vendor._id,
+      isActive: true,
+      isApproved: true,
+    });
+    const pendingProducts = await Product.countDocuments({
+      vendorId: vendor._id,
+      approvalStatus: "PENDING",
+    });
+
+    const totalOrders = await Order.countDocuments({
+      "items.vendorId": vendor._id,
+    });
+    const completedOrders = await Order.countDocuments({
+      "items.vendorId": vendor._id,
+      status: "DELIVERED",
+    });
+    const pendingOrders = await Order.countDocuments({
+      "items.vendorId": vendor._id,
+      status: { $in: ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED"] },
+    });
+
+    const totalRevenue = await Order.aggregate([
+      { $match: { "items.vendorId": vendor._id, paymentStatus: "PAID" } },
+      { $unwind: "$items" },
+      { $match: { "items.vendorId": vendor._id } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+        },
+      },
+    ]);
+
+    const recentOrders = await Order.find({
+      "items.vendorId": vendor._id,
+    })
+      .populate("userId", "firstName lastName")
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    const topProducts = await Product.find({
+      vendorId: vendor._id,
+      isActive: true,
+    })
+      .sort({ soldCount: -1 })
+      .limit(5);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        stats: {
+          totalProducts,
+          activeProducts,
+          pendingProducts,
+          totalOrders,
+          completedOrders,
+          pendingOrders,
+          totalRevenue: totalRevenue[0]?.total || 0,
+          rating: vendor.rating,
+        },
+        recentOrders,
+        topProducts,
+      },
+    });
+  }
+);
+
+export const getVendorSales = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const { period = "month" } = req.query;
+
+    const vendor = await Vendor.findOne({ userId: user._id });
+    if (!vendor) {
+      return next(createError("Vendor profile not found", 404));
+    }
+
+    let dateFilter = {};
+    const now = new Date();
+
+    switch (period) {
+      case "week":
+        dateFilter = {
+          createdAt: {
+            $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+          },
+        };
+        break;
+      case "month":
+        dateFilter = {
+          createdAt: { $gte: new Date(now.getFullYear(), now.getMonth(), 1) },
+        };
+        break;
+      case "year":
+        dateFilter = {
+          createdAt: { $gte: new Date(now.getFullYear(), 0, 1) },
+        };
+        break;
+    }
+
+    const salesData = await Order.aggregate([
+      {
+        $match: {
+          "items.vendorId": vendor._id,
+          paymentStatus: "PAID",
+          ...dateFilter,
+        },
+      },
+      { $unwind: "$items" },
+      { $match: { "items.vendorId": vendor._id } },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+            day: { $dayOfMonth: "$createdAt" },
+          },
+          revenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+          orders: { $sum: 1 },
+          products: { $sum: "$items.quantity" },
+        },
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1, "_id.day": 1 } },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: salesData,
+    });
+  }
+);
+
+export const getAllVendors = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const query: any = { isActive: true };
+
+    if (req.query.search) {
+      query.businessName = { $regex: req.query.search, $options: "i" };
+    }
+
+    if (req.query.verificationStatus) {
+      query.verificationStatus = req.query.verificationStatus;
+    }
+
+    const vendors = await Vendor.find(query)
+      .populate("userId", "firstName lastName")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Vendor.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      data: vendors,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  }
+);
+
+export const getVendorById = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const vendor = await Vendor.findById(req.params.id).populate(
+      "userId",
+      "firstName lastName"
+    );
+
+    if (!vendor) {
+      return next(createError("Vendor not found", 404));
+    }
+
+    const products = await Product.find({
+      vendorId: vendor._id,
+      isActive: true,
+      isApproved: true,
+    }).limit(6);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        vendor,
+        products,
+      },
+    });
+  }
+);
+
+export const verifyVendor = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const { status, rejectionReason } = req.body;
+
+    if (user.role !== "ADMIN") {
+      return next(createError("Unauthorized", 403));
+    }
+
+    const vendor = await Vendor.findById(req.params.id);
+    if (!vendor) {
+      return next(createError("Vendor not found", 404));
+    }
+
+    const validStatuses = ["APPROVED", "REJECTED"];
+    if (!validStatuses.includes(status)) {
+      return next(createError("Invalid verification status", 400));
+    }
+
+    vendor.verificationStatus = status;
+    await vendor.save();
+
+    if (status === "APPROVED") {
+      await Product.updateMany(
+        { vendorId: vendor._id },
+        { isApproved: true, approvalStatus: "APPROVED" }
+      );
+    }
+
+    try {
+      const io = SocketService.getIO();
+      io.to(vendor.userId.toString()).emit("vendor:verification_updated", {
+        vendorId: vendor._id,
+        status,
+        rejectionReason,
+      });
+    } catch (error) {
+      console.log("Socket emit error:", error);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Vendor ${status.toLowerCase()} successfully`,
+      data: vendor,
+    });
+  }
+);

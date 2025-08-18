@@ -1,13 +1,17 @@
-// import { Router } from "express";
+import { Router } from "express";
+import { authenticate, authorize } from "@/middleware/auth";
+import {
+  initializePayment,
+  verifyPayment,
+  getUserPayments,
+  refundPayment
+} from "@/controllers/PaymentController";
 
-// const router = Router();
+const router: Router = Router();
 
-// router.post("/initialize", (req, res) => {
-//   res.json({ message: "Initialize payment" });
-// });
+router.post("/initialize", authenticate, initializePayment);
+router.get("/verify/:reference", authenticate, verifyPayment);
+router.get("/", authenticate, getUserPayments);
+router.post("/:id/refund", authenticate, authorize("ADMIN"), refundPayment);
 
-// router.post("/verify", (req, res) => {
-//   res.json({ message: "Verify payment" });
-// });
-
-// export default router;
+export default router;

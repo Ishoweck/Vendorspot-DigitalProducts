@@ -1,17 +1,21 @@
-// import { Router } from "express";
+import { Router } from "express";
+import { authenticate, authorize } from "@/middleware/auth";
+import {
+  createOrder,
+  getUserOrders,
+  getOrderById,
+  getVendorOrders,
+  updateOrderStatus,
+  cancelOrder
+} from "@/controllers/OrderController";
 
-// const router = Router();
+const router: Router = Router();
 
-// router.get("/", (req, res) => {
-//   res.json({ message: "Get user orders" });
-// });
+router.post("/", authenticate, createOrder);
+router.get("/", authenticate, getUserOrders);
+router.get("/vendor", authenticate, authorize("VENDOR", "ADMIN"), getVendorOrders);
+router.get("/:id", authenticate, getOrderById);
+router.patch("/:id/status", authenticate, authorize("VENDOR", "ADMIN"), updateOrderStatus);
+router.patch("/:id/cancel", authenticate, cancelOrder);
 
-// router.post("/", (req, res) => {
-//   res.json({ message: "Create order" });
-// });
-
-// router.get("/:id", (req, res) => {
-//   res.json({ message: `Get order ${req.params.id}` });
-// });
-
-// export default router;
+export default router;

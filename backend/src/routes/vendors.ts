@@ -1,46 +1,42 @@
 import { Router } from "express";
+import multer from "multer";
 import { authenticate, authorize } from "@/middleware/auth";
+import {
+  createVendorProfile,
+  getVendorProfile,
+  updateVendorProfile,
+  getVendorDashboard,
+  getVendorSales,
+  getAllVendors,
+  getVendorById,
+  verifyVendor
+} from "@/controllers/VendorController";
 
 const router: Router = Router();
 
-router.get("/", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Vendors endpoint - Coming soon",
-    data: [],
-  });
+const upload = multer({
+  dest: "uploads/",
+  limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-router.get("/:id", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Vendor details endpoint - Coming soon",
-    data: null,
-  });
-});
+const uploadFields = upload.fields([
+  { name: "logo", maxCount: 1 },
+  { name: "banner", maxCount: 1 },
+  { name: "documents", maxCount: 10 }
+]);
 
-router.post("/", authenticate, (req, res) => {
-  res.status(201).json({
-    success: true,
-    message: "Create vendor endpoint - Coming soon",
-    data: null,
-  });
-});
+const logoAndBannerFields = upload.fields([
+  { name: "logo", maxCount: 1 },
+  { name: "banner", maxCount: 1 }
+]);
 
-router.put("/:id", authenticate, authorize("VENDOR", "ADMIN"), (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Update vendor endpoint - Coming soon",
-    data: null,
-  });
-});
-
-router.delete("/:id", authenticate, authorize("ADMIN"), (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Delete vendor endpoint - Coming soon",
-    data: null,
-  });
-});
+router.post("/profile", authenticate, uploadFields, createVendorProfile);
+router.get("/profile", authenticate, authorize("VENDOR", "ADMIN"), getVendorProfile);
+router.put("/profile", authenticate, authorize("VENDOR", "ADMIN"), logoAndBannerFields, updateVendorProfile);
+router.get("/dashboard", authenticate, authorize("VENDOR", "ADMIN"), getVendorDashboard);
+router.get("/sales", authenticate, authorize("VENDOR", "ADMIN"), getVendorSales);
+router.get("/", getAllVendors);
+router.get("/:id", getVendorById);
+router.patch("/:id/verify", authenticate, authorize("ADMIN"), verifyVendor);
 
 export default router;

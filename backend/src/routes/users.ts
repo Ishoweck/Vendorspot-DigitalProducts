@@ -1,37 +1,36 @@
 import { Router } from "express";
+import multer from "multer";
+import { authenticate } from "@/middleware/auth";
+import {
+  getProfile,
+  updateProfile,
+  uploadAvatar,
+  changePassword,
+  getUserDashboard,
+  getUserWishlist,
+  deleteAccount
+} from "@/controllers/UserController";
 
 const router: Router = Router();
 
-// Get user profile
-router.get("/profile", async (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      message: "Profile retrieved successfully",
-      data: { message: "Get user profile - MongoDB implementation needed" },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to get profile",
-    });
+const upload = multer({
+  dest: "uploads/",
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
   }
 });
 
-// Update user profile
-router.put("/profile", async (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      message: "Profile updated successfully",
-      data: { message: "Update user profile - MongoDB implementation needed" },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to update profile",
-    });
-  }
-});
+router.get("/profile", authenticate, getProfile);
+router.put("/profile", authenticate, updateProfile);
+router.post("/avatar", authenticate, upload.single("avatar"), uploadAvatar);
+router.post("/change-password", authenticate, changePassword);
+router.get("/dashboard", authenticate, getUserDashboard);
+router.get("/wishlist", authenticate, getUserWishlist);
+router.delete("/account", authenticate, deleteAccount);
 
 export default router;
