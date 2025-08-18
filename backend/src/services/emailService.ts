@@ -201,6 +201,47 @@ class EmailService {
       html,
     });
   }
+
+  // Notification email template
+  async sendNotificationEmail(
+    to: string,
+    data: {
+      title: string;
+      message: string;
+      userName: string;
+    }
+  ) {
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #D7195B; margin: 0;">Vendorspot</h1>
+        </div>
+        <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px;">
+          <h2 style="color: #333; margin: 0 0 20px 0;">${data.title}</h2>
+          <p style="color: #666; margin-bottom: 30px;">Hi ${data.userName},</p>
+          <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="color: #444; margin: 0; line-height: 1.6;">${data.message}</p>
+          </div>
+          <div style="margin-top: 30px;">
+            <a href="${config.frontendUrl}/dashboard/notifications" 
+               style="background-color: #D7195B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+              View in Dashboard
+            </a>
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 30px;">
+          <p style="color: #999; font-size: 12px;">You received this email because you have notifications enabled for your Vendorspot account.</p>
+          <p style="color: #999; font-size: 12px;">The Vendorspot Team</p>
+        </div>
+      </div>
+    `;
+
+    return this.sendEmail({
+      to,
+      subject: data.title,
+      html,
+    });
+  }
 }
 
 export const emailService = new EmailService();
