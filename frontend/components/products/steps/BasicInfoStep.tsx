@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { useProductFormStore } from "@/stores/productFormStore";
 import { useCategories } from "@/hooks/useAPI";
+import HelpTooltip from "@/components/ui/HelpTooltip";
 
 export default function BasicInfoStep() {
   const { formData, updateFormData } = useProductFormStore();
@@ -37,6 +38,7 @@ export default function BasicInfoStep() {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Product Name <span className="text-red-500">*</span>
+          <HelpTooltip text="This title appears on product cards and in search results. Keep it short and descriptive." />
         </label>
         <input
           type="text"
@@ -50,6 +52,7 @@ export default function BasicInfoStep() {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Description <span className="text-red-500">*</span>
+          <HelpTooltip text="Full details buyers should know before purchase. Supports paragraphs; focus on value and what’s included." />
         </label>
         <textarea
           value={formData.description}
@@ -66,6 +69,7 @@ export default function BasicInfoStep() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Price (₦) <span className="text-red-500">*</span>
+            <HelpTooltip text="Current selling price. This is what customers pay." />
           </label>
           <input
             type="number"
@@ -83,6 +87,7 @@ export default function BasicInfoStep() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Category <span className="text-red-500">*</span>
+            <HelpTooltip text="Choose the most relevant category so customers can find your product easily." />
           </label>
           <select
             value={formData.categoryId}
@@ -106,6 +111,7 @@ export default function BasicInfoStep() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Original Price (₦)
+            <HelpTooltip text="Optional. Shown struck-through if higher than Price to indicate savings." />
           </label>
           <input
             type="number"
@@ -123,12 +129,15 @@ export default function BasicInfoStep() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Discount Percentage (%)
+            <HelpTooltip text="Optional. If set, shows a -% badge and can be used to calculate sale price." />
           </label>
           <input
             type="number"
             value={formData.discountPercentage || ""}
             onChange={(e) =>
-              updateFormData({ discountPercentage: parseFloat(e.target.value) || 0 })
+              updateFormData({
+                discountPercentage: parseFloat(e.target.value) || 0,
+              })
             }
             min="0"
             max="100"
@@ -142,6 +151,7 @@ export default function BasicInfoStep() {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Features
+          <HelpTooltip text="Short bullet points highlighting key benefits. Type and press Enter to add each feature." />
         </label>
         <input
           type="text"
@@ -170,9 +180,11 @@ export default function BasicInfoStep() {
               >
                 {feature}
                 <button
-                  onClick={() => updateFormData({
-                    features: formData.features.filter((f) => f !== feature)
-                  })}
+                  onClick={() =>
+                    updateFormData({
+                      features: formData.features.filter((f) => f !== feature),
+                    })
+                  }
                   className="hover:bg-white/20 rounded-full p-0.5 cursor-pointer"
                 >
                   <X className="w-3 h-3" />
@@ -187,6 +199,7 @@ export default function BasicInfoStep() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Requirements
+            <HelpTooltip text="What buyers need to use the product (e.g., WordPress 5.0+, Photoshop CC)." />
           </label>
           <input
             type="text"
@@ -200,10 +213,13 @@ export default function BasicInfoStep() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             License Type
+            <HelpTooltip text="How your product can be used (single-site, multiple, unlimited, time-limited, subscription)." />
           </label>
           <select
             value={formData.licenseType}
-            onChange={(e) => updateFormData({ licenseType: e.target.value as any })}
+            onChange={(e) =>
+              updateFormData({ licenseType: e.target.value as any })
+            }
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent cursor-pointer"
           >
             <option value="MULTIPLE_USE">Multiple Use</option>
@@ -219,6 +235,7 @@ export default function BasicInfoStep() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             License Duration (days)
+            <HelpTooltip text="If time-limited or subscription, how long access lasts (0 or blank means lifetime)." />
           </label>
           <input
             type="number"
@@ -235,12 +252,16 @@ export default function BasicInfoStep() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Download Limit
+            <HelpTooltip text="Maximum downloads allowed per purchase (-1 means unlimited)." />
           </label>
           <input
             type="number"
             value={formData.downloadLimit === -1 ? "" : formData.downloadLimit}
             onChange={(e) =>
-              updateFormData({ downloadLimit: e.target.value === "" ? -1 : parseInt(e.target.value) || 0 })
+              updateFormData({
+                downloadLimit:
+                  e.target.value === "" ? -1 : parseInt(e.target.value) || 0,
+              })
             }
             min="-1"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
@@ -252,6 +273,7 @@ export default function BasicInfoStep() {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Instructions
+          <HelpTooltip text="Optional. Steps to install/use the product after download." />
         </label>
         <textarea
           value={formData.instructions}
@@ -265,6 +287,7 @@ export default function BasicInfoStep() {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Tags
+          <HelpTooltip text="Keywords to help customers find your product (press Enter to add)." />
         </label>
         <input
           type="text"

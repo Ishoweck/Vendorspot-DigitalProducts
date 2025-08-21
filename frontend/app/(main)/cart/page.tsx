@@ -102,7 +102,7 @@ export default function CartPage() {
                   key={item._id}
                   className={`p-6 ${index !== cartProducts.length - 1 ? "border-b border-neutral-200" : ""}`}
                 >
-                  <div className="flex items-center space-x-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:space-x-4">
                     <div className="relative w-20 h-20 flex-shrink-0">
                       <Image
                         src={item.thumbnail || "/api/placeholder/200/150"}
@@ -112,9 +112,9 @@ export default function CartPage() {
                       />
                     </div>
 
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 w-full">
                       <Link href={`/products/${item._id}`}>
-                        <h3 className="font-semibold text-neutral-900 hover:text-primary-500 transition-colors duration-200">
+                        <h3 className="font-semibold text-neutral-900 hover:text-primary-500 transition-colors duration-200 break-words">
                           {item.name}
                         </h3>
                       </Link>
@@ -131,7 +131,7 @@ export default function CartPage() {
                       </p>
                     </div>
 
-                    <div className="flex items-center space-x-3">
+                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                       <div className="flex items-center border border-neutral-200 rounded-lg">
                         <button
                           onClick={() =>
@@ -154,7 +154,7 @@ export default function CartPage() {
                         </button>
                       </div>
 
-                      <div className="text-right min-w-0">
+                      <div className="text-right min-w-0 ml-auto sm:ml-0">
                         <div className="font-semibold text-neutral-900">
                           ₦{(item.price * item.quantity).toLocaleString()}
                         </div>

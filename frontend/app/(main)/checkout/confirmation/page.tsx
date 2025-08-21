@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { CheckCircle, Package, MapPin, Truck, Calendar, ArrowRight } from "lucide-react";
+import {
+  CheckCircle,
+  Package,
+  MapPin,
+  Truck,
+  Calendar,
+  ArrowRight,
+} from "lucide-react";
 import { useTempStore } from "@/stores/tempStore";
 import { useProducts } from "@/hooks/useAPI";
 
@@ -29,11 +36,11 @@ export default function CheckoutConfirmationPage() {
       const today = new Date();
       const deliveryDate = new Date(today);
       deliveryDate.setDate(today.getDate() + 5);
-      return deliveryDate.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+      return deliveryDate.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
     };
 
@@ -76,7 +83,8 @@ export default function CheckoutConfirmationPage() {
             Order Confirmed!
           </h1>
           <p className="text-neutral-600 mb-4">
-            Thank you for your purchase. Your order has been successfully placed.
+            Thank you for your purchase. Your order has been successfully
+            placed.
           </p>
           <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 inline-block">
             <p className="text-sm text-primary-700 mb-1">Order Number</p>
@@ -92,7 +100,10 @@ export default function CheckoutConfirmationPage() {
               </h2>
               <div className="space-y-4">
                 {cartProducts.map((item) => (
-                  <div key={item._id} className="flex items-center space-x-4 pb-4 border-b border-neutral-100 last:border-b-0 last:pb-0">
+                  <div
+                    key={item._id}
+                    className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-4 pb-4 border-b border-neutral-100 last:border-b-0 last:pb-0"
+                  >
                     <div className="relative w-16 h-16 flex-shrink-0">
                       <Image
                         src={item.thumbnail || "/api/placeholder/200/150"}
@@ -101,15 +112,15 @@ export default function CheckoutConfirmationPage() {
                         className="object-cover rounded-lg"
                       />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-neutral-900 truncate">
+                    <div className="flex-1 min-w-0 w-full">
+                      <h3 className="font-medium text-neutral-900 truncate sm:truncate break-words">
                         {item.name}
                       </h3>
                       <p className="text-sm text-neutral-500">
                         Qty: {item.quantity}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right ml-auto sm:ml-0">
                       <p className="font-semibold text-neutral-900">
                         ₦{(item.price * item.quantity).toLocaleString()}
                       </p>
@@ -127,10 +138,14 @@ export default function CheckoutConfirmationPage() {
                 <div className="flex items-start space-x-3">
                   <MapPin className="w-5 h-5 text-neutral-400 mt-1" />
                   <div>
-                    <p className="font-medium text-neutral-900">Delivery Address</p>
+                    <p className="font-medium text-neutral-900">
+                      Delivery Address
+                    </p>
                     <p className="text-neutral-600 text-sm">
-                      123 Lagos Street, Victoria Island<br />
-                      Lagos, Nigeria<br />
+                      123 Lagos Street, Victoria Island
+                      <br />
+                      Lagos, Nigeria
+                      <br />
                       +234 901 234 5678
                     </p>
                   </div>
@@ -138,15 +153,23 @@ export default function CheckoutConfirmationPage() {
                 <div className="flex items-start space-x-3">
                   <Truck className="w-5 h-5 text-neutral-400 mt-1" />
                   <div>
-                    <p className="font-medium text-neutral-900">Delivery Method</p>
-                    <p className="text-neutral-600 text-sm">Standard Delivery (3-5 business days)</p>
+                    <p className="font-medium text-neutral-900">
+                      Delivery Method
+                    </p>
+                    <p className="text-neutral-600 text-sm">
+                      Standard Delivery (3-5 business days)
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Calendar className="w-5 h-5 text-neutral-400 mt-1" />
                   <div>
-                    <p className="font-medium text-neutral-900">Estimated Delivery</p>
-                    <p className="text-neutral-600 text-sm">{estimatedDelivery}</p>
+                    <p className="font-medium text-neutral-900">
+                      Estimated Delivery
+                    </p>
+                    <p className="text-neutral-600 text-sm">
+                      {estimatedDelivery}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -156,7 +179,9 @@ export default function CheckoutConfirmationPage() {
               <div className="flex items-start space-x-3">
                 <Package className="w-6 h-6 text-blue-600 mt-1" />
                 <div>
-                  <h3 className="font-semibold text-blue-900 mb-2">What happens next?</h3>
+                  <h3 className="font-semibold text-blue-900 mb-2">
+                    What happens next?
+                  </h3>
                   <ul className="space-y-2 text-sm text-blue-800">
                     <li className="flex items-center">
                       <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
@@ -185,7 +210,9 @@ export default function CheckoutConfirmationPage() {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-600">Subtotal</span>
-                  <span className="font-medium">₦{subtotal.toLocaleString()}</span>
+                  <span className="font-medium">
+                    ₦{subtotal.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-600">Shipping</span>
@@ -225,7 +252,10 @@ export default function CheckoutConfirmationPage() {
               <div className="mt-6 p-4 bg-neutral-50 rounded-lg">
                 <p className="text-sm text-neutral-600 text-center">
                   Need help? Contact our support team at{" "}
-                  <a href="mailto:support@example.com" className="text-primary-600 hover:underline">
+                  <a
+                    href="mailto:support@example.com"
+                    className="text-primary-600 hover:underline"
+                  >
                     support@example.com
                   </a>
                 </p>

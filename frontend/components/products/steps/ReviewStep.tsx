@@ -3,6 +3,7 @@
 import { File, Image } from "lucide-react";
 import { useProductFormStore } from "@/stores/productFormStore";
 import { useCategories } from "@/hooks/useAPI";
+import HelpTooltip from "@/components/ui/HelpTooltip";
 
 export default function ReviewStep() {
   const { formData } = useProductFormStore();
@@ -18,6 +19,7 @@ export default function ReviewStep() {
       <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Product Details
+          <HelpTooltip text="Review everything before submitting. Go back to make corrections." />
         </h3>
 
         <div className="space-y-4">

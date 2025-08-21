@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { Upload, X, File, Image, RefreshCw } from "lucide-react";
 import { useProductFormStore } from "@/stores/productFormStore";
+import HelpTooltip from "@/components/ui/HelpTooltip";
 
 export default function FilesStep() {
   const { formData, updateFormData } = useProductFormStore();
@@ -61,7 +62,8 @@ export default function FilesStep() {
     <div className="space-y-6">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Product File (Required)
+          Product File <span className="text-red-500">*</span>
+          <HelpTooltip text="Upload the main digital file customers will download (ZIP, PDF, etc.)." />
         </label>
         <div
           onClick={() => fileInputRef.current?.click()}
@@ -137,6 +139,7 @@ export default function FilesStep() {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Thumbnail <span className="text-red-500">*</span>
+          <HelpTooltip text="Cover image shown on product cards and details page. Recommended 400x300px." />
         </label>
         <div
           onClick={() => thumbnailInputRef.current?.click()}
@@ -195,7 +198,9 @@ export default function FilesStep() {
           ) : (
             <div>
               <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Upload a thumbnail image (required)</p>
+              <p className="text-gray-600">
+                Upload a thumbnail image (required)
+              </p>
               <p className="text-sm text-gray-500 mt-1">
                 JPG, PNG (recommended: 400x300px)
               </p>
@@ -214,6 +219,7 @@ export default function FilesStep() {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Preview Image (Optional)
+          <HelpTooltip text="Optional promo image or screenshot shown on the product page." />
         </label>
         <div
           onClick={() => previewInputRef.current?.click()}
@@ -291,6 +297,7 @@ export default function FilesStep() {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Additional Images (Optional)
+          <HelpTooltip text="Optional gallery images (screenshots, variants, previews)." />
         </label>
         <div
           onClick={() => imagesInputRef.current?.click()}
