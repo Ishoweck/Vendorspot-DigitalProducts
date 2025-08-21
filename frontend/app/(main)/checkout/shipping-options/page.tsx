@@ -4,11 +4,18 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Truck, Clock, Zap, Check } from "lucide-react";
 import { useTempStore } from "@/stores/tempStore";
+import { useProducts } from "@/hooks/useAPI";
 
 export default function CheckoutShippingPage() {
   const { cartItems } = useTempStore();
   const [selectedShipping, setSelectedShipping] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
+  const [cartProducts, setCartProducts] = useState<any[]>([]);
+
+  const { data: productsData } = useProducts({
+    page: 1,
+    limit: 100,
+  });
 
   const shippingOptions = [
     {
@@ -39,9 +46,22 @@ export default function CheckoutShippingPage() {
   ];
 
   useEffect(() => {
+    if (productsData?.data?.data && cartItems.length > 0) {
+      const products = productsData.data.data;
+      const cartProductData = cartItems
+        .map((cartItem) => {
+          const product = products.find((p: any) => p._id === cartItem.productId);
+          return product ? { ...product, quantity: cartItem.quantity } : null;
+        })
+        .filter(Boolean);
+
+      setCartProducts(cartProductData);
+    } else {
+      setCartProducts([]);
+    }
     setSelectedShipping("standard");
     setIsLoading(false);
-  }, []);
+  }, [cartItems, productsData]);
 
   const handleShippingSelect = (shippingId: string) => {
     setSelectedShipping(shippingId);
@@ -55,7 +75,7 @@ export default function CheckoutShippingPage() {
     }
   };
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cartProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const selectedOption = shippingOptions.find(opt => opt.id === selectedShipping);
   const total = subtotal + (selectedOption?.price || 0);
 

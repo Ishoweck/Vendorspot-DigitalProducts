@@ -20,6 +20,7 @@ const upload = multer({
 const uploadFields = upload.fields([
   { name: "file", maxCount: 1 },
   { name: "thumbnail", maxCount: 1 },
+  { name: "preview", maxCount: 1 },
   { name: "images", maxCount: 5 },
 ]);
 

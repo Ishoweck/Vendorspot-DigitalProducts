@@ -205,7 +205,14 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
                   className="p-1 hover:bg-white/20 rounded transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
-                    updateCartQuantity(product._id, cartItem.quantity - 1);
+                    const newQuantity = cartItem.quantity - 1;
+                    if (newQuantity === 0) {
+                      updateCartQuantity(product._id, 0);
+                      showNotification("Item was removed from cart successfully");
+                    } else {
+                      updateCartQuantity(product._id, newQuantity);
+                      showNotification("Item quantity has been updated");
+                    }
                   }}
                 >
                   <Minus className="w-4 h-4" />
@@ -216,6 +223,7 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
                   onClick={(e) => {
                     e.stopPropagation();
                     updateCartQuantity(product._id, cartItem.quantity + 1);
+                    showNotification("Item added to cart");
                   }}
                 >
                   <Plus className="w-4 h-4" />

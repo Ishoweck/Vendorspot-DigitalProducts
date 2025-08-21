@@ -73,6 +73,13 @@ export default function ProductsPage() {
     }
   }, [categories, searchParams]);
 
+  useEffect(() => {
+    const vendorParam = searchParams.get("vendor");
+    if (vendorParam) {
+      setSelectedVendor(vendorParam);
+    }
+  }, [searchParams]);
+
   const updateURL = (categorySlug?: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (categorySlug) {
@@ -122,11 +129,6 @@ export default function ProductsPage() {
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1);
-  };
-
-  const handleVendorChange = (vendor: string) => {
-    setSelectedVendor(vendor);
     setCurrentPage(1);
   };
 

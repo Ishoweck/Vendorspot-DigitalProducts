@@ -15,8 +15,21 @@ export default function CheckoutPage() {
 
   const [cartProducts, setCartProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedAddress, setSelectedAddress] = useState(null);
-  const [selectedShipping, setSelectedShipping] = useState(null);
+  const [selectedAddress, setSelectedAddress] = useState<{
+    fullName?: string;
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    phone: string;
+  } | null>(null);
+  const [selectedShipping, setSelectedShipping] = useState<{
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    estimatedDays: string;
+  } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const { data: productsData } = useProducts({
