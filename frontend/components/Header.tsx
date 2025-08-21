@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Search,
   X,
@@ -39,6 +39,7 @@ export default function Header() {
 
   const searchRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   const { data: userProfile } = useUserProfile();
   const { data: categoriesData } = useCategories();
@@ -53,10 +54,6 @@ export default function Header() {
   );
 
   useEffect(() => {
-    const pathname = window.location.pathname;
-    const hideOn = [/^\/dashboard\//, /^\/cart(\/|$)/, /^\/checkout(\/|$)/];
-    setShowBanner(!hideOn.some((re) => re.test(pathname)));
-
     const handleScroll = () => {
       const scrollY = window.scrollY;
 
@@ -90,6 +87,11 @@ export default function Header() {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    const hideOn = [/^\/dashboard\//, /^\/cart(\/|$)/, /^\/checkout(\/|$)/];
+    setShowBanner(!hideOn.some((re) => re.test(pathname)));
+  }, [pathname]);
 
   useEffect(() => {
     const searchTimeout = setTimeout(async () => {

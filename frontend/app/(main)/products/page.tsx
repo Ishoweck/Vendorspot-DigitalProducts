@@ -12,7 +12,7 @@ import { useProducts, useCategories } from "@/hooks/useAPI";
 export default function ProductsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,15 +42,23 @@ export default function ProductsPage() {
     sortBy:
       sortBy === "newest"
         ? "createdAt"
-        : sortBy === "popular"
-          ? "soldCount"
-          : sortBy.includes("price")
-            ? "price"
-            : "rating",
+        : sortBy === "oldest"
+          ? "createdAt"
+          : sortBy === "popular"
+            ? "soldCount"
+            : sortBy.includes("price")
+              ? "price"
+              : "rating",
     sortOrder:
-      sortBy === "price-high" || sortBy === "rating" || sortBy === "popular"
+      sortBy === "newest"
         ? "desc"
-        : "asc",
+        : sortBy === "oldest"
+          ? "asc"
+          : sortBy === "price-high" ||
+              sortBy === "rating" ||
+              sortBy === "popular"
+            ? "desc"
+            : "asc",
   });
 
   const categories = categoriesData?.data?.data || [];
@@ -94,9 +102,10 @@ export default function ProductsPage() {
     const newRange = [...priceRange] as [number, number];
     newRange[index] = value;
     setPriceRange(newRange);
-    
+
     const defaultRange: [number, number] = [0, 100000];
-    const hasChanged = newRange[0] !== defaultRange[0] || newRange[1] !== defaultRange[1];
+    const hasChanged =
+      newRange[0] !== defaultRange[0] || newRange[1] !== defaultRange[1];
     setIsPriceRangeChanged(hasChanged);
   };
 
