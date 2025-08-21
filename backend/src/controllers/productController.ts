@@ -110,6 +110,10 @@ export const getProductById = asyncHandler(
       return next(createError("Product not found", 404));
     }
 
+    await Product.findByIdAndUpdate(req.params.id, {
+      $inc: { viewCount: 1 }
+    });
+
     res.status(200).json({
       success: true,
       data: product,

@@ -25,13 +25,13 @@ const uploadFields = upload.fields([
 ]);
 
 router.get("/", getProducts);
+router.get("/:id", getProductById);
 router.get(
   "/vendor",
   authenticate,
   authorize("VENDOR", "ADMIN"),
   getVendorProducts
 );
-router.get("/:id", getProductById);
 router.post(
   "/",
   authenticate,

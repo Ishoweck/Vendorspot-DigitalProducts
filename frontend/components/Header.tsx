@@ -89,7 +89,7 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    const hideOn = [/^\/dashboard\//, /^\/cart(\/|$)/, /^\/checkout(\/|$)/];
+    const hideOn = [/^\/dashboard\//, /^\/cart(\/|$)/, /^\/checkout(\/|$)/, /^\/products\/[^\/]+$/];
     setShowBanner(!hideOn.some((re) => re.test(pathname)));
   }, [pathname]);
 
