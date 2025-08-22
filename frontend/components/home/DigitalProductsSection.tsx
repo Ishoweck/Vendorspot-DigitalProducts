@@ -3,14 +3,39 @@
 import Link from "next/link";
 import { useProducts } from "@/hooks/useAPI";
 import { ProductThumbnail } from "@/components/products/ProductThumbnail";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DigitalProductsSection() {
-  const { data: productsData } = useProducts({
+  const { data: productsData, isLoading } = useProducts({
     page: 1,
     limit: 8,
   });
 
   const products = productsData?.data?.data || [];
+
+  const renderSkeletons = () => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
+      {[...Array(8)].map((_, i) => (
+        <div
+          key={i}
+          className="w-full bg-white rounded-[5px] overflow-hidden shadow-md h-64 sm:h-80 md:h-96"
+        >
+          <div className="bg-gray-200 h-[72.2%] animate-pulse" />
+          <div className="bg-white p-2 sm:p-3 md:py-4 md:px-[15px] h-[27.8%] space-y-2">
+            <Skeleton className="h-3 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-2 w-2" />
+              <Skeleton className="h-2 w-2" />
+              <Skeleton className="h-2 w-2" />
+              <Skeleton className="h-2 w-2" />
+              <Skeleton className="h-2 w-2" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <section className="py-8 sm:py-12 md:py-16 bg-[#D7195B]">
@@ -24,11 +49,15 @@ export default function DigitalProductsSection() {
       </div>
 
       <div className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
-          {products.map((product) => (
-            <ProductThumbnail key={product._id} product={product} />
-          ))}
-        </div>
+        {isLoading ? (
+          renderSkeletons()
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
+            {products.map((product) => (
+              <ProductThumbnail key={product._id} product={product} />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="text-center">

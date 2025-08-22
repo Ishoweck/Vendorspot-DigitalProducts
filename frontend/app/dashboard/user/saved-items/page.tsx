@@ -6,6 +6,7 @@ import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import AuthWrapper from "@/components/auth/AuthWrapper";
 import { useTempStore } from "@/stores/tempStore";
+import Link from "next/link";
 
 function SavedItemsPageContent() {
   const { isVendor } = useTempStore();
@@ -84,9 +85,10 @@ function SavedItemsPageContent() {
               ) : Array.isArray(wishlist) ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {wishlist.map((item: any) => (
-                    <div
+                    <Link
                       key={item._id}
-                      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                      href={`/products/${item._id}`}
+                      className="block bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
                       <div className="aspect-video bg-gray-100 rounded-lg mb-3 overflow-hidden">
                         <img
@@ -106,13 +108,17 @@ function SavedItemsPageContent() {
                           ₦{item.price?.toLocaleString() || "0"}
                         </span>
                         <button
-                          onClick={() => handleToggleLike(item._id)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleToggleLike(item._id);
+                          }}
                           className="text-[#D7195B] hover:text-[#B01548] transition-colors"
                         >
                           <Heart className="w-5 h-5 fill-current" />
                         </button>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (

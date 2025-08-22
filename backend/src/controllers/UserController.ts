@@ -20,6 +20,7 @@ export const getProfile = asyncHandler(
 
     res.status(200).json({
       success: true,
+      message: "User retrieved successfully",
       data: userProfile,
     });
   }
@@ -46,9 +47,24 @@ export const updateProfile = asyncHandler(
       return next(createError("User not found", 404));
     }
 
+    if (phone) {
+      const existingUser = await User.findOne({
+        phone,
+        _id: { $ne: user._id },
+      });
+      if (existingUser) {
+        return next(
+          createError(
+            "This phone number is already registered by another user",
+            400
+          )
+        );
+      }
+      userProfile.phone = phone;
+    }
+
     if (firstName) userProfile.firstName = firstName;
     if (lastName) userProfile.lastName = lastName;
-    if (phone) userProfile.phone = phone;
     if (dateOfBirth) userProfile.dateOfBirth = new Date(dateOfBirth);
     if (gender) userProfile.gender = gender;
     if (address) userProfile.address = address;

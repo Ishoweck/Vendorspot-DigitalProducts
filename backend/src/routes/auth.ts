@@ -114,6 +114,8 @@ router.get("/me", authenticate, async (req, res) => {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      dateOfBirth: user.dateOfBirth,
+      shippingAddresses: user.shippingAddresses || [],
       role: user.role,
       status: user.status,
       isEmailVerified: user.isEmailVerified,

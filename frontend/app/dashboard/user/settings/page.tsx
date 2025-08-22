@@ -20,6 +20,7 @@ import {
   useUpdateProfile,
   useDeleteAccount,
 } from "@/hooks/useAPI";
+import { toast } from "react-hot-toast";
 
 function SettingsPageContent() {
   const { data: userProfile } = useUserProfile();
@@ -38,12 +39,37 @@ function SettingsPageContent() {
   };
 
   const handleSave = async (field: string) => {
-    const payload: any = {};
-    if (field === "phone") payload.phone = editValue;
-    if (field === "dateOfBirth") payload.dateOfBirth = editValue;
-    await updateProfile.mutateAsync(payload);
-    setEditingField(null);
-    setEditValue("");
+    try {
+      const payload: any = {};
+      if (field === "phone") {
+        if (!/^\d{10,11}$/.test(editValue)) {
+          toast.error("Phone number must be 10-11 digits");
+          return;
+        }
+        payload.phone = editValue;
+      }
+      if (field === "dateOfBirth") {
+        const dob = new Date(editValue);
+        const now = new Date();
+        const minDate = new Date();
+        minDate.setFullYear(now.getFullYear() - 100);
+
+        if (dob > now || dob < minDate) {
+          toast.error("Please enter a valid date of birth");
+          return;
+        }
+        payload.dateOfBirth = editValue;
+      }
+
+      await updateProfile.mutateAsync(payload);
+      setEditingField(null);
+      setEditValue("");
+      toast.success("Profile updated successfully");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to update profile";
+      toast.error(errorMessage);
+    }
   };
 
   const handleCancel = () => {

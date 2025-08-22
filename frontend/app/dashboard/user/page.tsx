@@ -23,7 +23,9 @@ function UserDashboardContent() {
   const cart = cartData?.data?.data || { items: [] };
   const orders = ordersData?.data?.data || [];
 
-  const defaultAddress = user?.defaultAddress;
+  const defaultAddress =
+    user?.shippingAddresses?.find((addr: any) => addr.isDefault) ||
+    user?.shippingAddresses?.[0];
 
   return (
     <div className="bg-gray-50 min-h-screen">
