@@ -1,20 +1,32 @@
- "use client";
+"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Edit2, ArrowRight, MapPin, Truck, CreditCard } from "lucide-react";
-import { useTempStore } from "@/stores/tempStore";
-import { useProducts } from "@/hooks/useAPI";
-import { useUserProfile } from "@/hooks/useAPI";
+import { useUserProfile, useCart } from "@/hooks/useAPI";
 
 export default function CheckoutPage() {
-  const { cartItems } = useTempStore();
   const { data: userProfile } = useUserProfile();
   const user = userProfile?.data?.data;
+  const { data: backendCartData, isLoading } = useCart(!!user);
 
-  const [cartProducts, setCartProducts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const cartProducts = useMemo(() => {
+    if (user) {
+      const items = backendCartData?.data?.data?.items || [];
+      return items.map((it: any) => ({
+        _id: it.productId?._id || it.productId,
+        name: it.productId?.name,
+        price: it.productId?.price,
+        quantity: it.quantity,
+        thumbnail: it.productId?.thumbnail,
+        vendorId: it.productId?.vendorId,
+        categoryId: it.productId?.categoryId,
+      }));
+    }
+    return [];
+  }, [user, backendCartData]);
+
   const [selectedAddress, setSelectedAddress] = useState<{
     fullName?: string;
     street: string;
@@ -32,38 +44,21 @@ export default function CheckoutPage() {
   } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const { data: productsData } = useProducts({
-    page: 1,
-    limit: 100,
-  });
-
-  useEffect(() => {
-    if (productsData?.data?.data && cartItems.length > 0) {
-      const products = productsData.data.data;
-      const cartProductData = cartItems
-        .map((cartItem) => {
-          const product = products.find((p) => p._id === cartItem.productId);
-          return product ? { ...product, quantity: cartItem.quantity } : null;
-        })
-        .filter(Boolean);
-
-      setCartProducts(cartProductData);
-    } else {
-      setCartProducts([]);
-    }
-    setIsLoading(false);
-  }, [cartItems, productsData]);
-
   useEffect(() => {
     if (user?.defaultAddress) {
       setSelectedAddress(user.defaultAddress);
     }
+    const saved = localStorage.getItem("selectedShipping");
+    if (saved) setSelectedShipping(JSON.parse(saved));
   }, [user]);
 
-  const subtotal = cartProducts.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const subtotal = useMemo(() => {
+    return cartProducts.reduce(
+      (sum: number, item: (typeof cartProducts)[0]) =>
+        sum + (item.price || 0) * (item.quantity || 1),
+      0
+    );
+  }, [cartProducts]);
   const tax = subtotal * 0.075;
   const shippingFee = selectedShipping?.price || 0;
   const total = subtotal + tax + shippingFee;
@@ -144,11 +139,12 @@ export default function CheckoutPage() {
                   Change
                 </Link>
               </div>
-              
+
               {selectedAddress ? (
                 <div className="p-4 bg-neutral-50 rounded-lg">
                   <p className="font-medium text-neutral-900">
-                    {selectedAddress.fullName || user?.firstName + " " + user?.lastName}
+                    {selectedAddress.fullName ||
+                      user?.firstName + " " + user?.lastName}
                   </p>
                   <p className="text-neutral-600">
                     {selectedAddress.street}, {selectedAddress.city}
@@ -168,55 +164,13 @@ export default function CheckoutPage() {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <Truck className="w-5 h-5 text-neutral-400 mr-2" />
-                  <h2 className="text-lg font-semibold text-neutral-900">
-                    Delivery Options
-                  </h2>
-                </div>
-                <Link
-                  href="/checkout/shipping-options"
-                  className="flex items-center text-primary-600 hover:text-primary-700 font-medium"
-                >
-                  <Edit2 className="w-4 h-4 mr-1" />
-                  Change
-                </Link>
-              </div>
-              
-              {selectedShipping ? (
-                <div className="p-4 bg-neutral-50 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium text-neutral-900">
-                        {selectedShipping.name}
-                      </p>
-                      <p className="text-sm text-neutral-600">
-                        {selectedShipping.description}
-                      </p>
-                    </div>
-                    <span className="font-semibold text-neutral-900">
-                      ₦{selectedShipping.price.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-blue-800">
-                    Standard delivery (3-5 business days) - Free
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center mb-4">
                 <CreditCard className="w-5 h-5 text-neutral-400 mr-2" />
                 <h2 className="text-lg font-semibold text-neutral-900">
                   Payment Method
                 </h2>
               </div>
-              
+
               <div className="p-4 bg-neutral-50 rounded-lg border-2 border-primary-200">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -224,7 +178,9 @@ export default function CheckoutPage() {
                       <span className="text-white text-xs font-bold">PAY</span>
                     </div>
                     <div>
-                      <p className="font-medium text-neutral-900">Pay with Paystack</p>
+                      <p className="font-medium text-neutral-900">
+                        Pay with Paystack
+                      </p>
                       <p className="text-sm text-neutral-600">
                         You will be redirected to our secure checkout page.
                       </p>
@@ -243,7 +199,7 @@ export default function CheckoutPage() {
               </h2>
 
               <div className="space-y-4 mb-6">
-                {cartProducts.map((item) => (
+                {cartProducts.map((item: (typeof cartProducts)[0]) => (
                   <div key={item._id} className="flex items-center space-x-3">
                     <div className="relative w-12 h-12 flex-shrink-0">
                       <Image
@@ -271,12 +227,16 @@ export default function CheckoutPage() {
               <div className="space-y-3 mb-6 pt-4 border-t border-neutral-200">
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-600">Subtotal</span>
-                  <span className="font-medium">₦{subtotal.toLocaleString()}</span>
+                  <span className="font-medium">
+                    ₦{subtotal.toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-600">Shipping</span>
                   <span className="font-medium">
-                    {shippingFee === 0 ? 'Free' : `₦${shippingFee.toLocaleString()}`}
+                    {shippingFee === 0
+                      ? "Free"
+                      : `₦${shippingFee.toLocaleString()}`}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">

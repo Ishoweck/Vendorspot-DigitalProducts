@@ -1,11 +1,11 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface TempStore {
   savedItems: string[];
   cartItems: { productId: string; quantity: number }[];
-  pendingSaved: string[];
-  pendingCart: { productId: string; quantity: number }[];
+  sessionId: string;
+  isPendingSync: boolean;
   addSavedItem: (productId: string) => void;
   removeSavedItem: (productId: string) => void;
   addCartItem: (productId: string, quantity?: number) => void;
@@ -14,24 +14,41 @@ interface TempStore {
   clearSavedItems: () => void;
   clearCart: () => void;
   clearAll: () => void;
-  markPendingFromGuest: () => void;
-  transferPendingToUser: () => void;
+  markPendingSync: () => void;
+  clearPendingSync: () => void;
+  generateNewSession: () => void;
+  isVendor: boolean;
+  setVendorStatus: (status: boolean) => void;
 }
+
+const generateSessionId = () =>
+  `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 export const useTempStore = create<TempStore>()(
   persist(
     (set, get) => ({
       savedItems: [],
       cartItems: [],
-      pendingSaved: [],
-      pendingCart: [],
+      sessionId: generateSessionId(),
+      isPendingSync: false,
+      isVendor: false,
 
       addSavedItem: (productId: string) => {
+        const { isVendor } = get();
+        if (isVendor) return;
+
+        console.log(
+          "Adding saved item:",
+          productId,
+          "Current saved items:",
+          get().savedItems
+        );
         set((state) => ({
           savedItems: state.savedItems.includes(productId)
             ? state.savedItems
             : [...state.savedItems, productId],
         }));
+        console.log("Updated saved items:", get().savedItems);
       },
 
       removeSavedItem: (productId: string) => {
@@ -41,6 +58,15 @@ export const useTempStore = create<TempStore>()(
       },
 
       addCartItem: (productId: string, quantity = 1) => {
+        const { isVendor } = get();
+        if (isVendor) return;
+
+        console.log(
+          "Adding cart item:",
+          productId,
+          "Current cart items:",
+          get().cartItems
+        );
         set((state) => {
           const existingItem = state.cartItems.find(
             (item) => item.productId === productId
@@ -60,11 +86,14 @@ export const useTempStore = create<TempStore>()(
             cartItems: [...state.cartItems, { productId, quantity }],
           };
         });
+        console.log("Updated cart items:", get().cartItems);
       },
 
       removeCartItem: (productId: string) => {
         set((state) => ({
-          cartItems: state.cartItems.filter((item) => item.productId !== productId),
+          cartItems: state.cartItems.filter(
+            (item) => item.productId !== productId
+          ),
         }));
       },
 
@@ -84,32 +113,37 @@ export const useTempStore = create<TempStore>()(
       clearSavedItems: () => set({ savedItems: [] }),
       clearCart: () => set({ cartItems: [] }),
       clearAll: () => set({ savedItems: [], cartItems: [] }),
-      markPendingFromGuest: () => {
-        set((state) => ({
-          pendingSaved: [...state.savedItems],
-          pendingCart: [...state.cartItems],
-          savedItems: [],
-          cartItems: [],
-        }));
+
+      markPendingSync: () => {
+        console.log("Marking pending sync");
+        set({ isPendingSync: true });
+      },
+      clearPendingSync: () => {
+        console.log("Clearing pending sync");
+        set({ isPendingSync: false });
       },
 
-      transferPendingToUser: () => {
-        set((state) => ({
-          savedItems: Array.from(new Set([...(state.savedItems || []), ...state.pendingSaved])),
-          cartItems: (() => {
-            const map = new Map<string, number>();
-            [...state.cartItems, ...state.pendingCart].forEach((it) => {
-              map.set(it.productId, (map.get(it.productId) || 0) + it.quantity);
-            });
-            return Array.from(map.entries()).map(([productId, quantity]) => ({ productId, quantity }));
-          })(),
-          pendingSaved: [],
-          pendingCart: [],
-        }));
+      generateNewSession: () => {
+        console.log("Generating new session - clearing all data");
+        set({
+          sessionId: generateSessionId(),
+          savedItems: [],
+          cartItems: [],
+          isPendingSync: false,
+        });
       },
+
+      setVendorStatus: (status: boolean) => set({ isVendor: status }),
     }),
     {
-      name: 'temp-store',
+      name: "temp-store",
+      partialize: (state) => ({
+        savedItems: state.savedItems,
+        cartItems: state.cartItems,
+        sessionId: state.sessionId,
+        isPendingSync: state.isPendingSync,
+        isVendor: state.isVendor,
+      }),
     }
   )
-); 
+);

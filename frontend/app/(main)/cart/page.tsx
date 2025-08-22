@@ -1,51 +1,88 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { useTempStore } from "@/stores/tempStore";
-import { useProducts } from "@/hooks/useAPI";
-import { useUserProfile } from "@/hooks/useAPI";
+import {
+  useUserProfile,
+  useCart,
+  useUpdateCartItem,
+  useRemoveFromCart,
+  useClearCart,
+} from "@/hooks/useAPI";
 
 export default function CartPage() {
-  const { cartItems, updateCartQuantity, removeCartItem } = useTempStore();
   const { data: userProfile } = useUserProfile();
   const user = userProfile?.data?.data;
 
-  const [cartProducts, setCartProducts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    cartItems: guestCartItems,
+    updateCartQuantity: updateGuestQty,
+    removeCartItem: removeGuestItem,
+    clearCart: clearGuestCart,
+  } = useTempStore();
 
-  const { data: productsData } = useProducts({
-    page: 1,
-    limit: 100,
-  });
+  const { data: backendCartData, isLoading } = useCart(!!user);
+  const updateCartItem = useUpdateCartItem();
+  const removeFromCart = useRemoveFromCart();
+  const clearCart = useClearCart();
 
-  useEffect(() => {
-    if (productsData?.data?.data && cartItems.length > 0) {
-      const products = productsData.data.data;
-      const cartProductData = cartItems
-        .map((cartItem) => {
-          const product = products.find((p) => p._id === cartItem.productId);
-          return product ? { ...product, quantity: cartItem.quantity } : null;
-        })
-        .filter(Boolean);
-
-      setCartProducts(cartProductData);
-    } else {
-      setCartProducts([]);
+  const cartItems = useMemo(() => {
+    if (user) {
+      const items = backendCartData?.data?.data?.items || [];
+      return items.map((it: any) => ({
+        id: it.productId?._id || it.productId,
+        product: it.productId,
+        quantity: it.quantity || 1,
+      }));
     }
-    setIsLoading(false);
-  }, [cartItems, productsData]);
+    return guestCartItems.map((it: any) => ({
+      id: it.productId,
+      product: null,
+      quantity: it.quantity,
+    }));
+  }, [user, backendCartData, guestCartItems]);
 
-  const subtotal = cartProducts.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const tax = subtotal * 0.075;
-  const total = subtotal + tax;
+  const subtotal = useMemo(() => {
+    return cartItems.reduce((sum: number, it: any) => {
+      const price = user ? it.product?.price || 0 : 0;
+      if (user) return sum + price * it.quantity;
+      return sum;
+    }, 0);
+  }, [cartItems, user]);
 
-  if (isLoading) {
+  const handleQuantityChange = async (
+    productId: string,
+    newQuantity: number
+  ) => {
+    if (user) {
+      if (newQuantity < 1) {
+        await removeFromCart.mutateAsync(productId);
+      } else {
+        await updateCartItem.mutateAsync({ productId, quantity: newQuantity });
+      }
+    } else {
+      if (newQuantity < 1) {
+        removeGuestItem(productId);
+      } else {
+        updateGuestQty(productId, newQuantity);
+      }
+    }
+  };
+
+  const handleRemoveItem = async (productId: string) => {
+    if (user) await removeFromCart.mutateAsync(productId);
+    else removeGuestItem(productId);
+  };
+
+  const handleClearCart = async () => {
+    if (user) await clearCart.mutateAsync();
+    else clearGuestCart();
+  };
+
+  if (user && isLoading) {
     return (
       <div className="min-h-screen bg-neutral-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -59,7 +96,7 @@ export default function CartPage() {
     );
   }
 
-  if (cartProducts.length === 0) {
+  if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-neutral-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -89,44 +126,51 @@ export default function CartPage() {
             Shopping Cart
           </h1>
           <p className="text-neutral-600">
-            {cartProducts.length} {cartProducts.length === 1 ? "item" : "items"}{" "}
-            in your cart
+            {cartItems.length} {cartItems.length === 1 ? "item" : "items"} in
+            your cart
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 order-2 lg:order-1">
             <div className="bg-white rounded-xl shadow-sm">
-              {cartProducts.map((item, index) => (
+              {cartItems.map((item: any, index: number) => (
                 <div
-                  key={item._id}
-                  className={`p-6 ${index !== cartProducts.length - 1 ? "border-b border-neutral-200" : ""}`}
+                  key={item.id}
+                  className={`p-6 ${index !== cartItems.length - 1 ? "border-b border-neutral-200" : ""}`}
                 >
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:space-x-4">
                     <div className="relative w-20 h-20 flex-shrink-0">
                       <Image
-                        src={item.thumbnail || "/api/placeholder/200/150"}
-                        alt={item.name}
+                        src={
+                          user
+                            ? item.product?.thumbnail ||
+                              "/api/placeholder/200/150"
+                            : "/api/placeholder/200/150"
+                        }
+                        alt={user ? item.product?.name || "Product" : "Product"}
                         fill
                         className="object-cover rounded-lg"
                       />
                     </div>
 
                     <div className="flex-1 min-w-0 w-full">
-                      <Link href={`/products/${item._id}`}>
+                      <Link
+                        href={`/products/${user ? item.product?._id || item.id : item.id}`}
+                      >
                         <h3 className="font-semibold text-neutral-900 hover:text-primary-500 transition-colors duration-200 break-words">
-                          {item.name}
+                          {user ? item.product?.name || "Product" : item.id}
                         </h3>
                       </Link>
                       <p className="text-sm text-neutral-500 mb-1">
-                        by{" "}
-                        {typeof item.vendorId === "object"
-                          ? item.vendorId.businessName
-                          : "Unknown Vendor"}
+                        {user
+                          ? item.product?.vendorId?.businessName ||
+                            "Unknown Vendor"
+                          : ""}
                       </p>
                       <p className="text-sm text-neutral-400">
-                        {typeof item.categoryId === "object"
-                          ? item.categoryId.name
+                        {user
+                          ? item.product?.categoryId?.name || "Digital Product"
                           : "Digital Product"}
                       </p>
                     </div>
@@ -135,7 +179,7 @@ export default function CartPage() {
                       <div className="flex items-center border border-neutral-200 rounded-lg">
                         <button
                           onClick={() =>
-                            updateCartQuantity(item._id, item.quantity - 1)
+                            handleQuantityChange(item.id, item.quantity - 1)
                           }
                           className="p-2 hover:bg-neutral-50 transition-colors duration-200"
                         >
@@ -146,7 +190,7 @@ export default function CartPage() {
                         </span>
                         <button
                           onClick={() =>
-                            updateCartQuantity(item._id, item.quantity + 1)
+                            handleQuantityChange(item.id, item.quantity + 1)
                           }
                           className="p-2 hover:bg-neutral-50 transition-colors duration-200"
                         >
@@ -156,12 +200,16 @@ export default function CartPage() {
 
                       <div className="text-right min-w-0 ml-auto sm:ml-0">
                         <div className="font-semibold text-neutral-900">
-                          ₦{(item.price * item.quantity).toLocaleString()}
+                          ₦
+                          {(user
+                            ? (item.product?.price || 0) * item.quantity
+                            : 0
+                          ).toLocaleString()}
                         </div>
                       </div>
 
                       <button
-                        onClick={() => removeCartItem(item._id)}
+                        onClick={() => handleRemoveItem(item.id)}
                         className="p-2 text-neutral-400 hover:text-error-500 transition-colors duration-200"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -188,7 +236,9 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-600">VAT (7.5%)</span>
-                  <span className="font-medium">₦{tax.toFixed(2)}</span>
+                  <span className="font-medium">
+                    ₦{(subtotal * 0.075).toFixed(2)}
+                  </span>
                 </div>
                 <div className="border-t border-neutral-200 pt-4">
                   <div className="flex justify-between">
@@ -196,7 +246,7 @@ export default function CartPage() {
                       Total
                     </span>
                     <span className="text-lg font-semibold text-neutral-900">
-                      ₦{total.toLocaleString()}
+                      ₦{(subtotal * 1.075).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -212,10 +262,17 @@ export default function CartPage() {
 
               <Link
                 href="/products"
-                className="block w-full btn-outline text-center"
+                className="block w-full btn-outline text-center mb-4"
               >
                 Continue Shopping
               </Link>
+
+              <button
+                onClick={handleClearCart}
+                className="block w-full btn-outline text-center"
+              >
+                Clear Cart
+              </button>
 
               <div className="mt-6 p-4 bg-neutral-50 rounded-lg">
                 <div className="flex items-center text-sm text-neutral-600">

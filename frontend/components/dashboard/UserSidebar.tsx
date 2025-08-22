@@ -3,7 +3,6 @@
 import { useUserProfile } from "@/hooks/useAPI";
 import {
   ShoppingBag,
-  CreditCard,
   Bell,
   MapPin,
   Settings,
@@ -35,11 +34,6 @@ export default function UserSidebar() {
       href: "/dashboard/user/saved-items",
       icon: Heart,
       label: "Saved Items",
-    },
-    {
-      href: "/dashboard/user/payment-methods",
-      icon: CreditCard,
-      label: "Payment Methods",
     },
     {
       href: "/dashboard/user/notifications",

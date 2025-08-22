@@ -14,21 +14,20 @@ import {
 import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import AuthWrapper from "@/components/auth/AuthWrapper";
+import {
+  useUserProfile,
+  useUpdateProfile,
+  useDeleteAccount,
+} from "@/hooks/useAPI";
 
-const mockUser = {
-  id: 1,
-  firstName: "John",
-  lastName: "Doe",
-  email: "john.doe@example.com",
-  phone: "+234 123 456 7890",
-  dateOfBirth: "1990-01-01",
-  createdAt: "2024-01-01T00:00:00Z",
-  isEmailVerified: true,
-  isPhoneVerified: false,
-};
+function SettingsPageContent() {
+  const { data: userProfile } = useUserProfile();
+  const user = userProfile?.data?.data;
+  const updateProfile = useUpdateProfile();
+  const deleteAccount = useDeleteAccount();
+  const [passwordForDelete, setPasswordForDelete] = useState("");
 
-export default function SettingsPage() {
-  const [user, setUser] = useState(mockUser);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -38,11 +37,11 @@ export default function SettingsPage() {
     setEditValue(value);
   };
 
-  const handleSave = (field: string) => {
-    setUser((prev) => ({
-      ...prev,
-      [field]: editValue,
-    }));
+  const handleSave = async (field: string) => {
+    const payload: any = {};
+    if (field === "phone") payload.phone = editValue;
+    if (field === "dateOfBirth") payload.dateOfBirth = editValue;
+    await updateProfile.mutateAsync(payload);
     setEditingField(null);
     setEditValue("");
   };
@@ -56,8 +55,8 @@ export default function SettingsPage() {
     setShowDeleteConfirm(true);
   };
 
-  const confirmDeleteAccount = () => {
-    console.log("Account deleted");
+  const confirmDeleteAccount = async () => {
+    await deleteAccount.mutateAsync({ password: passwordForDelete });
     setShowDeleteConfirm(false);
   };
 
@@ -123,6 +122,11 @@ export default function SettingsPage() {
     );
   };
 
+  const fullName = `${user?.firstName || ""} ${user?.lastName || ""}`.trim();
+  const dob = user?.dateOfBirth
+    ? new Date(user.dateOfBirth).toISOString().slice(0, 10)
+    : "";
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <SectionWrapper className="pt-8 pb-8">
@@ -135,21 +139,16 @@ export default function SettingsPage() {
               </h1>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {renderField("Full Name", "name", fullName, false)}
+                {renderField("Email", "email", user?.email || "", false)}
                 {renderField(
-                  "Full Name",
-                  "name",
-                  `${user.firstName} ${user.lastName}`,
-                  false
-                )}
-                {renderField("Email", "email", user.email, false)}
-                {renderField("Phone Number", "phone", user.phone, true, "tel")}
-                {renderField(
-                  "Date of Birth",
-                  "dateOfBirth",
-                  new Date(user.dateOfBirth).toLocaleDateString(),
+                  "Phone Number",
+                  "phone",
+                  user?.phone || "",
                   true,
-                  "date"
+                  "tel"
                 )}
+                {renderField("Date of Birth", "dateOfBirth", dob, true, "date")}
               </div>
 
               <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
@@ -161,30 +160,32 @@ export default function SettingsPage() {
                     <span className="text-gray-700">Email Verification</span>
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        user.isEmailVerified
+                        user?.isEmailVerified
                           ? "bg-green-100 text-green-800"
                           : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
-                      {user.isEmailVerified ? "Verified" : "Pending"}
+                      {user?.isEmailVerified ? "Verified" : "Pending"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between py-2">
                     <span className="text-gray-700">Phone Verification</span>
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        user.isPhoneVerified
+                        user?.isPhoneVerified
                           ? "bg-green-100 text-green-800"
                           : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
-                      {user.isPhoneVerified ? "Verified" : "Pending"}
+                      {user?.isPhoneVerified ? "Verified" : "Pending"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between py-2">
                     <span className="text-gray-700">Member Since</span>
                     <span className="text-gray-900">
-                      {new Date(user.createdAt).toLocaleDateString()}
+                      {user?.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString()
+                        : "N/A"}
                     </span>
                   </div>
                 </div>
@@ -208,7 +209,23 @@ export default function SettingsPage() {
               <ConfirmationModal
                 isOpen={showDeleteConfirm}
                 title="Delete Account"
-                message="Are you sure you want to delete your account? This action cannot be undone."
+                message={
+                  (
+                    <div>
+                      <p className="mb-3">
+                        Are you sure you want to delete your account? This
+                        action cannot be undone.
+                      </p>
+                      <input
+                        type="password"
+                        value={passwordForDelete}
+                        onChange={(e) => setPasswordForDelete(e.target.value)}
+                        placeholder="Enter password"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+                      />
+                    </div>
+                  ) as any
+                }
                 confirmLabel="Delete Account"
                 cancelLabel="Cancel"
                 onConfirm={confirmDeleteAccount}
@@ -219,5 +236,13 @@ export default function SettingsPage() {
         </div>
       </SectionWrapper>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <AuthWrapper>
+      <SettingsPageContent />
+    </AuthWrapper>
   );
 }

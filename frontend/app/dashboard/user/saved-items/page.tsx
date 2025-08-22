@@ -1,35 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useWishlist, useRemoveFromWishlist } from "@/hooks/useAPI";
 import { Heart } from "lucide-react";
 import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
+import AuthWrapper from "@/components/auth/AuthWrapper";
+import { useTempStore } from "@/stores/tempStore";
 
-const mockSavedItems = [
-  {
-    id: 1,
-    name: "Digital Marketing Course",
-    vendor: "EduPro",
-    price: 99.99,
-    image:
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=200&h=150&fit=crop",
-  },
-  {
-    id: 2,
-    name: "SEO Optimization Tool",
-    vendor: "MarketingPro",
-    price: 79.99,
-    image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=200&h=150&fit=crop",
-  },
-];
+function SavedItemsPageContent() {
+  const { isVendor } = useTempStore();
+  const { data: wishlistData, isLoading } = useWishlist(!isVendor);
+  const removeFromWishlist = useRemoveFromWishlist();
 
-export default function SavedItemsPage() {
-  const [savedItems, setSavedItems] = useState(mockSavedItems);
+  const wishlist = Array.isArray(wishlistData?.data)
+    ? wishlistData.data
+    : Array.isArray(wishlistData?.data?.data)
+      ? wishlistData.data.data
+      : [];
 
-  const handleToggleLike = (itemId: number) => {
-    setSavedItems((prev) => prev.filter((item) => item.id !== itemId));
+  const handleToggleLike = async (productId: string) => {
+    try {
+      await removeFromWishlist.mutateAsync(productId);
+    } catch (error) {
+      console.error("Failed to remove from wishlist:", error);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 min-h-screen">
+        <SectionWrapper className="pt-8 pb-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex gap-8">
+              <UserSidebar />
+              <main className="flex-1 bg-white rounded-lg shadow p-4 sm:p-6">
+                <div className="animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="bg-gray-100 rounded-lg p-4">
+                        <div className="h-32 bg-gray-200 rounded mb-3"></div>
+                        <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </main>
+            </div>
+          </div>
+        </SectionWrapper>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -43,11 +67,11 @@ export default function SavedItemsPage() {
                   Saved Items
                 </h1>
                 <div className="text-sm text-gray-500">
-                  {savedItems.length} items saved
+                  {wishlist.length} items saved
                 </div>
               </div>
 
-              {savedItems.length === 0 ? (
+              {wishlist.length === 0 ? (
                 <div className="text-center py-12">
                   <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -57,16 +81,16 @@ export default function SavedItemsPage() {
                     Items you like will appear here.
                   </p>
                 </div>
-              ) : (
+              ) : Array.isArray(wishlist) ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {savedItems.map((item) => (
+                  {wishlist.map((item: any) => (
                     <div
-                      key={item.id}
+                      key={item._id}
                       className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
                       <div className="aspect-video bg-gray-100 rounded-lg mb-3 overflow-hidden">
                         <img
-                          src={item.image}
+                          src={item.thumbnail || "/api/placeholder/200/150"}
                           alt={item.name}
                           className="w-full h-full object-cover"
                         />
@@ -75,14 +99,14 @@ export default function SavedItemsPage() {
                         {item.name}
                       </h3>
                       <p className="text-sm text-gray-500 mb-2">
-                        by {item.vendor}
+                        by {item.vendorId?.businessName || "Unknown Vendor"}
                       </p>
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-gray-900">
-                          ₦{item.price.toLocaleString()}
+                          ₦{item.price?.toLocaleString() || "0"}
                         </span>
                         <button
-                          onClick={() => handleToggleLike(item.id)}
+                          onClick={() => handleToggleLike(item._id)}
                           className="text-[#D7195B] hover:text-[#B01548] transition-colors"
                         >
                           <Heart className="w-5 h-5 fill-current" />
@@ -91,11 +115,23 @@ export default function SavedItemsPage() {
                     </div>
                   ))}
                 </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-600">Error loading wishlist data</p>
+                </div>
               )}
             </main>
           </div>
         </div>
       </SectionWrapper>
     </div>
+  );
+}
+
+export default function SavedItemsPage() {
+  return (
+    <AuthWrapper>
+      <SavedItemsPageContent />
+    </AuthWrapper>
   );
 }

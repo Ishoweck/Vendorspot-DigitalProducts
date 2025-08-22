@@ -4,7 +4,6 @@ import { persist } from "zustand/middleware";
 interface ProductFormData {
   name: string;
   description: string;
-  shortDescription: string;
   price: number;
   originalPrice: number;
   discountPercentage: number;
@@ -42,7 +41,6 @@ interface ProductFormStore {
 const initialFormData: ProductFormData = {
   name: "",
   description: "",
-  shortDescription: "",
   price: 0,
   originalPrice: 0,
   discountPercentage: 0,
@@ -140,7 +138,6 @@ export const useProductFormStore = create<ProductFormStore>()(
         formData: {
           name: state.formData.name,
           description: state.formData.description,
-          shortDescription: state.formData.shortDescription,
           price: state.formData.price,
           originalPrice: state.formData.originalPrice,
           discountPercentage: state.formData.discountPercentage,

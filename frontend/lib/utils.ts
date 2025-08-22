@@ -14,3 +14,13 @@ export function smoothScrollToSection(sectionId: string) {
     });
   }
 }
+
+export function buildDownloadUrl(fileUrl: string, categoryName?: string) {
+  if (!fileUrl) return "";
+  const url = new URL(fileUrl, typeof window !== "undefined" ? window.location.origin : undefined);
+  url.searchParams.set("download", "1");
+  if (categoryName) {
+    url.searchParams.set("category", categoryName.toLowerCase());
+  }
+  return url.toString();
+}

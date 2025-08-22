@@ -20,8 +20,12 @@ import {
   Grid3X3,
 } from "lucide-react";
 import { IconBrandWhatsapp } from "@tabler/icons-react";
-import { useProduct, useProducts } from "@/hooks/useAPI";
-import { useUserProfile } from "@/hooks/useAPI";
+import {
+  useProduct,
+  useProducts,
+  useUserProfile,
+  useSyncTempStore,
+} from "@/hooks/useAPI";
 import { useTempStore } from "@/stores/tempStore";
 import { ProductThumbnail } from "./ProductThumbnail";
 import { Notification } from "@/components/ui/Notification";
@@ -55,6 +59,9 @@ export default function ProductDetail() {
     addCartItem,
     updateCartQuantity,
   } = useTempStore();
+
+  const { handleGuestAction, handleVendorAction } = useSyncTempStore();
+
   const isSaved = savedItems.includes(productId);
   const cartItem = cartItems.find((item) => item.productId === productId);
 
@@ -86,12 +93,13 @@ export default function ProductDetail() {
 
   const handleSavedItemToggle = () => {
     if (!user) {
-      useTempStore.getState().markPendingFromGuest();
+      addSavedItem(productId);
+      handleGuestAction("save");
       return;
     }
 
     if (isVendor) {
-      showNotification("Vendors cannot save items", "error");
+      handleVendorAction("save");
       return;
     }
 
@@ -106,12 +114,13 @@ export default function ProductDetail() {
 
   const handleAddToCart = () => {
     if (!user) {
-      useTempStore.getState().markPendingFromGuest();
+      addCartItem(productId);
+      handleGuestAction("cart");
       return;
     }
 
     if (isVendor) {
-      showNotification("Vendors cannot add items to cart", "error");
+      handleVendorAction("cart");
       return;
     }
 
@@ -201,8 +210,8 @@ export default function ProductDetail() {
 
       <section className="bg-white rounded-lg shadow-sm">
         <div className="p-6 lg:p-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            <div className="flex-1 bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex flex-col lg:flex-row gap-8 lg:bg-white lg:rounded-lg lg:border lg:border-gray-200 lg:p-6">
+            <div className="flex-1 max-w-fit">
               <div className="relative mb-4">
                 <Image
                   src={
@@ -240,7 +249,7 @@ export default function ProductDetail() {
               )}
             </div>
 
-            <div className="flex-1 lg:max-w-md">
+            <div className="flex-1 lg:max-w-[38rem]">
               <div className="flex items-start justify-between">
                 <h1 className="text-xl font-semibold text-gray-900 leading-tight mt-auto mb-auto">
                   {product.name}

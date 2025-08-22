@@ -1,6 +1,11 @@
 "use client";
 
-import { useUserProfile } from "@/hooks/useAPI";
+import {
+  useUserProfile,
+  useWishlist,
+  useCart,
+  useOrders,
+} from "@/hooks/useAPI";
 import { Mail, Edit } from "lucide-react";
 import Link from "next/link";
 import AuthWrapper from "@/components/auth/AuthWrapper";
@@ -9,7 +14,16 @@ import UserSidebar from "@/components/dashboard/UserSidebar";
 
 function UserDashboardContent() {
   const { data: userProfile } = useUserProfile();
+  const { data: wishlistData } = useWishlist();
+  const { data: cartData } = useCart();
+  const { data: ordersData } = useOrders();
+
   const user = userProfile?.data?.data;
+  const wishlist = wishlistData?.data?.data || [];
+  const cart = cartData?.data?.data || { items: [] };
+  const orders = ordersData?.data?.data || [];
+
+  const defaultAddress = user?.defaultAddress;
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -44,21 +58,30 @@ function UserDashboardContent() {
                   <h3 className="font-semibold text-gray-900 mb-2">
                     Total Orders
                   </h3>
-                  <p className="text-3xl font-bold text-[#D7195B]">0</p>
+                  <p className="text-3xl font-bold text-[#D7195B]">
+                    {orders.length}
+                  </p>
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-2">
                     Saved Items
                   </h3>
-                  <p className="text-3xl font-bold text-[#D7195B]">0</p>
+                  <p className="text-3xl font-bold text-[#D7195B]">
+                    {wishlist.length}
+                  </p>
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-2">
-                    Account Status
+                    Cart Items
                   </h3>
-                  <p className="text-lg font-medium text-green-600">Active</p>
+                  <p className="text-3xl font-bold text-[#D7195B]">
+                    {cart.items.reduce(
+                      (t: number, it: any) => t + (it.quantity || 1),
+                      0
+                    )}
+                  </p>
                 </div>
               </div>
 
@@ -77,7 +100,9 @@ function UserDashboardContent() {
                     </p>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Member Since:</span>{" "}
-                      {new Date(user?.createdAt).toLocaleDateString()}
+                      {user?.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString()
+                        : "N/A"}
                     </p>
                   </div>
                 </div>
@@ -94,15 +119,30 @@ function UserDashboardContent() {
                       <Edit className="w-4 h-4" />
                     </Link>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    <p>No default shipping address set</p>
-                    <Link
-                      href="/dashboard/user/shipping-address"
-                      className="text-[#D7195B] hover:text-[#B01548] transition-colors mt-2 inline-block"
-                    >
-                      Add shipping address
-                    </Link>
-                  </div>
+                  {defaultAddress ? (
+                    <div className="text-sm text-gray-600">
+                      <p className="font-medium text-gray-900">
+                        {defaultAddress.fullName ||
+                          `${user?.firstName} ${user?.lastName}`}
+                      </p>
+                      <p>{defaultAddress.street}</p>
+                      <p>
+                        {defaultAddress.city}, {defaultAddress.state}
+                      </p>
+                      <p>{defaultAddress.country}</p>
+                      <p className="mt-1">{defaultAddress.phone}</p>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-600">
+                      <p>No default shipping address set</p>
+                      <Link
+                        href="/dashboard/user/shipping-address"
+                        className="text-[#D7195B] hover:text-[#B01548] transition-colors mt-2 inline-block"
+                      >
+                        Add shipping address
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             </main>

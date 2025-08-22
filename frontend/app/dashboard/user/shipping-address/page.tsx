@@ -1,95 +1,95 @@
 "use client";
 
-import { useState } from "react";
-import { MapPin, Plus, Edit3, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MapPin, Plus, Edit3, Trash2, Check } from "lucide-react";
 import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import AuthWrapper from "@/components/auth/AuthWrapper";
+import {
+  useAddresses,
+  useAddAddress,
+  useUpdateAddress,
+  useDeleteAddress,
+  useSetDefaultAddress,
+  useUserProfile,
+} from "@/hooks/useAPI";
 
-const mockShippingAddresses = [
-  {
-    id: 1,
-    name: "John Doe",
-    address: "123 Main Street",
-    city: "Lagos",
-    state: "Lagos",
-    zipCode: "100001",
-    phone: "+234 123 456 7890",
-    isDefault: true,
-  },
-  {
-    id: 2,
-    name: "John Doe",
-    address: "456 Office Complex",
-    city: "Abuja",
-    state: "FCT",
-    zipCode: "900001",
-    phone: "+234 987 654 3210",
-    isDefault: false,
-  },
-];
+function ShippingAddressPageContent() {
+  const { data: userProfile } = useUserProfile();
+  const user = userProfile?.data?.data;
 
-export default function ShippingAddressPage() {
-  const [shippingAddresses, setShippingAddresses] = useState(
-    mockShippingAddresses
-  );
+  const { data: addressesData, isLoading } = useAddresses();
+  const addAddress = useAddAddress();
+  const updateAddress = useUpdateAddress();
+  const deleteAddress = useDeleteAddress();
+  const setDefault = useSetDefaultAddress();
+
+  const addresses = addressesData?.data?.data || [];
+
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    street: "",
+    city: "",
+    state: "",
+    country: "Nigeria",
+    postalCode: "",
+    phone: "",
+    isDefault: false,
+  });
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    addressId: string | null;
+  }>({ isOpen: false, addressId: null });
 
   const handleAddAddress = () => {
+    setEditingId(null);
+    setFormData({
+      fullName: `${user?.firstName || ""} ${user?.lastName || ""}`.trim(),
+      street: "",
+      city: "",
+      state: "",
+      country: "Nigeria",
+      postalCode: "",
+      phone: "",
+      isDefault: false,
+    });
     setShowAddForm(true);
   };
 
-  const handleEditAddress = (id: number) => {
-    const addressToEdit = shippingAddresses.find((addr) => addr.id === id);
-    if (addressToEdit) {
-      setEditingId(id);
-      setFormData({
-        name: addressToEdit.name,
-        address: addressToEdit.address,
-        city: addressToEdit.city,
-        state: addressToEdit.state,
-        zipCode: addressToEdit.zipCode,
-        phone: addressToEdit.phone,
-      });
-      setShowAddForm(true);
+  const handleEditAddress = (addr: any) => {
+    setEditingId(addr._id);
+    setFormData({
+      fullName: addr.fullName,
+      street: addr.street,
+      city: addr.city,
+      state: addr.state,
+      country: addr.country || "Nigeria",
+      postalCode: addr.postalCode || "",
+      phone: addr.phone,
+      isDefault: !!addr.isDefault,
+    });
+    setShowAddForm(true);
+  };
+
+  const handleSaveForm = async () => {
+    if (!formData.street || !formData.city || !formData.phone) return;
+    if (editingId) {
+      await updateAddress.mutateAsync({ id: editingId, payload: formData });
+    } else {
+      await addAddress.mutateAsync(formData);
     }
+    setShowAddForm(false);
   };
 
-  const [formData, setFormData] = useState({
-    name: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    phone: "",
-  });
-
-  const [deleteConfirm, setDeleteConfirm] = useState<{
-    isOpen: boolean;
-    addressId: number | null;
-  }>({ isOpen: false, addressId: null });
-
-  const handleDeleteAddress = (id: number) => {
-    setDeleteConfirm({ isOpen: true, addressId: id });
+  const handleDelete = async (id: string) => {
+    await deleteAddress.mutateAsync(id);
   };
 
-  const confirmDelete = () => {
-    if (deleteConfirm.addressId) {
-      setShippingAddresses((prev) =>
-        prev.filter((address) => address.id !== deleteConfirm.addressId)
-      );
-      setDeleteConfirm({ isOpen: false, addressId: null });
-    }
-  };
-
-  const handleSetDefault = (id: number) => {
-    setShippingAddresses((prev) =>
-      prev.map((address) => ({
-        ...address,
-        isDefault: address.id === id,
-      }))
-    );
+  const handleSetDefault = async (id: string) => {
+    await setDefault.mutateAsync(id);
   };
 
   return (
@@ -112,7 +112,9 @@ export default function ShippingAddressPage() {
                 </button>
               </div>
 
-              {shippingAddresses.length === 0 ? (
+              {isLoading ? (
+                <div className="text-center py-12">Loading...</div>
+              ) : addresses.length === 0 ? (
                 <div className="text-center py-12">
                   <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -131,9 +133,9 @@ export default function ShippingAddressPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {shippingAddresses.map((address) => (
+                  {addresses.map((address: any) => (
                     <div
-                      key={address.id}
+                      key={address._id}
                       className="bg-white border border-gray-200 rounded-lg p-4"
                     >
                       <div className="flex items-start justify-between">
@@ -141,12 +143,18 @@ export default function ShippingAddressPage() {
                           <MapPin className="w-5 h-5 text-gray-500 mt-0.5" />
                           <div>
                             <p className="font-medium text-gray-900">
-                              {address.name}
+                              {address.fullName}
                             </p>
-                            <p className="text-gray-600">{address.address}</p>
+                            <p className="text-gray-600">{address.street}</p>
                             <p className="text-gray-600">
-                              {address.city}, {address.state} {address.zipCode}
+                              {address.city}, {address.state}
                             </p>
+                            <p className="text-gray-600">{address.country}</p>
+                            {address.postalCode && (
+                              <p className="text-gray-600">
+                                {address.postalCode}
+                              </p>
+                            )}
                             <p className="text-gray-600">{address.phone}</p>
                           </div>
                         </div>
@@ -158,20 +166,25 @@ export default function ShippingAddressPage() {
                           )}
                           {!address.isDefault && (
                             <button
-                              onClick={() => handleSetDefault(address.id)}
+                              onClick={() => handleSetDefault(address._id)}
                               className="text-sm text-[#D7195B] hover:text-[#B01548]"
                             >
                               Set as Default
                             </button>
                           )}
                           <button
-                            onClick={() => handleEditAddress(address.id)}
+                            onClick={() => handleEditAddress(address)}
                             className="text-gray-400 hover:text-gray-600"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDeleteAddress(address.id)}
+                            onClick={() =>
+                              setDeleteConfirm({
+                                isOpen: true,
+                                addressId: address._id,
+                              })
+                            }
                             className="text-gray-400 hover:text-red-600"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -187,23 +200,34 @@ export default function ShippingAddressPage() {
                 <div
                   className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70]"
                   onClick={(e) => {
-                    if (e.target === e.currentTarget) {
-                      setShowAddForm(false);
-                    }
+                    if (e.target === e.currentTarget) setShowAddForm(false);
                   }}
                 >
                   <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Add Shipping Address
+                      {editingId ? "Edit Address" : "Add Shipping Address"}
                     </h3>
-                    <form className="space-y-4">
+                    <form
+                      className="space-y-4"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSaveForm();
+                      }}
+                    >
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Full Name
                         </label>
                         <input
                           type="text"
-                          placeholder="John Doe"
+                          value={formData.fullName}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              fullName: e.target.value,
+                            })
+                          }
+                          placeholder={`${user?.firstName || ""} ${user?.lastName || ""}`.trim()}
                           className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
                         />
                       </div>
@@ -213,6 +237,10 @@ export default function ShippingAddressPage() {
                         </label>
                         <input
                           type="text"
+                          value={formData.street}
+                          onChange={(e) =>
+                            setFormData({ ...formData, street: e.target.value })
+                          }
                           placeholder="123 Main Street"
                           className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
                         />
@@ -224,6 +252,10 @@ export default function ShippingAddressPage() {
                           </label>
                           <input
                             type="text"
+                            value={formData.city}
+                            onChange={(e) =>
+                              setFormData({ ...formData, city: e.target.value })
+                            }
                             placeholder="Lagos"
                             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
                           />
@@ -234,6 +266,13 @@ export default function ShippingAddressPage() {
                           </label>
                           <input
                             type="text"
+                            value={formData.state}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                state: e.target.value,
+                              })
+                            }
                             placeholder="Lagos"
                             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
                           />
@@ -246,22 +285,52 @@ export default function ShippingAddressPage() {
                           </label>
                           <input
                             type="text"
+                            value={formData.postalCode}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                postalCode: e.target.value,
+                              })
+                            }
                             placeholder="100001"
                             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text_sm font-medium text-gray-700 mb-1">
                             Phone
                           </label>
                           <input
                             type="tel"
+                            value={formData.phone}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                phone: e.target.value,
+                              })
+                            }
                             placeholder="+234 123 456 7890"
                             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
                           />
                         </div>
                       </div>
-                      <div className="flex gap-3 pt-4">
+                      <div className="flex items-center mt-1">
+                        <input
+                          type="checkbox"
+                          checked={formData.isDefault}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              isDefault: e.target.checked,
+                            })
+                          }
+                          className="mr-2"
+                        />
+                        <label className="text-sm text-gray-700">
+                          Set as default address
+                        </label>
+                      </div>
+                      <div className="flex gap-3 pt-2">
                         <button
                           type="button"
                           onClick={() => setShowAddForm(false)}
@@ -273,7 +342,7 @@ export default function ShippingAddressPage() {
                           type="submit"
                           className="flex-1 px-4 py-2 bg-[#D7195B] text-white rounded-md hover:bg-[#B01548] transition-colors"
                         >
-                          Add Address
+                          {editingId ? "Save Changes" : "Add Address"}
                         </button>
                       </div>
                     </form>
@@ -287,7 +356,12 @@ export default function ShippingAddressPage() {
                 message="Are you sure you want to delete this shipping address? This action cannot be undone."
                 confirmLabel="Delete"
                 cancelLabel="Cancel"
-                onConfirm={confirmDelete}
+                onConfirm={async () => {
+                  if (deleteConfirm.addressId) {
+                    await deleteAddress.mutateAsync(deleteConfirm.addressId);
+                  }
+                  setDeleteConfirm({ isOpen: false, addressId: null });
+                }}
                 onCancel={() =>
                   setDeleteConfirm({ isOpen: false, addressId: null })
                 }
@@ -297,5 +371,13 @@ export default function ShippingAddressPage() {
         </div>
       </SectionWrapper>
     </div>
+  );
+}
+
+export default function ShippingAddressPage() {
+  return (
+    <AuthWrapper>
+      <ShippingAddressPageContent />
+    </AuthWrapper>
   );
 }

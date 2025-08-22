@@ -10,18 +10,24 @@ import {
   usersAPI,
   vendorsAPI,
   categoriesAPI,
+  notificationsAPI,
 } from "@/lib/api";
 import { useTempStore } from "@/stores/tempStore";
+import { useRouter } from "next/navigation";
 
-// Auth hooks
+// =====================================
+// AUTHENTICATION HOOKS
+// =====================================
+
 export const useLogin = () => {
   const queryClient = useQueryClient();
+  const { syncTempStore } = useSyncTempStore();
 
   return useMutation(
     (credentials: { email: string; password: string; rememberMe?: boolean }) =>
       authAPI.login(credentials),
     {
-      onSuccess: (data, variables) => {
+      onSuccess: async (data, variables) => {
         const { CookieService } = require("@/lib/cookies");
         const tokenExpiry = variables.rememberMe ? 7 : 1;
         const refreshExpiry = variables.rememberMe ? 30 : 7;
@@ -32,11 +38,11 @@ export const useLogin = () => {
           data.data.data.refreshToken,
           refreshExpiry
         );
-        // Transfer any guest pending items to the logged-in user's temp store
-        try {
-          useTempStore.getState().transferPendingToUser();
-        } catch (e) {}
+
         queryClient.invalidateQueries(["user"]);
+
+        await syncTempStore();
+
         toast.success("Login successful!");
         window.location.href = "/dashboard";
       },
@@ -49,13 +55,18 @@ export const useLogin = () => {
 
 export const useRegister = () => {
   const queryClient = useQueryClient();
+  const { syncTempStore } = useSyncTempStore();
 
   return useMutation(authAPI.register, {
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       const { CookieService } = require("@/lib/cookies");
       CookieService.set("auth_token", data.data.data.token, 1);
       CookieService.set("refresh_token", data.data.data.refreshToken, 7);
+
       queryClient.invalidateQueries(["user"]);
+
+      await syncTempStore();
+
       toast.success("Registration successful! Please verify your email.");
       window.location.href = "/verify-email";
     },
@@ -67,6 +78,7 @@ export const useRegister = () => {
 
 export const useLogout = () => {
   const queryClient = useQueryClient();
+  const { generateNewSession } = useTempStore();
 
   return useMutation(authAPI.logout, {
     onSuccess: () => {
@@ -74,6 +86,7 @@ export const useLogout = () => {
       CookieService.remove("auth_token");
       CookieService.remove("refresh_token");
       queryClient.clear();
+      generateNewSession();
       toast.success("Logged out successfully");
       window.location.href = "/login";
     },
@@ -129,7 +142,10 @@ export const useResendVerificationOTP = () => {
   });
 };
 
-// Products hooks
+// =====================================
+// PRODUCTS HOOKS
+// =====================================
+
 export const useProducts = (params?: {
   page?: number;
   limit?: number;
@@ -151,6 +167,19 @@ export const useProduct = (id: string) => {
   return useQuery(["product", id], () => productsAPI.getById(id), {
     enabled: !!id,
   });
+};
+
+export const useVendorProducts = (params?: {
+  page?: number;
+  limit?: number;
+}) => {
+  return useQuery(
+    ["vendor-products", params],
+    () => productsAPI.getVendorProducts(params),
+    {
+      keepPreviousData: true,
+    }
+  );
 };
 
 export const useCreateProduct = () => {
@@ -203,20 +232,10 @@ export const useDeleteProduct = () => {
   });
 };
 
-export const useVendorProducts = (params?: {
-  page?: number;
-  limit?: number;
-}) => {
-  return useQuery(
-    ["vendor-products", params],
-    () => productsAPI.getVendorProducts(params),
-    {
-      keepPreviousData: true,
-    }
-  );
-};
+// =====================================
+// ORDERS HOOKS
+// =====================================
 
-// Orders hooks
 export const useOrders = () => {
   return useQuery(["orders"], ordersAPI.getAll);
 };
@@ -241,21 +260,40 @@ export const useCreateOrder = () => {
   });
 };
 
-// User hooks
+// =====================================
+// USER PROFILE HOOKS
+// =====================================
+
 export const useUserProfile = () => {
   const [isEnabled, setIsEnabled] = useState(false);
+  const { setVendorStatus, generateNewSession } = useTempStore();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const { CookieService } = require("@/lib/cookies");
-      setIsEnabled(!!CookieService.get("auth_token"));
+      const hasToken = !!CookieService.get("auth_token");
+      setIsEnabled(hasToken);
     }
   }, []);
 
-  return useQuery(["user"], authAPI.getCurrentUser, {
+  const query = useQuery(["user"], authAPI.getCurrentUser, {
     enabled: isEnabled,
     retry: false,
   });
+
+  useEffect(() => {
+    if (query.data?.data?.data && isEnabled) {
+      const user = query.data.data.data;
+      const isVendor = user.role === "VENDOR";
+      setVendorStatus(isVendor);
+
+      if (isVendor) {
+        generateNewSession();
+      }
+    }
+  }, [query.data, isEnabled, setVendorStatus, generateNewSession]);
+
+  return query;
 };
 
 export const useUpdateProfile = () => {
@@ -272,12 +310,188 @@ export const useUpdateProfile = () => {
   });
 };
 
-// Categories hooks
-export const useCategories = () => {
-  return useQuery(["categories"], categoriesAPI.getAll);
+export const useDeleteAccount = () => {
+  const queryClient = useQueryClient();
+  const { generateNewSession } = useTempStore();
+
+  return useMutation(
+    ({ password }: { password: string }) => usersAPI.deleteAccount(password),
+    {
+      onSuccess: () => {
+        const { CookieService } = require("@/lib/cookies");
+        CookieService.remove("auth_token");
+        CookieService.remove("refresh_token");
+
+        queryClient.clear();
+        generateNewSession();
+
+        toast.success("Account deleted successfully");
+
+        window.location.href = "/register";
+      },
+      onError: (error: any) => {
+        toast.error(
+          error.response?.data?.message || "Failed to delete account"
+        );
+      },
+    }
+  );
 };
 
-// Vendors hooks
+// =====================================
+// ADDRESS HOOKS
+// =====================================
+
+export const useAddresses = () => {
+  return useQuery(["addresses"], usersAPI.getAddresses);
+};
+
+export const useAddAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation(usersAPI.addAddress, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["addresses"]);
+      queryClient.invalidateQueries(["user"]);
+    },
+  });
+};
+
+export const useUpdateAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ id, payload }: { id: string; payload: any }) =>
+      usersAPI.updateAddress(id, payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["addresses"]);
+        queryClient.invalidateQueries(["user"]);
+      },
+    }
+  );
+};
+
+export const useDeleteAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation((id: string) => usersAPI.deleteAddress(id), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["addresses"]);
+      queryClient.invalidateQueries(["user"]);
+    },
+  });
+};
+
+export const useSetDefaultAddress = () => {
+  const queryClient = useQueryClient();
+  return useMutation((id: string) => usersAPI.setDefaultAddress(id), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["addresses"]);
+      queryClient.invalidateQueries(["user"]);
+    },
+  });
+};
+
+// =====================================
+// WISHLIST HOOKS
+// =====================================
+
+export const useWishlist = (enabled: boolean = true) => {
+  return useQuery(["wishlist"], () => usersAPI.getWishlist(), {
+    enabled,
+  });
+};
+
+export const useAddToWishlist = () => {
+  const queryClient = useQueryClient();
+  const { removeSavedItem } = useTempStore();
+
+  return useMutation((productId: string) => usersAPI.addToWishlist(productId), {
+    onSuccess: (data, productId) => {
+      queryClient.invalidateQueries(["wishlist"]);
+      removeSavedItem(productId);
+    },
+  });
+};
+
+export const useRemoveFromWishlist = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (productId: string) => usersAPI.removeFromWishlist(productId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["wishlist"]);
+      },
+    }
+  );
+};
+
+// =====================================
+// CART HOOKS
+// =====================================
+
+export const useCart = (enabled: boolean = true) => {
+  return useQuery(["cart"], () => usersAPI.getCart(), {
+    enabled,
+  });
+};
+
+export const useAddToCart = () => {
+  const queryClient = useQueryClient();
+  const { removeCartItem } = useTempStore();
+
+  return useMutation(
+    ({ productId, quantity }: { productId: string; quantity: number }) =>
+      usersAPI.addToCart(productId, quantity),
+    {
+      onSuccess: (data, { productId }) => {
+        queryClient.invalidateQueries(["cart"]);
+        removeCartItem(productId);
+      },
+    }
+  );
+};
+
+export const useUpdateCartItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    ({ productId, quantity }: { productId: string; quantity: number }) =>
+      usersAPI.updateCartItem(productId, quantity),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["cart"]);
+      },
+    }
+  );
+};
+
+export const useRemoveFromCart = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (productId: string) => usersAPI.removeFromCart(productId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["cart"]);
+      },
+    }
+  );
+};
+
+export const useClearCart = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(usersAPI.clearCart, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["cart"]);
+    },
+  });
+};
+
+// =====================================
+// VENDOR HOOKS
+// =====================================
+
 export const useVendor = (id: string) => {
   return useQuery(["vendor", id], () => vendorsAPI.getById(id), {
     enabled: !!id,
@@ -298,4 +512,109 @@ export const useRegisterVendor = () => {
       );
     },
   });
+};
+
+// =====================================
+// CATEGORIES HOOKS
+// =====================================
+
+export const useCategories = () => {
+  return useQuery(["categories"], categoriesAPI.getAll);
+};
+
+// =====================================
+// NOTIFICATIONS HOOKS
+// =====================================
+
+export const useNotifications = () => {
+  return useQuery(["notifications"], notificationsAPI.getAll);
+};
+
+export const useMarkNotificationAsRead = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation((id: string) => notificationsAPI.markAsRead(id), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notifications"]);
+    },
+  });
+};
+
+// =====================================
+// TEMPORARY STORE SYNC HOOKS
+// =====================================
+
+export const useSyncTempStore = () => {
+  const router = useRouter();
+  const {
+    savedItems,
+    cartItems,
+    isPendingSync,
+    markPendingSync,
+    clearPendingSync,
+    generateNewSession,
+  } = useTempStore();
+  const addToWishlist = useAddToWishlist();
+  const addToCart = useAddToCart();
+
+  const syncTempStore = async () => {
+    console.log("Sync temp store called", {
+      isPendingSync,
+      savedItems,
+      cartItems,
+    });
+
+    if (!isPendingSync || (savedItems.length === 0 && cartItems.length === 0)) {
+      console.log("No sync needed");
+      return;
+    }
+
+    try {
+      console.log("Starting sync with items:", { savedItems, cartItems });
+      const promises = [];
+
+      for (const productId of savedItems) {
+        promises.push(addToWishlist.mutateAsync(productId));
+      }
+
+      for (const item of cartItems) {
+        promises.push(
+          addToCart.mutateAsync({
+            productId: item.productId,
+            quantity: item.quantity,
+          })
+        );
+      }
+
+      await Promise.all(promises);
+      console.log("Sync completed successfully");
+      clearPendingSync();
+      generateNewSession();
+    } catch (error) {
+      console.error("Failed to sync temp store:", error);
+      clearPendingSync();
+    }
+  };
+
+  const handleGuestAction = (action: "save" | "cart") => {
+    console.log("Guest action:", action);
+    markPendingSync();
+    router.push("/login");
+  };
+
+  const handleVendorAction = (action: "save" | "cart") => {
+    const message =
+      action === "save"
+        ? "Vendors cannot save items"
+        : "Vendors cannot add items to cart";
+    toast.error(message);
+    generateNewSession();
+  };
+
+  return {
+    syncTempStore,
+    handleGuestAction,
+    handleVendorAction,
+    isPendingSync,
+  };
 };

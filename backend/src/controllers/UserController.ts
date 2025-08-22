@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { User } from "@/models/User";
 import { Order } from "@/models/Order";
 import { Review } from "@/models/Review";
+import { Product } from "@/models/Product";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 
@@ -202,10 +203,264 @@ export const getUserWishlist = asyncHandler(
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
+    const userProfile = await User.findById(user._id).populate({
+      path: "wishlist",
+      select: "name price thumbnail vendorId categoryId",
+      populate: [
+        { path: "vendorId", select: "businessName" },
+        { path: "categoryId", select: "name" },
+      ],
+    });
+
+    if (!userProfile) {
+      return next(createError("User not found", 404));
+    }
+
+    const wishlist = userProfile.wishlist || [];
+    const total = wishlist.length;
+    const paginatedWishlist = wishlist.slice(skip, skip + limit);
+
     res.status(200).json({
       success: true,
-      message: "Wishlist feature coming soon",
-      data: [],
+      data: paginatedWishlist,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  }
+);
+
+export const addToWishlist = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const { productId } = req.body;
+
+    if (!productId) {
+      return next(createError("Product ID is required", 400));
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return next(createError("Product not found", 404));
+    }
+
+    const userProfile = await User.findById(user._id);
+    if (!userProfile) {
+      return next(createError("User not found", 404));
+    }
+
+    if (!userProfile.wishlist) {
+      userProfile.wishlist = [];
+    }
+
+    if (userProfile.wishlist.includes(productId)) {
+      return next(createError("Product already in wishlist", 400));
+    }
+
+    userProfile.wishlist.push(productId);
+    await userProfile.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Product added to wishlist",
+    });
+  }
+);
+
+export const removeFromWishlist = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const { productId } = req.params;
+
+    const userProfile = await User.findById(user._id);
+    if (!userProfile) {
+      return next(createError("User not found", 404));
+    }
+
+    if (!userProfile.wishlist) {
+      userProfile.wishlist = [];
+    }
+
+    const index = userProfile.wishlist.findIndex(
+      (id: any) => id.toString() === productId
+    );
+    if (index === -1) {
+      return next(createError("Product not in wishlist", 404));
+    }
+
+    userProfile.wishlist.splice(index, 1);
+    await userProfile.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Product removed from wishlist",
+    });
+  }
+);
+
+export const getCart = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+
+    const userProfile = await User.findById(user._id).populate({
+      path: "cart.items.productId",
+      select: "name price thumbnail vendorId categoryId",
+      populate: [
+        { path: "vendorId", select: "businessName" },
+        { path: "categoryId", select: "name" },
+      ],
+    });
+
+    if (!userProfile) {
+      return next(createError("User not found", 404));
+    }
+
+    const cart = userProfile.cart || { items: [] };
+
+    res.status(200).json({
+      success: true,
+      data: cart,
+    });
+  }
+);
+
+export const addToCart = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const { productId, quantity = 1 } = req.body;
+
+    if (!productId) {
+      return next(createError("Product ID is required", 400));
+    }
+
+    if (quantity < 1) {
+      return next(createError("Quantity must be at least 1", 400));
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return next(createError("Product not found", 404));
+    }
+
+    const userProfile = await User.findById(user._id);
+    if (!userProfile) {
+      return next(createError("User not found", 404));
+    }
+
+    if (!userProfile.cart) {
+      userProfile.cart = { items: [] };
+    }
+
+    const existingItemIndex = userProfile.cart.items.findIndex(
+      (item: any) => item.productId.toString() === productId
+    );
+
+    if (existingItemIndex !== -1) {
+      userProfile.cart.items[existingItemIndex].quantity += quantity;
+    } else {
+      userProfile.cart.items.push({
+        productId,
+        quantity,
+        addedAt: new Date(),
+      });
+    }
+
+    await userProfile.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Product added to cart",
+    });
+  }
+);
+
+export const updateCartItem = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const { productId } = req.params;
+    const { quantity } = req.body;
+
+    if (!quantity || quantity < 1) {
+      return next(createError("Valid quantity is required", 400));
+    }
+
+    const userProfile = await User.findById(user._id);
+    if (!userProfile) {
+      return next(createError("User not found", 404));
+    }
+
+    if (!userProfile.cart) {
+      return next(createError("Cart is empty", 404));
+    }
+
+    const itemIndex = userProfile.cart.items.findIndex(
+      (item: any) => item.productId.toString() === productId
+    );
+
+    if (itemIndex === -1) {
+      return next(createError("Product not in cart", 404));
+    }
+
+    userProfile.cart.items[itemIndex].quantity = quantity;
+    await userProfile.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Cart item updated",
+    });
+  }
+);
+
+export const removeFromCart = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const { productId } = req.params;
+
+    const userProfile = await User.findById(user._id);
+    if (!userProfile) {
+      return next(createError("User not found", 404));
+    }
+
+    if (!userProfile.cart) {
+      return next(createError("Cart is empty", 404));
+    }
+
+    const itemIndex = userProfile.cart.items.findIndex(
+      (item: any) => item.productId.toString() === productId
+    );
+
+    if (itemIndex === -1) {
+      return next(createError("Product not in cart", 404));
+    }
+
+    userProfile.cart.items.splice(itemIndex, 1);
+    await userProfile.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Product removed from cart",
+    });
+  }
+);
+
+export const clearCart = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+
+    const userProfile = await User.findById(user._id);
+    if (!userProfile) {
+      return next(createError("User not found", 404));
+    }
+
+    userProfile.cart = { items: [] };
+    await userProfile.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Cart cleared",
     });
   }
 );
@@ -238,13 +493,182 @@ export const deleteAccount = asyncHandler(
       return next(createError("Cannot delete account with active orders", 400));
     }
 
+    const timestamp = Date.now();
+
     userProfile.status = "INACTIVE";
-    userProfile.email = `deleted_${Date.now()}_${userProfile.email}`;
+    userProfile.email = `deleted_${timestamp}_${userProfile.email}`;
+    if (userProfile.phone) {
+      userProfile.phone = `deleted_${timestamp}_${userProfile.phone}`;
+    }
+
     await userProfile.save();
 
     res.status(200).json({
       success: true,
       message: "Account deleted successfully",
+    });
+  }
+);
+
+export const getAddresses = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const userProfile = await User.findById(user._id);
+    if (!userProfile) return next(createError("User not found", 404));
+    res
+      .status(200)
+      .json({ success: true, data: userProfile.shippingAddresses || [] });
+  }
+);
+
+export const addAddress = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const {
+      fullName,
+      street,
+      city,
+      state,
+      country,
+      postalCode,
+      phone,
+      isDefault,
+    } = req.body;
+
+    const userProfile = await User.findById(user._id);
+    if (!userProfile) return next(createError("User not found", 404));
+
+    const newAddress: any = {
+      fullName,
+      street,
+      city,
+      state,
+      country: country || "Nigeria",
+      postalCode,
+      phone,
+      isDefault: !!isDefault,
+    };
+
+    if (!Array.isArray(userProfile.shippingAddresses))
+      userProfile.shippingAddresses = [] as any;
+
+    if (newAddress.isDefault) {
+      userProfile.shippingAddresses = (userProfile.shippingAddresses || []).map(
+        (a: any) => ({
+          ...((a as any).toObject ? (a as any).toObject() : a),
+          isDefault: false,
+        })
+      ) as any;
+    }
+
+    (userProfile.shippingAddresses as any).push(newAddress);
+    await userProfile.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Address added",
+      data: userProfile.shippingAddresses,
+    });
+  }
+);
+
+export const updateAddress = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const { id } = req.params;
+    const {
+      fullName,
+      street,
+      city,
+      state,
+      country,
+      postalCode,
+      phone,
+      isDefault,
+    } = req.body;
+
+    const userProfile = await User.findById(user._id);
+    if (!userProfile) return next(createError("User not found", 404));
+    if (!Array.isArray(userProfile.shippingAddresses))
+      userProfile.shippingAddresses = [] as any;
+
+    const idx = (userProfile.shippingAddresses || []).findIndex(
+      (a: any) => a._id?.toString() === id
+    );
+    if (idx === -1) return next(createError("Address not found", 404));
+
+    if (isDefault) {
+      userProfile.shippingAddresses = (userProfile.shippingAddresses || []).map(
+        (a: any) => ({
+          ...((a as any).toObject ? (a as any).toObject() : a),
+          isDefault: false,
+        })
+      ) as any;
+    }
+
+    const addr: any = (userProfile.shippingAddresses as any)[idx];
+    if (fullName !== undefined) addr.fullName = fullName;
+    if (street !== undefined) addr.street = street;
+    if (city !== undefined) addr.city = city;
+    if (state !== undefined) addr.state = state;
+    if (country !== undefined) addr.country = country;
+    if (postalCode !== undefined) addr.postalCode = postalCode;
+    if (phone !== undefined) addr.phone = phone;
+    if (isDefault !== undefined) addr.isDefault = !!isDefault;
+
+    userProfile.markModified("shippingAddresses");
+    await userProfile.save();
+    res.status(200).json({
+      success: true,
+      message: "Address updated",
+      data: userProfile.shippingAddresses,
+    });
+  }
+);
+
+export const deleteAddress = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const { id } = req.params;
+
+    const userProfile = await User.findById(user._id);
+    if (!userProfile) return next(createError("User not found", 404));
+
+    userProfile.shippingAddresses = (
+      (userProfile.shippingAddresses as any) || []
+    ).filter((a: any) => a._id?.toString() !== id) as any;
+    userProfile.markModified("shippingAddresses");
+    await userProfile.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Address deleted",
+      data: userProfile.shippingAddresses,
+    });
+  }
+);
+
+export const setDefaultAddress = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const { id } = req.params;
+
+    const userProfile = await User.findById(user._id);
+    if (!userProfile) return next(createError("User not found", 404));
+
+    userProfile.shippingAddresses = (
+      (userProfile.shippingAddresses as any) || []
+    ).map((a: any) => ({
+      ...((a as any).toObject ? (a as any).toObject() : a),
+      isDefault: a._id?.toString() === id,
+    })) as any;
+    userProfile.markModified("shippingAddresses");
+    await userProfile.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Default address set",
+      data: userProfile.shippingAddresses,
     });
   }
 );

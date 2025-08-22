@@ -26,10 +26,62 @@ export interface IUser extends Document {
   passwordResetExpires?: Date;
   emailVerificationOTP?: string;
   emailVerificationOTPExpires?: Date;
+  wishlist?: mongoose.Types.ObjectId[];
+  cart?: {
+    items: Array<{
+      productId: mongoose.Types.ObjectId;
+      quantity: number;
+      addedAt: Date;
+    }>;
+  };
+  shippingAddresses?: Array<{
+    _id: mongoose.Types.ObjectId;
+    fullName: string;
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    postalCode?: string;
+    phone: string;
+    isDefault: boolean;
+  }>;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
+
+const cartItemSchema = new Schema({
+  productId: {
+    type: Schema.Types.ObjectId,
+    ref: "Product",
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    min: 1,
+    default: 1,
+  },
+  addedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const cartSchema = new Schema({
+  items: [cartItemSchema],
+});
+
+const addressSchema = new Schema({
+  fullName: { type: String, required: true },
+  street: { type: String, required: true },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  country: { type: String, required: true, default: "Nigeria" },
+  postalCode: { type: String },
+  phone: { type: String, required: true },
+  isDefault: { type: Boolean, default: false },
+}, { timestamps: true });
 
 const userSchema = new Schema<IUser>(
   {
@@ -102,6 +154,12 @@ const userSchema = new Schema<IUser>(
     passwordResetExpires: Date,
     emailVerificationOTP: String,
     emailVerificationOTPExpires: Date,
+    wishlist: [{
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+    }],
+    cart: cartSchema,
+    shippingAddresses: [addressSchema],
   },
   {
     timestamps: true,

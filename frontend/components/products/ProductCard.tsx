@@ -9,6 +9,7 @@ import { useUserProfile } from "@/hooks/useAPI";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTempStore } from "@/stores/tempStore";
 import { Notification } from "@/components/ui/Notification";
+import { useSyncTempStore } from "@/hooks/useAPI";
 
 export function ProductCard({ product, viewMode }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -24,8 +25,15 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
   const user = userProfile?.data?.data;
   const isVendor = user?.role === "VENDOR";
 
-  const { savedItems, cartItems, addSavedItem, removeSavedItem, addCartItem, updateCartQuantity } =
-    useTempStore();
+  const {
+    savedItems,
+    cartItems,
+    addSavedItem,
+    removeSavedItem,
+    addCartItem,
+    updateCartQuantity,
+  } = useTempStore();
+  const { handleGuestAction, handleVendorAction } = useSyncTempStore();
   const isSaved = savedItems.includes(product._id);
   const cartItem = cartItems.find((item) => item.productId === product._id);
 
@@ -48,14 +56,13 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
     e.stopPropagation();
 
     if (!user) {
-      // mark pending to transfer after login
-      useTempStore.getState().markPendingFromGuest();
-      router.push("/login");
+      addSavedItem(product._id);
+      handleGuestAction("save");
       return;
     }
 
     if (isVendor) {
-      showNotification("Vendors cannot save items", "error");
+      handleVendorAction("save");
       return;
     }
 
@@ -72,14 +79,13 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
     e.stopPropagation();
 
     if (!user) {
-      // mark pending to transfer after login
-      useTempStore.getState().markPendingFromGuest();
-      router.push("/login");
+      addCartItem(product._id);
+      handleGuestAction("cart");
       return;
     }
 
     if (isVendor) {
-      showNotification("Vendors cannot add items to cart", "error");
+      handleVendorAction("cart");
       return;
     }
 
@@ -181,11 +187,15 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
 
           <div className="flex items-center gap-1 mb-2">
             <StarRating rating={product.rating} />
-            <span className="text-xs text-gray-600">({product.reviewCount || 0})</span>
+            <span className="text-xs text-gray-600">
+              ({product.reviewCount || 0})
+            </span>
           </div>
 
           <div className="mb-3">
-            <span className="font-semibold text-[#D7195B] text-base">₦{product.price.toLocaleString()}</span>
+            <span className="font-semibold text-[#D7195B] text-base">
+              ₦{product.price.toLocaleString()}
+            </span>
             {product.originalPrice && product.originalPrice > product.price && (
               <span className="text-xs text-gray-500 line-through ml-2">
                 ₦{product.originalPrice.toLocaleString()}
@@ -198,8 +208,9 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
             )}
           </div>
 
-          {isHovered && !isVendor && (
-            cartItem ? (
+          {isHovered &&
+            !isVendor &&
+            (cartItem ? (
               <div className="flex items-center justify-center gap-2 bg-[#D7195B] text-white py-2 px-4 rounded-lg text-sm font-medium">
                 <button
                   className="p-1 hover:bg-white/20 rounded transition-colors"
@@ -208,7 +219,9 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
                     const newQuantity = cartItem.quantity - 1;
                     if (newQuantity === 0) {
                       updateCartQuantity(product._id, 0);
-                      showNotification("Item was removed from cart successfully");
+                      showNotification(
+                        "Item was removed from cart successfully"
+                      );
                     } else {
                       updateCartQuantity(product._id, newQuantity);
                       showNotification("Item quantity has been updated");
@@ -217,7 +230,9 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="min-w-[20px] text-center">{cartItem.quantity}</span>
+                <span className="min-w-[20px] text-center">
+                  {cartItem.quantity}
+                </span>
                 <button
                   className="p-1 hover:bg-white/20 rounded transition-colors"
                   onClick={(e) => {
@@ -237,8 +252,7 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
                 <ShoppingCart className="w-4 h-4" />
                 Add to Cart
               </button>
-            )
-          )}
+            ))}
         </div>
       </div>
     </>

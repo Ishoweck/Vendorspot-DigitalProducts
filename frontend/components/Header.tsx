@@ -48,10 +48,20 @@ export default function Header() {
   const categories = categoriesData?.data?.data || [];
 
   const { cartItems } = useTempStore();
-  const cartItemCount = cartItems.reduce(
+  const tempCartCount = cartItems.reduce(
     (total, item) => total + item.quantity,
     0
   );
+
+  const { useCart } = require("@/hooks/useAPI");
+  const { data: backendCartData } = useCart(!!user);
+  const backendCartCount =
+    backendCartData?.data?.data?.items?.reduce(
+      (t: number, it: any) => t + (it.quantity || 1),
+      0
+    ) || 0;
+
+  const cartItemCount = user ? backendCartCount : tempCartCount;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,7 +99,12 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    const hideOn = [/^\/dashboard\//, /^\/cart(\/|$)/, /^\/checkout(\/|$)/, /^\/products\/[^\/]+$/];
+    const hideOn = [
+      /^\/dashboard\//,
+      /^\/cart(\/|$)/,
+      /^\/checkout(\/|$)/,
+      /^\/products\/[^\/]+$/,
+    ];
     setShowBanner(!hideOn.some((re) => re.test(pathname)));
   }, [pathname]);
 
