@@ -5,6 +5,7 @@ import {
   useWishlist,
   useCart,
   useOrders,
+  useAllWishlist,
 } from "@/hooks/useAPI";
 import { Mail, Edit } from "lucide-react";
 import Link from "next/link";
@@ -14,7 +15,7 @@ import UserSidebar from "@/components/dashboard/UserSidebar";
 
 function UserDashboardContent() {
   const { data: userProfile } = useUserProfile();
-  const { data: wishlistData } = useWishlist();
+  const { data: wishlistData } = useAllWishlist();
   const { data: cartData } = useCart();
   const { data: ordersData } = useOrders();
 

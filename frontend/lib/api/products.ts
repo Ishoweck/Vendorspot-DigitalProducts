@@ -32,4 +32,6 @@ export const productsAPI = {
     }),
 
   delete: (id: string) => api.delete(`/products/${id}`),
+
+  download: (productId: string) => api.get<any>(`/products/${productId}/download`),
 };

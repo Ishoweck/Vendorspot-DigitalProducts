@@ -28,13 +28,13 @@ export interface IProduct extends Document {
     | "SUBSCRIPTION";
   licenseDuration?: number;
   downloadLimit?: number;
+  downloadCount: number;
   isActive: boolean;
   isFeatured: boolean;
   isApproved: boolean;
   approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
   rejectionReason?: string;
   viewCount: number;
-  downloadCount: number;
   soldCount: number;
   rating: number;
   reviewCount: number;
@@ -111,6 +111,10 @@ const productSchema = new Schema<IProduct>(
       type: Number,
       default: -1,
     },
+    downloadCount: {
+      type: Number,
+      default: 0,
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -130,10 +134,6 @@ const productSchema = new Schema<IProduct>(
     },
     rejectionReason: String,
     viewCount: {
-      type: Number,
-      default: 0,
-    },
-    downloadCount: {
       type: Number,
       default: 0,
     },

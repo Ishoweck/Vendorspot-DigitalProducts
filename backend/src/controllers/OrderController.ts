@@ -53,6 +53,7 @@ export const createOrder = asyncHandler(
         name: product.name,
         price: product.price,
         quantity,
+        downloadLimit: product.downloadLimit,
       });
 
       subtotal += itemTotal;

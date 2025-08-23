@@ -8,6 +8,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  downloadProduct,
 } from "@/controllers/productController";
 
 const router: Router = Router();
@@ -31,6 +32,11 @@ router.get(
   authenticate,
   authorize("VENDOR", "ADMIN"),
   getVendorProducts
+);
+router.get(
+  "/:productId/download",
+  authenticate,
+  downloadProduct
 );
 router.post(
   "/",

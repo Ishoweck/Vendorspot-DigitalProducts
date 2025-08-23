@@ -13,77 +13,18 @@ import {
 } from "lucide-react";
 import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
+import AuthWrapper from "@/components/auth/AuthWrapper";
+import { useOrders, useAddToCart, useDownloadProduct } from "@/hooks/useAPI";
+import { useRouter } from "next/navigation";
 
-export default function OrdersPage() {
+function OrdersPageContent() {
   const [activeTab, setActiveTab] = useState("all");
+  const { data: ordersData, isLoading } = useOrders();
+  const addToCart = useAddToCart();
+  const downloadProduct = useDownloadProduct();
+  const router = useRouter();
 
-  const orders = [
-    {
-      id: "ORD-001",
-      orderNumber: "VS-2024-001",
-      status: "DELIVERED",
-      paymentStatus: "PAID",
-      total: 129.98,
-      currency: "NGN",
-      createdAt: "2024-01-15T10:30:00Z",
-      items: [
-        {
-          id: "1",
-          product: {
-            id: 1,
-            name: "Premium WordPress Theme",
-            vendor: "TechVendor",
-            image:
-              "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop",
-          },
-          quantity: 1,
-          price: 29.99,
-          total: 29.99,
-          downloadUrl: "https://example.com/download/theme.zip",
-          downloadExpiry: "2024-02-15T10:30:00Z",
-        },
-        {
-          id: "2",
-          product: {
-            id: 2,
-            name: "Digital Marketing Course",
-            vendor: "EduPro",
-            image:
-              "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop",
-          },
-          quantity: 1,
-          price: 99.99,
-          total: 99.99,
-          downloadUrl: "https://example.com/download/course.zip",
-          downloadExpiry: "2024-02-15T10:30:00Z",
-        },
-      ],
-    },
-    {
-      id: "ORD-002",
-      orderNumber: "VS-2024-002",
-      status: "PROCESSING",
-      paymentStatus: "PAID",
-      total: 49.99,
-      currency: "NGN",
-      createdAt: "2024-01-20T14:15:00Z",
-      items: [
-        {
-          id: "3",
-          product: {
-            id: 3,
-            name: "Mobile App UI Kit",
-            vendor: "DesignHub",
-            image:
-              "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=300&fit=crop",
-          },
-          quantity: 1,
-          price: 49.99,
-          total: 49.99,
-        },
-      ],
-    },
-  ];
+  const orders = ordersData?.data?.data || [];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -111,9 +52,9 @@ export default function OrdersPage() {
     }
   };
 
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = orders.filter((order: any) => {
     if (activeTab === "all") return true;
-    return order.status.toLowerCase() === activeTab;
+    return (order.status || "").toLowerCase() === activeTab;
   });
 
   const tabs = [
@@ -121,19 +62,62 @@ export default function OrdersPage() {
     {
       id: "delivered",
       label: "Delivered",
-      count: orders.filter((o) => o.status === "DELIVERED").length,
+      count: orders.filter((o: any) => o.status === "DELIVERED").length,
     },
     {
       id: "processing",
       label: "Processing",
-      count: orders.filter((o) => o.status === "PROCESSING").length,
+      count: orders.filter((o: any) => o.status === "PROCESSING").length,
     },
     {
       id: "cancelled",
       label: "Cancelled",
-      count: orders.filter((o) => o.status === "CANCELLED").length,
+      count: orders.filter((o: any) => o.status === "CANCELLED").length,
     },
   ];
+
+  const handleDownload = (item: any) => {
+    const productId = item.productId?._id || item.productId;
+    if (productId) {
+      downloadProduct.mutate(productId);
+    }
+  };
+
+  const handleReorder = async (item: any) => {
+    const productId = item.productId?._id || item.productId;
+    const quantity = item.quantity || 1;
+    try {
+      await addToCart.mutateAsync({ productId, quantity });
+      router.push("/cart");
+    } catch {}
+  };
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 min-h-screen">
+        <SectionWrapper className="pt-4 pb-4 md:pt-8 md:pb-8">
+          <div className="max-w-7xl mx-auto px-2 md:px-4">
+            <div className="flex gap-4 md:gap-8">
+              <UserSidebar />
+              <main className="flex-1 bg-white rounded-lg shadow p-3 md:p-6 overflow-hidden">
+                <div className="animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+                  <div className="space-y-4 md:space-y-6">
+                    {[...Array(3)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="bg-gray-100 rounded-lg p-4 h-32"
+                      ></div>
+                    ))}
+                  </div>
+                </div>
+              </main>
+            </div>
+          </div>
+        </SectionWrapper>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -153,7 +137,7 @@ export default function OrdersPage() {
 
               <div className="bg-white rounded-lg border border-gray-200 mb-4 md:mb-6">
                 <div className="border-b border-gray-200">
-                <div className="overflow-x-auto scrollbar-hide">
+                  <div className="overflow-x-auto scrollbar-hide">
                     <nav className="flex space-x-4 md:space-x-8 px-4 md:px-6 min-w-max">
                       {tabs.map((tab) => (
                         <button
@@ -194,9 +178,9 @@ export default function OrdersPage() {
                     </Link>
                   </div>
                 ) : (
-                  filteredOrders.map((order) => (
+                  filteredOrders.map((order: any) => (
                     <div
-                      key={order.id}
+                      key={order._id}
                       className="bg-white rounded-lg border border-gray-200"
                     >
                       <div className="p-4 md:p-6 border-b border-gray-200">
@@ -208,7 +192,11 @@ export default function OrdersPage() {
                               </h3>
                               <p className="text-xs md:text-sm text-gray-500">
                                 Placed on{" "}
-                                {new Date(order.createdAt).toLocaleDateString()}
+                                {order.createdAt
+                                  ? new Date(
+                                      order.createdAt
+                                    ).toLocaleDateString()
+                                  : ""}
                               </p>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -222,11 +210,13 @@ export default function OrdersPage() {
                           </div>
                           <div className="text-right">
                             <div className="font-semibold text-gray-900 text-sm md:text-base">
-                              ₦{order.total.toLocaleString()}
+                              ₦{order.total?.toLocaleString() || "0"}
                             </div>
                             <div className="text-xs md:text-sm text-gray-500">
-                              {order.items.length}{" "}
-                              {order.items.length === 1 ? "item" : "items"}
+                              {order.items?.length || 0}{" "}
+                              {(order.items?.length || 0) === 1
+                                ? "item"
+                                : "items"}
                             </div>
                           </div>
                         </div>
@@ -234,58 +224,76 @@ export default function OrdersPage() {
 
                       <div className="p-4 md:p-6">
                         <div className="space-y-3 md:space-y-4">
-                          {order.items.map((item) => (
+                          {order.items?.map((item: any) => (
                             <div
-                              key={item.id}
+                              key={item._id || item.productId}
                               className="flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4"
                             >
                               <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0">
                                 <Image
-                                  src={item.product.image}
-                                  alt={item.product.name}
+                                  src={
+                                    item.productId?.thumbnail ||
+                                    "/api/placeholder/80/80"
+                                  }
+                                  alt={
+                                    item.name ||
+                                    item.productId?.name ||
+                                    "Product"
+                                  }
                                   fill
                                   className="object-cover rounded-lg"
                                 />
                               </div>
 
                               <div className="flex-1 min-w-0">
-                                <Link href={`/products/${item.product.id}`}>
+                                <Link
+                                  href={`/products/${item.productId?._id || item.productId}`}
+                                >
                                   <h4 className="font-medium text-gray-900 hover:text-[#D7195B] transition-colors duration-200 text-sm md:text-base">
-                                    {item.product.name}
+                                    {item.name ||
+                                      item.productId?.name ||
+                                      "Product"}
                                   </h4>
                                 </Link>
                                 <p className="text-xs md:text-sm text-gray-500">
-                                  by {item.product.vendor}
+                                  by{" "}
+                                  {item.vendorId?.businessName ||
+                                    item.productId?.vendorId?.businessName ||
+                                    "Unknown Vendor"}
                                 </p>
                                 <p className="text-xs md:text-sm text-gray-400">
-                                  Quantity: {item.quantity}
+                                  Quantity: {item.quantity || 1}
                                 </p>
                               </div>
 
                               <div className="flex flex-col sm:flex-row sm:items-center gap-2 md:gap-4">
                                 <div className="text-right">
                                   <div className="font-medium text-gray-900 text-sm md:text-base">
-                                    ₦{item.total.toLocaleString()}
+                                    ₦
+                                    {(
+                                      item.total || item.price * item.quantity
+                                    )?.toLocaleString() || "0"}
                                   </div>
                                 </div>
 
-                                {order.status === "DELIVERED" &&
-                                  "downloadUrl" in item &&
-                                  item.downloadUrl && (
-                                    <div className="flex flex-col sm:flex-row gap-2">
-                                      <button className="inline-flex items-center px-2 md:px-3 py-1 border border-gray-300 rounded-md text-xs md:text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        <Download className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                                        Download
-                                      </button>
-                                      <Link
-                                        href={`/orders/${order.id}`}
-                                        className="inline-flex items-center px-2 md:px-3 py-1 border border-gray-300 rounded-md text-xs md:text-sm font-medium text-gray-700 hover:bg-gray-50"
-                                      >
-                                        <Eye className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                                        View
-                                      </Link>
-                                    </div>
-                                  )}
+                                {order.status === "DELIVERED" && (
+                                  <div className="flex flex-col sm:flex-row gap-2">
+                                    <button
+                                      onClick={() => handleDownload(item)}
+                                      className="inline-flex items-center px-2 md:px-3 py-1 border border-gray-300 rounded-md text-xs md:text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                    >
+                                      <Download className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                                      Download
+                                    </button>
+
+                                    <button
+                                      onClick={() => handleReorder(item)}
+                                      className="inline-flex items-center px-2 md:px-3 py-1 border border-gray-300 rounded-md text-xs md:text-sm font-medium text-gray-700 hover:bg-gray-50"
+                                    >
+                                      Reorder
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           ))}
@@ -295,27 +303,21 @@ export default function OrdersPage() {
                           <div className="text-xs md:text-sm text-gray-500">
                             {order.status === "DELIVERED" &&
                               order.items[0] &&
-                              "downloadExpiry" in order.items[0] && (
+                              "downloadCount" in order.items[0] && (
                                 <span>
-                                  Downloads expire on{" "}
-                                  {new Date(
-                                    order.items[0].downloadExpiry || ""
-                                  ).toLocaleDateString()}
+                                  Downloads: {order.items[0].downloadCount || 0}/
+                                  {order.items[0].maxDownloads || "∞"}
                                 </span>
                               )}
                           </div>
                           <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                             <Link
-                              href={`/orders/${order.id}`}
-                              className="inline-flex items-center px-3 md:px-4 py-2 border border-gray-300 rounded-md text-xs md:text-sm font-medium text-gray-700 hover:bg-gray-50"
+                              href={`/dashboard/user/orders/${order._id}`}
+                              className="inline-flex items-center px-2 md:px-3 py-1 border border-gray-300 rounded-md text-xs md:text-sm font-medium text-gray-700 hover:bg-gray-50"
                             >
+                              <Eye className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                               View Details
                             </Link>
-                            {order.status === "DELIVERED" && (
-                              <button className="inline-flex items-center px-3 md:px-4 py-2 border border-gray-300 rounded-md text-xs md:text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                Reorder
-                              </button>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -328,5 +330,13 @@ export default function OrdersPage() {
         </div>
       </SectionWrapper>
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <AuthWrapper>
+      <OrdersPageContent />
+    </AuthWrapper>
   );
 }

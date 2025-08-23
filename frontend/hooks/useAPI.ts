@@ -232,6 +232,20 @@ export const useDeleteProduct = () => {
   });
 };
 
+export const useDownloadProduct = () => {
+  return useMutation((productId: string) => productsAPI.download(productId), {
+    onSuccess: (data: any) => {
+      const downloadUrl = data?.data?.data?.downloadUrl;
+      if (downloadUrl) {
+        window.open(downloadUrl, "_blank");
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Download failed");
+    },
+  });
+};
+
 // =====================================
 // ORDERS HOOKS
 // =====================================
@@ -394,12 +408,13 @@ export const useSetDefaultAddress = () => {
 // WISHLIST HOOKS
 // =====================================
 
-export const useWishlist = (enabled: boolean = true, params?: { page?: number; limit?: number }) => {
-  return useQuery(
-    ["wishlist", params], 
-    () => usersAPI.getWishlist(params), 
-    { enabled }
-  );
+export const useWishlist = (
+  enabled: boolean = true,
+  params?: { page?: number; limit?: number }
+) => {
+  return useQuery(["wishlist", params], () => usersAPI.getWishlist(params), {
+    enabled,
+  });
 };
 
 export const useAllWishlist = (enabled: boolean = true) => {

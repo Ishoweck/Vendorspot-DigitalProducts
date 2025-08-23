@@ -4,6 +4,7 @@ import { Vendor } from "@/models/Vendor";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
+import { Order } from "@/models/Order";
 
 export const getProducts = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -78,6 +79,7 @@ export const getProducts = asyncHandler(
       const products = await Product.find(query)
         .populate("vendorId", "businessName")
         .populate("categoryId", "name")
+        .select("-fileUrl -downloadCount")
         .sort(sortOptions)
         .skip(skip)
         .limit(limit);
@@ -104,14 +106,15 @@ export const getProductById = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const product = await Product.findById(req.params.id)
       .populate("vendorId", "businessName")
-      .populate("categoryId", "name");
+      .populate("categoryId", "name")
+      .select("-fileUrl -downloadCount");
 
     if (!product) {
       return next(createError("Product not found", 404));
     }
 
     await Product.findByIdAndUpdate(req.params.id, {
-      $inc: { viewCount: 1 }
+      $inc: { viewCount: 1 },
     });
 
     res.status(200).json({
@@ -136,6 +139,7 @@ export const getVendorProducts = asyncHandler(
 
     const products = await Product.find({ vendorId: vendor._id })
       .populate("categoryId", "name")
+      .select("-fileUrl -downloadCount")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -454,6 +458,67 @@ export const deleteProduct = asyncHandler(
     res.status(200).json({
       success: true,
       message: "Product deleted successfully",
+    });
+  }
+);
+
+export const downloadProduct = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
+    const { productId } = req.params;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return next(createError("Product not found", 404));
+    }
+
+    const order = await Order.findOne({
+      userId: user._id,
+      "items.productId": productId,
+      status: "DELIVERED",
+    });
+
+    if (!order) {
+      return next(createError("No valid order found for this product", 403));
+    }
+
+    const orderItem = order.items.find(
+      (item: any) => item.productId.toString() === productId
+    );
+
+    if (!orderItem) {
+      return next(createError("Product not found in order", 404));
+    }
+
+    if (
+      product.downloadLimit &&
+      product.downloadLimit > 0 &&
+      orderItem.downloadCount &&
+      orderItem.downloadCount >= product.downloadLimit
+    ) {
+      return next(createError("Download limit exceeded", 403));
+    }
+
+    if (!product.fileUrl) {
+      return next(createError("Product file not available", 404));
+    }
+
+    await Order.updateOne(
+      { _id: order._id, "items.productId": productId },
+      { $inc: { "items.$.downloadCount": 1 } }
+    );
+
+    await Product.findByIdAndUpdate(productId, {
+      $inc: { downloadCount: 1 },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        downloadUrl: product.fileUrl,
+        downloadCount: (orderItem.downloadCount || 0) + 1,
+        downloadLimit: product.downloadLimit,
+      },
     });
   }
 );
