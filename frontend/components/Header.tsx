@@ -54,7 +54,7 @@ export default function Header() {
   );
 
   const { useCart } = require("@/hooks/useAPI");
-  const { data: backendCartData } = useCart(!!user);
+  const { data: backendCartData } = useCart(!!user && user.role !== "VENDOR");
   const backendCartCount =
     backendCartData?.data?.data?.items?.reduce(
       (t: number, it: any) => t + (it.quantity || 1),

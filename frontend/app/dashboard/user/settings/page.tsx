@@ -64,11 +64,10 @@ function SettingsPageContent() {
       await updateProfile.mutateAsync(payload);
       setEditingField(null);
       setEditValue("");
-      toast.success("Profile updated successfully");
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Failed to update profile";
-      toast.error(errorMessage);
+      // toast.error(errorMessage);
     }
   };
 

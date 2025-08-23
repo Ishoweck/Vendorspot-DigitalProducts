@@ -25,12 +25,19 @@ import {
   useProducts,
   useUserProfile,
   useSyncTempStore,
+  useAllWishlist,
+  useAddToWishlist,
+  useRemoveFromWishlist,
+  useCart,
+  useAddToCart,
+  useUpdateCartItem,
 } from "@/hooks/useAPI";
 import { useTempStore } from "@/stores/tempStore";
 import { ProductThumbnail } from "./ProductThumbnail";
 import { Notification } from "@/components/ui/Notification";
 import { Skeleton } from "@/components/ui/skeleton";
 import { smoothScrollToSection } from "@/lib/utils";
+import { getCartItems, normalizeCartItem } from "@/lib/utils/cartUtils";
 
 export default function ProductDetail() {
   const params = useParams();
@@ -62,8 +69,37 @@ export default function ProductDetail() {
 
   const { handleGuestAction, handleVendorAction } = useSyncTempStore();
 
-  const isSaved = savedItems.includes(productId);
-  const cartItem = cartItems.find((item) => item.productId === productId);
+  const { data: wishlistData } = useAllWishlist(!!user && !isVendor);
+  const { data: backendCartData } = useCart(!!user && !isVendor);
+  const addToWishlistMutation = useAddToWishlist();
+  const removeFromWishlistMutation = useRemoveFromWishlist();
+  const addToCartMutation = useAddToCart();
+  const updateCartMutation = useUpdateCartItem();
+
+  const backendWishlist = wishlistData?.data?.data || [];
+
+  const backendCartItems = getCartItems(backendCartData);
+
+  const isSaved =
+    user && !isVendor
+      ? Array.isArray(backendWishlist)
+        ? backendWishlist.some((item: any) => item._id === productId)
+        : backendWishlist.items?.some(
+            (item: any) => item.productId === productId
+          )
+      : savedItems.includes(productId);
+
+  const cartItem =
+    user && !isVendor
+      ? backendCartItems.find(
+          (item: any) =>
+            item.productId === productId ||
+            item.productId?._id === productId ||
+            item._id === productId
+        )
+      : cartItems.find((item) => item.productId === productId);
+
+  const normalizedCartItem = normalizeCartItem(cartItem);
 
   const { data: relatedProductsData } = useProducts({
     category: productData?.data?.data?.categoryId?._id,
@@ -104,11 +140,21 @@ export default function ProductDetail() {
     }
 
     if (isSaved) {
-      removeSavedItem(productId);
-      showNotification("Item removed from saved items");
+      removeFromWishlistMutation.mutate(productId, {
+        onSuccess: () => showNotification("Item removed from saved items"),
+        onError: (error: any) => {
+          console.error("Remove wishlist error:", error);
+          showNotification("Failed to remove item", "error");
+        },
+      });
     } else {
-      addSavedItem(productId);
-      showNotification("Item added to saved items");
+      addToWishlistMutation.mutate(productId, {
+        onSuccess: () => showNotification("Item added to saved items"),
+        onError: (error: any) => {
+          console.error("Add wishlist error:", error);
+          showNotification("Failed to add item", "error");
+        },
+      });
     }
   };
 
@@ -124,17 +170,40 @@ export default function ProductDetail() {
       return;
     }
 
-    addCartItem(productId);
-    showNotification("Item added to cart");
+    addToCartMutation.mutate(
+      { productId, quantity: 1 },
+      {
+        onSuccess: () => showNotification("Item added to cart"),
+        onError: (error: any) => {
+          console.error("Add to cart error:", error);
+          showNotification("Failed to add to cart", "error");
+        },
+      }
+    );
   };
 
   const handleQuantityChange = (newQuantity: number) => {
-    if (newQuantity === 0) {
-      updateCartQuantity(productId, 0);
-      showNotification("Item was removed from cart successfully");
+    if (!user) {
+      if (newQuantity === 0) {
+        updateCartQuantity(productId, 0);
+        showNotification("Item was removed from cart successfully");
+      } else {
+        updateCartQuantity(productId, newQuantity);
+        showNotification("Item quantity has been updated");
+      }
     } else {
-      updateCartQuantity(productId, newQuantity);
-      showNotification("Item quantity has been updated");
+      updateCartMutation.mutate(
+        { productId, quantity: newQuantity },
+        {
+          onSuccess: () =>
+            showNotification(
+              newQuantity === 0
+                ? "Item removed from cart"
+                : "Item quantity updated"
+            ),
+          onError: () => showNotification("Failed to update cart", "error"),
+        }
+      );
     }
   };
 
@@ -324,23 +393,23 @@ export default function ProductDetail() {
               </div>
 
               <div className="mb-4">
-                {cartItem ? (
+                {normalizedCartItem && normalizedCartItem.quantity > 0 ? (
                   <div className="flex items-center justify-center gap-3 bg-[#D7195B] text-white py-2.5 px-4 rounded-lg">
                     <button
                       className="p-1 hover:bg-white/20 rounded transition-colors"
                       onClick={() =>
-                        handleQuantityChange(cartItem.quantity - 1)
+                        handleQuantityChange(normalizedCartItem.quantity - 1)
                       }
                     >
                       <Minus className="w-5 h-5" />
                     </button>
                     <span className="min-w-[28px] text-center font-medium">
-                      {cartItem.quantity}
+                      {normalizedCartItem.quantity}
                     </span>
                     <button
                       className="p-1 hover:bg-white/20 rounded transition-colors"
                       onClick={() =>
-                        handleQuantityChange(cartItem.quantity + 1)
+                        handleQuantityChange(normalizedCartItem.quantity + 1)
                       }
                     >
                       <Plus className="w-5 h-5" />

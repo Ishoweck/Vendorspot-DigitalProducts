@@ -216,7 +216,7 @@ export const getUserWishlist = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as any;
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const limit = parseInt(req.query.limit as string) || 9;
     const skip = (page - 1) * limit;
 
     const userProfile = await User.findById(user._id).populate({
@@ -399,7 +399,7 @@ export const updateCartItem = asyncHandler(
     const { productId } = req.params;
     const { quantity } = req.body;
 
-    if (!quantity || quantity < 1) {
+    if (quantity === undefined || quantity < 0) {
       return next(createError("Valid quantity is required", 400));
     }
 
@@ -420,12 +420,17 @@ export const updateCartItem = asyncHandler(
       return next(createError("Product not in cart", 404));
     }
 
-    userProfile.cart.items[itemIndex].quantity = quantity;
+    if (quantity === 0) {
+      userProfile.cart.items.splice(itemIndex, 1);
+    } else {
+      userProfile.cart.items[itemIndex].quantity = quantity;
+    }
+    
     await userProfile.save();
 
     res.status(200).json({
       success: true,
-      message: "Cart item updated",
+      message: quantity === 0 ? "Product removed from cart" : "Cart item updated",
     });
   }
 );

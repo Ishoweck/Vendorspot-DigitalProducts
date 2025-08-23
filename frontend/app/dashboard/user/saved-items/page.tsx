@@ -1,16 +1,28 @@
 "use client";
 
-import { useWishlist, useRemoveFromWishlist } from "@/hooks/useAPI";
+import { useState } from "react";
+import {
+  useWishlist,
+  useRemoveFromWishlist,
+  useAllWishlist,
+} from "@/hooks/useAPI";
 import { Heart } from "lucide-react";
 import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import AuthWrapper from "@/components/auth/AuthWrapper";
 import { useTempStore } from "@/stores/tempStore";
 import Link from "next/link";
+import Pagination from "@/components/ui/Pagination";
 
 function SavedItemsPageContent() {
   const { isVendor } = useTempStore();
-  const { data: wishlistData, isLoading } = useWishlist(!isVendor);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
+
+  const { data: wishlistData, isLoading } = useWishlist(!isVendor, { 
+    page: currentPage, 
+    limit: itemsPerPage 
+  });
   const removeFromWishlist = useRemoveFromWishlist();
 
   const wishlist = Array.isArray(wishlistData?.data)
@@ -19,12 +31,23 @@ function SavedItemsPageContent() {
       ? wishlistData.data.data
       : [];
 
+  const totalItems = wishlistData?.data?.pagination?.total || wishlist.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedWishlist = wishlist.slice(startIndex, endIndex);
+
   const handleToggleLike = async (productId: string) => {
     try {
       await removeFromWishlist.mutateAsync(productId);
     } catch (error) {
       console.error("Failed to remove from wishlist:", error);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (isLoading) {
@@ -68,11 +91,11 @@ function SavedItemsPageContent() {
                   Saved Items
                 </h1>
                 <div className="text-sm text-gray-500">
-                  {wishlist.length} items saved
+                  {totalItems} items saved
                 </div>
               </div>
 
-              {wishlist.length === 0 ? (
+              {paginatedWishlist.length === 0 ? (
                 <div className="text-center py-12">
                   <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -82,9 +105,9 @@ function SavedItemsPageContent() {
                     Items you like will appear here.
                   </p>
                 </div>
-              ) : Array.isArray(wishlist) ? (
+              ) : Array.isArray(paginatedWishlist) ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {wishlist.map((item: any) => (
+                  {paginatedWishlist.map((item: any) => (
                     <Link
                       key={item._id}
                       href={`/products/${item._id}`}
@@ -124,6 +147,16 @@ function SavedItemsPageContent() {
               ) : (
                 <div className="text-center py-12">
                   <p className="text-gray-600">Error loading wishlist data</p>
+                </div>
+              )}
+
+              {totalPages > 1 && (
+                <div className="mt-8">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
               )}
             </main>

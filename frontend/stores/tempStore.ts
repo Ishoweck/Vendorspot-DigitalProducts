@@ -37,18 +37,11 @@ export const useTempStore = create<TempStore>()(
         const { isVendor } = get();
         if (isVendor) return;
 
-        console.log(
-          "Adding saved item:",
-          productId,
-          "Current saved items:",
-          get().savedItems
-        );
         set((state) => ({
           savedItems: state.savedItems.includes(productId)
             ? state.savedItems
             : [...state.savedItems, productId],
         }));
-        console.log("Updated saved items:", get().savedItems);
       },
 
       removeSavedItem: (productId: string) => {
@@ -61,12 +54,6 @@ export const useTempStore = create<TempStore>()(
         const { isVendor } = get();
         if (isVendor) return;
 
-        console.log(
-          "Adding cart item:",
-          productId,
-          "Current cart items:",
-          get().cartItems
-        );
         set((state) => {
           const existingItem = state.cartItems.find(
             (item) => item.productId === productId
@@ -86,7 +73,6 @@ export const useTempStore = create<TempStore>()(
             cartItems: [...state.cartItems, { productId, quantity }],
           };
         });
-        console.log("Updated cart items:", get().cartItems);
       },
 
       removeCartItem: (productId: string) => {
@@ -115,16 +101,13 @@ export const useTempStore = create<TempStore>()(
       clearAll: () => set({ savedItems: [], cartItems: [] }),
 
       markPendingSync: () => {
-        console.log("Marking pending sync");
         set({ isPendingSync: true });
       },
       clearPendingSync: () => {
-        console.log("Clearing pending sync");
         set({ isPendingSync: false });
       },
 
       generateNewSession: () => {
-        console.log("Generating new session - clearing all data");
         set({
           sessionId: generateSessionId(),
           savedItems: [],

@@ -394,10 +394,22 @@ export const useSetDefaultAddress = () => {
 // WISHLIST HOOKS
 // =====================================
 
-export const useWishlist = (enabled: boolean = true) => {
-  return useQuery(["wishlist"], () => usersAPI.getWishlist(), {
-    enabled,
-  });
+export const useWishlist = (enabled: boolean = true, params?: { page?: number; limit?: number }) => {
+  return useQuery(
+    ["wishlist", params], 
+    () => usersAPI.getWishlist(params), 
+    { enabled }
+  );
+};
+
+export const useAllWishlist = (enabled: boolean = true) => {
+  return useQuery(
+    ["all-wishlist"],
+    () => usersAPI.getWishlist({ limit: 1000 }),
+    {
+      enabled,
+    }
+  );
 };
 
 export const useAddToWishlist = () => {
@@ -407,6 +419,7 @@ export const useAddToWishlist = () => {
   return useMutation((productId: string) => usersAPI.addToWishlist(productId), {
     onSuccess: (data, productId) => {
       queryClient.invalidateQueries(["wishlist"]);
+      queryClient.invalidateQueries(["all-wishlist"]);
       removeSavedItem(productId);
     },
   });
@@ -420,6 +433,7 @@ export const useRemoveFromWishlist = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(["wishlist"]);
+        queryClient.invalidateQueries(["all-wishlist"]);
       },
     }
   );
@@ -443,9 +457,51 @@ export const useAddToCart = () => {
     ({ productId, quantity }: { productId: string; quantity: number }) =>
       usersAPI.addToCart(productId, quantity),
     {
-      onSuccess: (data, { productId }) => {
+      onSuccess: (data, variables) => {
+        const { productId } = variables;
+
         queryClient.invalidateQueries(["cart"]);
+
+        queryClient.setQueryData(["cart"], (oldData: any) => {
+          if (!oldData?.data?.data) return oldData;
+
+          const cart = oldData.data.data;
+          const existingItemIndex = (cart.items || []).findIndex(
+            (item: any) => item.productId === productId
+          );
+
+          const newItems = [...(cart.items || [])];
+
+          if (existingItemIndex !== -1) {
+            newItems[existingItemIndex] = {
+              ...newItems[existingItemIndex],
+              quantity:
+                newItems[existingItemIndex].quantity + variables.quantity,
+            };
+          } else {
+            newItems.push({
+              productId: productId,
+              quantity: variables.quantity,
+              addedAt: new Date(),
+            });
+          }
+
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              data: {
+                ...cart,
+                items: newItems,
+              },
+            },
+          };
+        });
+
         removeCartItem(productId);
+      },
+      onError: (error: any) => {
+        console.error("Add to cart error:", error);
       },
     }
   );
@@ -458,8 +514,35 @@ export const useUpdateCartItem = () => {
     ({ productId, quantity }: { productId: string; quantity: number }) =>
       usersAPI.updateCartItem(productId, quantity),
     {
-      onSuccess: () => {
+      onSuccess: (data, variables) => {
+        const { productId, quantity } = variables;
+
         queryClient.invalidateQueries(["cart"]);
+
+        queryClient.setQueryData(["cart"], (oldData: any) => {
+          if (!oldData?.data?.data) return oldData;
+
+          const cart = oldData.data.data;
+          const newItems = (cart.items || []).map((item: any) =>
+            item.productId === productId
+              ? { ...item, quantity: quantity }
+              : item
+          );
+
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              data: {
+                ...cart,
+                items: newItems,
+              },
+            },
+          };
+        });
+      },
+      onError: (error: any) => {
+        console.error("Update cart item error:", error);
       },
     }
   );
@@ -471,8 +554,31 @@ export const useRemoveFromCart = () => {
   return useMutation(
     (productId: string) => usersAPI.removeFromCart(productId),
     {
-      onSuccess: () => {
+      onSuccess: (data, productId) => {
         queryClient.invalidateQueries(["cart"]);
+
+        queryClient.setQueryData(["cart"], (oldData: any) => {
+          if (!oldData?.data?.data) return oldData;
+
+          const cart = oldData.data.data;
+          const newItems = (cart.items || []).filter(
+            (item: any) => item.productId !== productId
+          );
+
+          return {
+            ...oldData,
+            data: {
+              ...oldData.data,
+              data: {
+                ...cart,
+                items: newItems,
+              },
+            },
+          };
+        });
+      },
+      onError: (error: any) => {
+        console.error("Remove from cart error:", error);
       },
     }
   );
@@ -484,6 +590,23 @@ export const useClearCart = () => {
   return useMutation(usersAPI.clearCart, {
     onSuccess: () => {
       queryClient.invalidateQueries(["cart"]);
+
+      queryClient.setQueryData(["cart"], (oldData: any) => {
+        if (!oldData?.data?.data) return oldData;
+
+        return {
+          ...oldData,
+          data: {
+            ...oldData.data,
+            data: {
+              items: [],
+            },
+          },
+        };
+      });
+    },
+    onError: (error: any) => {
+      console.error("Clear cart error:", error);
     },
   });
 };

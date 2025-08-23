@@ -5,11 +5,20 @@ import { Heart, ShoppingCart, Minus, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ProductCardProps } from "@/types/product";
 import { StarRating } from "./StarRating";
-import { useUserProfile } from "@/hooks/useAPI";
+import {
+  useUserProfile,
+  useAllWishlist,
+  useAddToWishlist,
+  useRemoveFromWishlist,
+  useCart,
+  useAddToCart,
+  useUpdateCartItem,
+} from "@/hooks/useAPI";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTempStore } from "@/stores/tempStore";
 import { Notification } from "@/components/ui/Notification";
 import { useSyncTempStore } from "@/hooks/useAPI";
+import { getCartItems, findCartItem, normalizeCartItem } from "@/lib/utils/cartUtils";
 
 export function ProductCard({ product, viewMode }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -34,8 +43,38 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
     updateCartQuantity,
   } = useTempStore();
   const { handleGuestAction, handleVendorAction } = useSyncTempStore();
-  const isSaved = savedItems.includes(product._id);
-  const cartItem = cartItems.find((item) => item.productId === product._id);
+
+  const { data: wishlistData } = useAllWishlist(!!user && !isVendor);
+  const { data: backendCartData } = useCart(!!user && !isVendor);
+  const addToWishlistMutation = useAddToWishlist();
+  const removeFromWishlistMutation = useRemoveFromWishlist();
+  const addToCartMutation = useAddToCart();
+  const updateCartMutation = useUpdateCartItem();
+
+  const backendWishlist = wishlistData?.data?.data || [];
+
+  const backendCartItems = getCartItems(backendCartData);
+
+  const isSaved =
+    user && !isVendor
+      ? Array.isArray(backendWishlist)
+        ? backendWishlist.some((item: any) => item._id === product._id)
+        : backendWishlist.items?.some(
+            (item: any) => item.productId === product._id
+          )
+      : savedItems.includes(product._id);
+
+  const cartItem =
+    user && !isVendor
+      ? backendCartItems.find(
+          (item: any) =>
+            item.productId === product._id ||
+            item.productId?._id === product._id ||
+            item._id === product._id
+        )
+      : cartItems.find((item) => item.productId === product._id);
+
+  const normalizedCartItem = normalizeCartItem(cartItem);
 
   const handleCardClick = () => {
     router.push(`/products/${product._id}`);
@@ -67,11 +106,21 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
     }
 
     if (isSaved) {
-      removeSavedItem(product._id);
-      showNotification("Item removed from saved items");
+      removeFromWishlistMutation.mutate(product._id, {
+        onSuccess: () => showNotification("Item removed from saved items"),
+        onError: (error: any) => {
+          console.error("Remove wishlist error:", error);
+          showNotification("Failed to remove item", "error");
+        },
+      });
     } else {
-      addSavedItem(product._id);
-      showNotification("Item added to saved items");
+      addToWishlistMutation.mutate(product._id, {
+        onSuccess: () => showNotification("Item added to saved items"),
+        onError: (error: any) => {
+          console.error("Add wishlist error:", error);
+          showNotification("Failed to add item", "error");
+        },
+      });
     }
   };
 
@@ -89,8 +138,13 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
       return;
     }
 
-    addCartItem(product._id);
-    showNotification("Item added to cart");
+    addToCartMutation.mutate(
+      { productId: product._id, quantity: 1 },
+      {
+        onSuccess: () => showNotification("Item added to cart"),
+        onError: () => showNotification("Failed to add to cart", "error"),
+      }
+    );
   };
 
   if (viewMode === "list") {
@@ -210,35 +264,71 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
 
           {isHovered &&
             !isVendor &&
-            (cartItem ? (
+            (normalizedCartItem && normalizedCartItem.quantity > 0 ? (
               <div className="flex items-center justify-center gap-2 bg-[#D7195B] text-white py-2 px-4 rounded-lg text-sm font-medium">
                 <button
                   className="p-1 hover:bg-white/20 rounded transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
-                    const newQuantity = cartItem.quantity - 1;
-                    if (newQuantity === 0) {
-                      updateCartQuantity(product._id, 0);
-                      showNotification(
-                        "Item was removed from cart successfully"
-                      );
+                    const newQuantity = normalizedCartItem.quantity - 1;
+
+                    if (!user) {
+                      if (newQuantity === 0) {
+                        updateCartQuantity(product._id, 0);
+                        showNotification(
+                          "Item was removed from cart successfully"
+                        );
+                      } else {
+                        updateCartQuantity(product._id, newQuantity);
+                        showNotification("Item quantity has been updated");
+                      }
                     } else {
-                      updateCartQuantity(product._id, newQuantity);
-                      showNotification("Item quantity has been updated");
+                      updateCartMutation.mutate(
+                        { productId: product._id, quantity: newQuantity },
+                        {
+                          onSuccess: () =>
+                            showNotification(
+                              newQuantity === 0
+                                ? "Item removed from cart"
+                                : "Item quantity updated"
+                            ),
+                          onError: () =>
+                            showNotification("Failed to update cart", "error"),
+                        }
+                      );
                     }
                   }}
                 >
                   <Minus className="w-4 h-4" />
                 </button>
                 <span className="min-w-[20px] text-center">
-                  {cartItem.quantity}
+                  {normalizedCartItem.quantity}
                 </span>
                 <button
                   className="p-1 hover:bg-white/20 rounded transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
-                    updateCartQuantity(product._id, cartItem.quantity + 1);
-                    showNotification("Item added to cart");
+
+                    if (!user) {
+                      updateCartQuantity(
+                        product._id,
+                        normalizedCartItem.quantity + 1
+                      );
+                      showNotification("Item added to cart");
+                    } else {
+                      updateCartMutation.mutate(
+                        {
+                          productId: product._id,
+                          quantity: normalizedCartItem.quantity + 1,
+                        },
+                        {
+                          onSuccess: () =>
+                            showNotification("Item added to cart"),
+                          onError: () =>
+                            showNotification("Failed to update cart", "error"),
+                        }
+                      );
+                    }
                   }}
                 >
                   <Plus className="w-4 h-4" />
