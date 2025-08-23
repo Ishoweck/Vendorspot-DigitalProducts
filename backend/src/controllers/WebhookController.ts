@@ -5,6 +5,7 @@ import { Order } from "@/models/Order";
 import { Product } from "@/models/Product";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
+import { createNotification } from "./NotificationController";
 import config from "@/config/config";
 
 export const paystackWebhook = asyncHandler(
@@ -88,6 +89,39 @@ const handleSuccessfulPayment = async (data: any) => {
       for (const item of order.items) {
         await Product.findByIdAndUpdate(item.productId, {
           $inc: { soldCount: item.quantity },
+        });
+      }
+
+      await createNotification({
+        userId: payment.userId.toString(),
+        type: "PAYMENT_SUCCESS",
+        title: "Payment Successful",
+        message: `Your payment of ₦${payment.amount.toLocaleString()} for order ${order.orderNumber} was successful.`,
+        category: "PAYMENT",
+        priority: "HIGH",
+        channels: ["IN_APP", "EMAIL"],
+        data: {
+          orderId: order._id,
+          orderNumber: order.orderNumber,
+          amount: payment.amount,
+        },
+      });
+
+      for (const item of order.items) {
+        await createNotification({
+          userId: item.vendorId.toString(),
+          type: "ORDER_PAYMENT_RECEIVED",
+          title: "New Order Payment Received",
+          message: `Payment received for order ${order.orderNumber} - ${item.name}`,
+          category: "ORDER",
+          priority: "NORMAL",
+          channels: ["IN_APP", "EMAIL"],
+          data: {
+            orderId: order._id,
+            orderNumber: order.orderNumber,
+            productName: item.name,
+            amount: item.price * item.quantity,
+          },
         });
       }
 

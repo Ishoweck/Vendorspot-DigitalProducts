@@ -3,74 +3,147 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import {
   CheckCircle,
+  XCircle,
   Package,
   MapPin,
   Truck,
   Calendar,
   ArrowRight,
+  RefreshCw,
 } from "lucide-react";
-import { useTempStore } from "@/stores/tempStore";
-import { useProducts } from "@/hooks/useAPI";
+import { useVerifyPayment, useOrder } from "@/hooks/useAPI";
 
 export default function CheckoutConfirmationPage() {
-  const { cartItems, clearCart } = useTempStore();
-  const [orderCode, setOrderCode] = useState("");
-  const [cartProducts, setCartProducts] = useState<any[]>([]);
-  const [estimatedDelivery, setEstimatedDelivery] = useState("");
+  const searchParams = useSearchParams();
+  const reference = searchParams.get("reference");
+  const trxref = searchParams.get("trxref");
+  const status = searchParams.get("status");
 
-  const { data: productsData } = useProducts({
-    page: 1,
-    limit: 100,
-  });
+  const [paymentStatus, setPaymentStatus] = useState<string>("pending");
+  const [orderData, setOrderData] = useState<any>(null);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  const verifyPayment = useVerifyPayment();
+  const { data: orderResponse } = useOrder(reference || "");
 
   useEffect(() => {
-    const generateOrderCode = () => {
-      const timestamp = Date.now().toString().slice(-6);
-      const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-      return `ORD-${random}-${timestamp}`;
-    };
-
-    const calculateDeliveryDate = () => {
-      const today = new Date();
-      const deliveryDate = new Date(today);
-      deliveryDate.setDate(today.getDate() + 5);
-      return deliveryDate.toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    };
-
-    setOrderCode(generateOrderCode());
-    setEstimatedDelivery(calculateDeliveryDate());
-
-    if (productsData?.data?.data && cartItems.length > 0) {
-      const products = productsData.data.data;
-      const cartProductData = cartItems
-        .map((cartItem) => {
-          const product = products.find((p) => p._id === cartItem.productId);
-          return product ? { ...product, quantity: cartItem.quantity } : null;
-        })
-        .filter(Boolean);
-
-      setCartProducts(cartProductData);
+    if (reference && trxref && status) {
+      if (status === "success") {
+        setPaymentStatus("success");
+        verifyPayment.mutate(reference);
+      } else {
+        setPaymentStatus("failed");
+        setErrorMessage("Payment was not successful. Please try again.");
+      }
     }
+  }, [reference, trxref, status, verifyPayment]);
 
-    setTimeout(() => {
-      clearCart();
-    }, 1000);
-  }, [cartItems, productsData, clearCart]);
+  useEffect(() => {
+    if (orderResponse?.data?.data) {
+      setOrderData(orderResponse.data.data);
+    }
+  }, [orderResponse]);
 
-  const subtotal = cartProducts.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const tax = subtotal * 0.075;
-  const shippingFee = 0;
-  const total = subtotal + tax + shippingFee;
+  const handleRetryPayment = () => {
+    window.location.href = "/checkout";
+  };
+
+  if (paymentStatus === "pending") {
+    return (
+      <div className="min-h-screen bg-neutral-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <RefreshCw className="w-12 h-12 text-blue-600 animate-spin" />
+            </div>
+            <h1 className="text-3xl font-bold text-neutral-900 font-display mb-2">
+              Processing Payment...
+            </h1>
+            <p className="text-neutral-600">
+              Please wait while we verify your payment.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (paymentStatus === "failed") {
+    return (
+      <div className="min-h-screen bg-neutral-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <XCircle className="w-12 h-12 text-red-600" />
+            </div>
+            <h1 className="text-3xl font-bold text-neutral-900 font-display mb-2">
+              Payment Failed
+            </h1>
+            <p className="text-neutral-600 mb-4">
+              {errorMessage ||
+                "Your payment was not successful. Please try again."}
+            </p>
+            <button
+              onClick={handleRetryPayment}
+              className="inline-flex items-center px-6 py-3 bg-[#D7195B] text-white rounded-lg hover:bg-[#B01548] transition-colors"
+            >
+              <RefreshCw className="w-5 h-5 mr-2" />
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (paymentStatus === "success" && !orderData) {
+    return (
+      <div className="min-h-screen bg-neutral-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-12 h-12 text-green-600" />
+            </div>
+            <h1 className="text-3xl font-bold text-neutral-900 font-display mb-2">
+              Payment Successful!
+            </h1>
+            <p className="text-neutral-600">Loading your order details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!orderData) {
+    return (
+      <div className="min-h-screen bg-neutral-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-neutral-900 font-display mb-2">
+              Order Not Found
+            </h1>
+            <p className="text-neutral-600 mb-4">
+              Unable to load your order details.
+            </p>
+            <Link href="/dashboard/user/orders" className="btn-primary">
+              View Orders
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const subtotal = orderData.subtotal || 0;
+  const tax = orderData.tax || 0;
+  const shippingFee = orderData.shippingFee || 0;
+  const total = orderData.total || 0;
+
+  const estimatedDelivery = new Date();
+  estimatedDelivery.setDate(estimatedDelivery.getDate() + 5);
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -88,7 +161,9 @@ export default function CheckoutConfirmationPage() {
           </p>
           <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 inline-block">
             <p className="text-sm text-primary-700 mb-1">Order Number</p>
-            <p className="text-xl font-bold text-primary-900">{orderCode}</p>
+            <p className="text-xl font-bold text-primary-900">
+              {orderData.orderNumber}
+            </p>
           </div>
         </div>
 
@@ -99,22 +174,25 @@ export default function CheckoutConfirmationPage() {
                 Order Details
               </h2>
               <div className="space-y-4">
-                {cartProducts.map((item) => (
+                {orderData.items?.map((item: any) => (
                   <div
-                    key={item._id}
+                    key={item._id || item.productId}
                     className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-4 pb-4 border-b border-neutral-100 last:border-b-0 last:pb-0"
                   >
                     <div className="relative w-16 h-16 flex-shrink-0">
                       <Image
-                        src={item.thumbnail || "/api/placeholder/200/150"}
-                        alt={item.name}
+                        src={
+                          item.productId?.thumbnail ||
+                          "/api/placeholder/200/150"
+                        }
+                        alt={item.name || item.productId?.name || "Product"}
                         fill
                         className="object-cover rounded-lg"
                       />
                     </div>
                     <div className="flex-1 min-w-0 w-full">
                       <h3 className="font-medium text-neutral-900 truncate sm:truncate break-words">
-                        {item.name}
+                        {item.name || item.productId?.name || "Product"}
                       </h3>
                       <p className="text-sm text-neutral-500">
                         Qty: {item.quantity}
@@ -142,11 +220,13 @@ export default function CheckoutConfirmationPage() {
                       Delivery Address
                     </p>
                     <p className="text-neutral-600 text-sm">
-                      123 Lagos Street, Victoria Island
+                      {orderData.shippingAddress?.street},{" "}
+                      {orderData.shippingAddress?.city}
                       <br />
-                      Lagos, Nigeria
+                      {orderData.shippingAddress?.state},{" "}
+                      {orderData.shippingAddress?.country}
                       <br />
-                      +234 901 234 5678
+                      {orderData.shippingAddress?.phone}
                     </p>
                   </div>
                 </div>
@@ -168,7 +248,12 @@ export default function CheckoutConfirmationPage() {
                       Estimated Delivery
                     </p>
                     <p className="text-neutral-600 text-sm">
-                      {estimatedDelivery}
+                      {estimatedDelivery.toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
                     </p>
                   </div>
                 </div>
@@ -216,7 +301,11 @@ export default function CheckoutConfirmationPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-600">Shipping</span>
-                  <span className="font-medium">Free</span>
+                  <span className="font-medium">
+                    {shippingFee === 0
+                      ? "Free"
+                      : `₦${shippingFee.toLocaleString()}`}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-600">VAT (7.5%)</span>

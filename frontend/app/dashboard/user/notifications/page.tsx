@@ -10,13 +10,63 @@ function NotificationsPageContent() {
   const { data: notificationsData, isLoading } = useNotifications();
   const markAsRead = useMarkNotificationAsRead();
 
-  const notifications = notificationsData?.data?.data || [];
+  const notifications = (notificationsData?.data?.data as any)?.notifications || [];
+  const unreadCount = (notificationsData?.data?.data as any)?.unreadCount || 0;
 
   const handleMarkAsRead = async (id: string) => {
     try {
       await markAsRead.mutateAsync(id);
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "PAYMENT_SUCCESS":
+        return "💰";
+      case "ORDER_PAYMENT_RECEIVED":
+        return "📦";
+      case "ORDER_CREATED":
+        return "🛒";
+      case "ORDER_CONFIRMED":
+        return "✅";
+      case "ORDER_SHIPPED":
+        return "🚚";
+      case "ORDER_DELIVERED":
+        return "🎉";
+      default:
+        return "🔔";
+    }
+  };
+
+  const getNotificationColor = (type: string, isRead: boolean) => {
+    if (isRead) return "bg-gray-50 border-gray-400";
+
+    switch (type) {
+      case "PAYMENT_SUCCESS":
+        return "bg-green-50 border-green-400";
+      case "ORDER_PAYMENT_RECEIVED":
+        return "bg-blue-50 border-blue-400";
+      case "ORDER_CREATED":
+        return "bg-purple-50 border-purple-400";
+      default:
+        return "bg-blue-50 border-blue-400";
+    }
+  };
+
+  const getNotificationTextColor = (type: string, isRead: boolean) => {
+    if (isRead) return "text-gray-900";
+
+    switch (type) {
+      case "PAYMENT_SUCCESS":
+        return "text-green-900";
+      case "ORDER_PAYMENT_RECEIVED":
+        return "text-blue-900";
+      case "ORDER_CREATED":
+        return "text-purple-900";
+      default:
+        return "text-blue-900";
     }
   };
 
@@ -54,9 +104,16 @@ function NotificationsPageContent() {
           <div className="flex gap-8">
             <UserSidebar />
             <main className="flex-1 bg-white rounded-lg shadow p-4 sm:p-6">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-                Notifications
-              </h1>
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  Notifications
+                </h1>
+                {unreadCount > 0 && (
+                  <span className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    {unreadCount} unread
+                  </span>
+                )}
+              </div>
 
               {notifications.length === 0 ? (
                 <div className="text-center py-12">
@@ -71,48 +128,68 @@ function NotificationsPageContent() {
                   {notifications.map((notification: any) => (
                     <div
                       key={notification._id}
-                      className={`border-l-4 p-4 cursor-pointer ${
+                      className={`border-l-4 p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${getNotificationColor(
+                        notification.type,
                         notification.isRead
-                          ? "bg-gray-50 border-gray-400"
-                          : "bg-blue-50 border-blue-400"
-                      }`}
+                      )}`}
                       onClick={() =>
                         !notification.isRead &&
                         handleMarkAsRead(notification._id)
                       }
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
+                      <div className="flex items-start space-x-3">
+                        <div className="text-2xl flex-shrink-0">
+                          {getNotificationIcon(notification.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
                           <p
-                            className={`font-medium ${
+                            className={`font-medium ${getNotificationTextColor(
+                              notification.type,
                               notification.isRead
-                                ? "text-gray-900"
-                                : "text-blue-900"
-                            }`}
+                            )}`}
                           >
                             {notification.title}
                           </p>
                           <p
-                            className={`text-sm ${
+                            className={`text-sm mt-1 ${
                               notification.isRead
                                 ? "text-gray-700"
-                                : "text-blue-700"
+                                : "text-gray-600"
                             }`}
                           >
                             {notification.message}
                           </p>
+                          {notification.data && (
+                            <div className="mt-2 text-xs text-gray-500">
+                              {notification.data.orderNumber && (
+                                <span className="inline-block bg-gray-100 px-2 py-1 rounded mr-2">
+                                  Order: {notification.data.orderNumber}
+                                </span>
+                              )}
+                              {notification.data.amount && (
+                                <span className="inline-block bg-gray-100 px-2 py-1 rounded">
+                                  ₦{notification.data.amount.toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        <span
-                          className={`text-xs ${
-                            notification.isRead
-                              ? "text-gray-600"
-                              : "text-blue-600"
-                          }`}
-                        >
-                          {new Date(
-                            notification.createdAt
-                          ).toLocaleDateString()}
-                        </span>
+                        <div className="flex flex-col items-end space-y-2">
+                          <span
+                            className={`text-xs ${
+                              notification.isRead
+                                ? "text-gray-600"
+                                : "text-blue-600"
+                            }`}
+                          >
+                            {new Date(
+                              notification.createdAt
+                            ).toLocaleDateString()}
+                          </span>
+                          {!notification.isRead && (
+                            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}

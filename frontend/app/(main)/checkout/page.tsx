@@ -4,13 +4,21 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Edit2, ArrowRight, MapPin, Truck, CreditCard } from "lucide-react";
-import { useUserProfile, useCart, useAddresses } from "@/hooks/useAPI";
+import {
+  useUserProfile,
+  useCart,
+  useAddresses,
+  useCreateOrder,
+  useInitializePayment,
+} from "@/hooks/useAPI";
 
 export default function CheckoutPage() {
   const { data: userProfile } = useUserProfile();
   const user = userProfile?.data?.data;
   const { data: backendCartData, isLoading } = useCart(!!user);
   const { data: addressesData } = useAddresses();
+  const createOrder = useCreateOrder();
+  const initializePayment = useInitializePayment();
 
   const cartProducts = useMemo(() => {
     if (user) {
@@ -73,11 +81,34 @@ export default function CheckoutPage() {
   const total = subtotal + tax + shippingFee;
 
   const handlePayment = async () => {
+    if (!selectedAddress || !user) return;
+
     setIsProcessing(true);
-    // Simulate payment processing
-    setTimeout(() => {
-      window.location.href = "/checkout/confirmation";
-    }, 2000);
+
+    try {
+      const orderData = {
+        items: cartProducts.map((item: any) => ({
+          productId: item._id,
+          quantity: item.quantity,
+        })),
+        shippingAddress: selectedAddress,
+        shippingMethod: "STANDARD",
+        paymentMethod: "PAYSTACK",
+      };
+
+      const orderResponse = await createOrder.mutateAsync(orderData);
+      const orderId = orderResponse.data.data._id;
+
+      const idempotencyKey = `order_${orderId}_${Date.now()}`;
+
+      await initializePayment.mutateAsync({
+        orderId,
+        idempotencyKey,
+      });
+    } catch (error) {
+      console.error("Payment error:", error);
+      setIsProcessing(false);
+    }
   };
 
   if (isLoading) {

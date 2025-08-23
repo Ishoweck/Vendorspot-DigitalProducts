@@ -23,10 +23,10 @@ import adminRoutes from "@/routes/admin";
 import productRoutes from "@/routes/products";
 import categoryRoutes from "@/routes/categories";
 import orderRoutes from "@/routes/orders";
-// import paymentRoutes from "@/routes/payments";
-// import reviewRoutes from "@/routes/reviews";
+import paymentRoutes from "@/routes/payments";
+import reviewRoutes from "@/routes/reviews";
 import notificationRoutes from "@/routes/notifications";
-// import webhookRoutes from "@/routes/webhooks";
+import webhookRoutes from "@/routes/webhooks";
 import { SocketService } from "@/services/SocketService";
 
 dotenv.config();
@@ -143,9 +143,9 @@ class App {
     this.app.use("/api/categories", categoryRoutes);
     this.app.use("/api/orders", orderRoutes);
     this.app.use("/api/notifications", notificationRoutes);
-    // this.app.use("/api/payments", paymentRoutes);
-    // this.app.use("/api/reviews", reviewRoutes);
-    // this.app.use("/api/webhooks", webhookRoutes);
+    this.app.use("/api/payments", paymentRoutes);
+    this.app.use("/api/reviews", reviewRoutes);
+    this.app.use("/api/webhooks", webhookRoutes);
   }
 
   private initializeErrorHandling(): void {

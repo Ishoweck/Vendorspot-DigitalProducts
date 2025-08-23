@@ -11,6 +11,7 @@ import {
   vendorsAPI,
   categoriesAPI,
   notificationsAPI,
+  paymentsAPI,
 } from "@/lib/api";
 import { useTempStore } from "@/stores/tempStore";
 import { useRouter } from "next/navigation";
@@ -266,6 +267,7 @@ export const useCreateOrder = () => {
   return useMutation(ordersAPI.create, {
     onSuccess: () => {
       queryClient.invalidateQueries(["orders"]);
+      queryClient.invalidateQueries(["cart"]);
       toast.success("Order created successfully!");
     },
     onError: (error: any) => {
@@ -674,6 +676,43 @@ export const useMarkNotificationAsRead = () => {
   return useMutation((id: string) => notificationsAPI.markAsRead(id), {
     onSuccess: () => {
       queryClient.invalidateQueries(["notifications"]);
+    },
+  });
+};
+
+// =====================================
+// PAYMENT HOOKS
+// =====================================
+
+export const useInitializePayment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(paymentsAPI.initialize, {
+    onSuccess: (data) => {
+      if (data.data?.data?.authorization_url) {
+        window.location.href = data.data.data.authorization_url;
+      }
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Payment initialization failed"
+      );
+    },
+  });
+};
+
+export const useVerifyPayment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(paymentsAPI.verify, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["orders"]);
+      queryClient.invalidateQueries(["notifications"]);
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Payment verification failed"
+      );
     },
   });
 };

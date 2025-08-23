@@ -7,6 +7,9 @@ export const ordersAPI = {
 
   create: (orderData: {
     items: Array<{ productId: string; quantity: number }>;
+    shippingAddress: any;
+    shippingMethod?: string;
+    paymentMethod?: string;
   }) => api.post<any>("/orders", orderData),
 
   cancel: (id: string) => api.put(`/orders/${id}/cancel`),

@@ -1,17 +1,17 @@
 import { Router } from "express";
-import { authenticate, authorize } from "@/middleware/auth";
+import { authenticate } from "@/middleware/auth";
 import {
   initializePayment,
   verifyPayment,
   getUserPayments,
-  refundPayment
+  refundPayment,
 } from "@/controllers/PaymentController";
 
 const router: Router = Router();
 
 router.post("/initialize", authenticate, initializePayment);
-router.get("/verify/:reference", authenticate, verifyPayment);
+router.post("/verify", authenticate, verifyPayment);
 router.get("/", authenticate, getUserPayments);
-router.post("/:id/refund", authenticate, authorize("ADMIN"), refundPayment);
+router.post("/:id/refund", authenticate, refundPayment);
 
 export default router;
