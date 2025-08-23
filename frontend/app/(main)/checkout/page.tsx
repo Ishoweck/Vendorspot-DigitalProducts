@@ -4,12 +4,13 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Edit2, ArrowRight, MapPin, Truck, CreditCard } from "lucide-react";
-import { useUserProfile, useCart } from "@/hooks/useAPI";
+import { useUserProfile, useCart, useAddresses } from "@/hooks/useAPI";
 
 export default function CheckoutPage() {
   const { data: userProfile } = useUserProfile();
   const user = userProfile?.data?.data;
   const { data: backendCartData, isLoading } = useCart(!!user);
+  const { data: addressesData } = useAddresses();
 
   const cartProducts = useMemo(() => {
     if (user) {
@@ -45,12 +46,20 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    if (user?.defaultAddress) {
-      setSelectedAddress(user.defaultAddress);
+    if (user?.shippingAddresses && user.shippingAddresses.length > 0) {
+      const defaultAddress =
+        user.shippingAddresses.find((addr: any) => addr.isDefault) ||
+        user.shippingAddresses[0];
+      setSelectedAddress(defaultAddress);
+    } else if (addressesData?.data && addressesData.data.length > 0) {
+      const defaultAddress =
+        addressesData.data.find((addr: any) => addr.isDefault) ||
+        addressesData.data[0];
+      setSelectedAddress(defaultAddress);
     }
     const saved = localStorage.getItem("selectedShipping");
     if (saved) setSelectedShipping(JSON.parse(saved));
-  }, [user]);
+  }, [user, addressesData]);
 
   const subtotal = useMemo(() => {
     return cartProducts.reduce(

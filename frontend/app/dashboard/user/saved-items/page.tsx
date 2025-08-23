@@ -33,9 +33,6 @@ function SavedItemsPageContent() {
 
   const totalItems = wishlistData?.data?.pagination?.total || wishlist.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedWishlist = wishlist.slice(startIndex, endIndex);
 
   const handleToggleLike = async (productId: string) => {
     try {
@@ -95,7 +92,7 @@ function SavedItemsPageContent() {
                 </div>
               </div>
 
-              {paginatedWishlist.length === 0 ? (
+              {wishlist.length === 0 ? (
                 <div className="text-center py-12">
                   <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -105,9 +102,9 @@ function SavedItemsPageContent() {
                     Items you like will appear here.
                   </p>
                 </div>
-              ) : Array.isArray(paginatedWishlist) ? (
+              ) : Array.isArray(wishlist) ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {paginatedWishlist.map((item: any) => (
+                  {wishlist.map((item: any) => (
                     <Link
                       key={item._id}
                       href={`/products/${item._id}`}

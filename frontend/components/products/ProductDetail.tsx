@@ -418,10 +418,20 @@ export default function ProductDetail() {
                 ) : (
                   <button
                     onClick={handleAddToCart}
-                    className="w-full bg-[#D7195B] text-white py-2.5 px-4 rounded-lg hover:bg-[#b8154d] transition-colors font-medium flex items-center justify-center gap-2 text-sm"
+                    disabled={addToCartMutation.isLoading}
+                    className="w-full bg-[#D7195B] text-white py-2.5 px-4 rounded-lg hover:bg-[#b8154d] transition-colors font-medium flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <ShoppingCart className="w-5 h-5" />
-                    Add to Cart
+                    {addToCartMutation.isLoading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Adding to Cart...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-5 h-5" />
+                        Add to Cart
+                      </>
+                    )}
                   </button>
                 )}
               </div>

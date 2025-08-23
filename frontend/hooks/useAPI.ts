@@ -290,7 +290,7 @@ export const useUserProfile = () => {
     }
   }, []);
 
-  const query = useQuery(["user"], authAPI.getCurrentUser, {
+  const query = useQuery(["user"], usersAPI.getProfile, {
     enabled: isEnabled,
     retry: false,
   });

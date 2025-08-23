@@ -18,7 +18,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTempStore } from "@/stores/tempStore";
 import { Notification } from "@/components/ui/Notification";
 import { useSyncTempStore } from "@/hooks/useAPI";
-import { getCartItems, findCartItem, normalizeCartItem } from "@/lib/utils/cartUtils";
+import {
+  getCartItems,
+  findCartItem,
+  normalizeCartItem,
+} from "@/lib/utils/cartUtils";
 
 export function ProductCard({ product, viewMode }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -336,11 +340,21 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
               </div>
             ) : (
               <button
-                className="w-full bg-[#D7195B] text-white py-2 px-4 rounded-lg hover:bg-[#b8154d] transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                className="w-full bg-[#D7195B] text-white py-2 px-4 rounded-lg hover:bg-[#b8154d] transition-colors text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleAddToCart}
+                disabled={addToCartMutation.isLoading}
               >
-                <ShoppingCart className="w-4 h-4" />
-                Add to Cart
+                {addToCartMutation.isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="w-4 h-4" />
+                    Add to Cart
+                  </>
+                )}
               </button>
             ))}
         </div>
