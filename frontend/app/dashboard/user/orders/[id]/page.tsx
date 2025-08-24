@@ -18,11 +18,7 @@ import {
 import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import AuthWrapper from "@/components/auth/AuthWrapper";
-import {
-  useOrder,
-  useDownloadProduct,
-  useUserProfile,
-} from "@/hooks/useAPI";
+import { useOrder, useDownloadProduct, useUserProfile } from "@/hooks/useAPI";
 import ReviewModal from "@/components/modals/ReviewModal";
 
 function OrderDetailsPageContent({ params }: { params: { id: string } }) {
@@ -201,10 +197,24 @@ function OrderDetailsPageContent({ params }: { params: { id: string } }) {
                                 <div className="flex flex-col gap-2">
                                   <button
                                     onClick={() => handleDownload(item)}
-                                    className="inline-flex items-center px-2 md:px-3 py-1 border border-[#D7195B] rounded-md text-xs md:text-sm font-medium text-[#D7195B] hover:bg-[#D7195B] hover:text-white transition-colors"
+                                    disabled={
+                                      item.downloadCount >=
+                                        item.downloadLimit &&
+                                      item.downloadLimit !== -1
+                                    }
+                                    className={`inline-flex items-center px-2 md:px-3 py-1 border rounded-md text-xs md:text-sm font-medium transition-colors ${
+                                      item.downloadCount >=
+                                        item.downloadLimit &&
+                                      item.downloadLimit !== -1
+                                        ? "border-gray-200 text-gray-400 cursor-not-allowed"
+                                        : "border-[#D7195B] text-[#D7195B] hover:bg-[#D7195B] hover:text-white"
+                                    }`}
                                   >
                                     <Download className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                                    Download
+                                    {item.downloadCount >= item.downloadLimit &&
+                                    item.downloadLimit !== -1
+                                      ? "Limit Reached"
+                                      : "Download"}
                                   </button>
                                   {user && user.role === "CUSTOMER" && (
                                     <button

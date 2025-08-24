@@ -5,6 +5,7 @@ import { Review } from "@/models/Review";
 import { Product } from "@/models/Product";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
+import { createNotification } from "./NotificationController";
 
 export const getProfile = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -74,6 +75,20 @@ export const updateProfile = asyncHandler(
     if (postalCode) userProfile.postalCode = postalCode;
 
     await userProfile.save();
+
+    try {
+      await createNotification({
+        userId: String(user._id),
+        type: "PROFILE_UPDATED",
+        title: "Profile Updated Successfully",
+        message: "Your profile has been updated successfully.",
+        category: "ACCOUNT",
+        priority: "NORMAL",
+        channels: ["IN_APP"],
+      });
+    } catch (error) {
+      console.error("Failed to create profile update notification:", error);
+    }
 
     const updatedUser = await User.findById(user._id).select(
       "-password -passwordResetToken -passwordResetExpires -emailVerificationOTP -emailVerificationOTPExpires"
@@ -159,6 +174,21 @@ export const changePassword = asyncHandler(
 
     userProfile.password = newPassword;
     await userProfile.save();
+
+    try {
+      await createNotification({
+        userId: String(user._id),
+        type: "PASSWORD_CHANGED",
+        title: "Password Changed",
+        message:
+          "Your password has been changed successfully. If you didn't make this change, please contact support immediately.",
+        category: "SECURITY",
+        priority: "HIGH",
+        channels: ["IN_APP", "EMAIL"],
+      });
+    } catch (error) {
+      console.error("Failed to create password change notification:", error);
+    }
 
     res.status(200).json({
       success: true,
@@ -425,12 +455,13 @@ export const updateCartItem = asyncHandler(
     } else {
       userProfile.cart.items[itemIndex].quantity = quantity;
     }
-    
+
     await userProfile.save();
 
     res.status(200).json({
       success: true,
-      message: quantity === 0 ? "Product removed from cart" : "Cart item updated",
+      message:
+        quantity === 0 ? "Product removed from cart" : "Cart item updated",
     });
   }
 );

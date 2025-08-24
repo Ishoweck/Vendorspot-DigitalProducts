@@ -235,6 +235,8 @@ export const useDeleteProduct = () => {
 };
 
 export const useDownloadProduct = () => {
+  const queryClient = useQueryClient();
+  
   return useMutation((productId: string) => productsAPI.download(productId), {
     onSuccess: (data: any) => {
       const downloadUrl = data?.data?.data?.downloadUrl;
@@ -246,6 +248,9 @@ export const useDownloadProduct = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        queryClient.invalidateQueries(["orders"]);
+        queryClient.invalidateQueries(["order"]);
       }
     },
     onError: (error: any) => {
@@ -721,6 +726,7 @@ export const useCreateReview = () => {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries(["reviews", variables.productId]);
       queryClient.invalidateQueries(["product", variables.productId]);
+      queryClient.invalidateQueries(["products"]);
       toast.success("Review submitted successfully!");
     },
     onError: (error: any) => {

@@ -17,6 +17,21 @@ export const createNotification = async (data: {
   expiresAt?: Date;
 }) => {
   try {
+    const user = await User.findById(data.userId);
+    if (!user) return;
+
+    const existingNotifications = await Notification.countDocuments({
+      userId: data.userId,
+    });
+    if (existingNotifications >= 100) {
+      const oldestNotification = await Notification.findOne({
+        userId: data.userId,
+      }).sort({ createdAt: 1 });
+      if (oldestNotification) {
+        await Notification.findByIdAndDelete(oldestNotification._id);
+      }
+    }
+
     const notification = await Notification.create({
       userId: data.userId,
       type: data.type,
@@ -26,11 +41,9 @@ export const createNotification = async (data: {
       priority: data.priority || "NORMAL",
       channels: data.channels || ["IN_APP"],
       data: data.data,
-      expiresAt: data.expiresAt
+      expiresAt:
+        data.expiresAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     });
-
-    const user = await User.findById(data.userId);
-    if (!user) return;
 
     if (data.channels?.includes("IN_APP")) {
       try {
@@ -46,7 +59,7 @@ export const createNotification = async (data: {
         await emailService.sendNotificationEmail(user.email, {
           title: data.title,
           message: data.message,
-          userName: `${user.firstName} ${user.lastName}`
+          userName: `${user.firstName} ${user.lastName}`,
         });
         notification.emailSent = true;
         await notification.save();
@@ -89,23 +102,23 @@ export const getUserNotifications = asyncHandler(
       .limit(limit);
 
     const total = await Notification.countDocuments(query);
-    const unreadCount = await Notification.countDocuments({ 
-      userId: user._id, 
-      isRead: false 
+    const unreadCount = await Notification.countDocuments({
+      userId: user._id,
+      isRead: false,
     });
 
     res.status(200).json({
       success: true,
       data: {
         notifications,
-        unreadCount
+        unreadCount,
       },
       pagination: {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     });
   }
 );
@@ -116,7 +129,7 @@ export const markNotificationAsRead = asyncHandler(
 
     const notification = await Notification.findOne({
       _id: req.params.id,
-      userId: user._id
+      userId: user._id,
     });
 
     if (!notification) {
@@ -132,7 +145,7 @@ export const markNotificationAsRead = asyncHandler(
     res.status(200).json({
       success: true,
       message: "Notification marked as read",
-      data: notification
+      data: notification,
     });
   }
 );
@@ -148,7 +161,7 @@ export const markAllNotificationsAsRead = asyncHandler(
 
     res.status(200).json({
       success: true,
-      message: "All notifications marked as read"
+      message: "All notifications marked as read",
     });
   }
 );
@@ -159,7 +172,7 @@ export const deleteNotification = asyncHandler(
 
     const notification = await Notification.findOne({
       _id: req.params.id,
-      userId: user._id
+      userId: user._id,
     });
 
     if (!notification) {
@@ -170,7 +183,7 @@ export const deleteNotification = asyncHandler(
 
     res.status(200).json({
       success: true,
-      message: "Notification deleted successfully"
+      message: "Notification deleted successfully",
     });
   }
 );
@@ -183,7 +196,7 @@ export const clearAllNotifications = asyncHandler(
 
     res.status(200).json({
       success: true,
-      message: "All notifications cleared"
+      message: "All notifications cleared",
     });
   }
 );
@@ -198,27 +211,27 @@ export const getNotificationSettings = asyncHandler(
         paymentNotifications: true,
         productApproval: true,
         reviewNotifications: true,
-        promotions: false
+        promotions: false,
       },
       push: {
         orderUpdates: true,
         paymentNotifications: true,
         productApproval: true,
         reviewNotifications: true,
-        promotions: false
+        promotions: false,
       },
       sms: {
         orderUpdates: false,
         paymentNotifications: true,
         productApproval: false,
         reviewNotifications: false,
-        promotions: false
-      }
+        promotions: false,
+      },
     };
 
     res.status(200).json({
       success: true,
-      data: settings
+      data: settings,
     });
   }
 );
@@ -231,7 +244,7 @@ export const updateNotificationSettings = asyncHandler(
     res.status(200).json({
       success: true,
       message: "Notification settings updated successfully",
-      data: settings
+      data: settings,
     });
   }
 );
@@ -239,15 +252,8 @@ export const updateNotificationSettings = asyncHandler(
 export const sendBulkNotification = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as any;
-    const { 
-      userIds, 
-      type, 
-      title, 
-      message, 
-      category, 
-      priority, 
-      channels 
-    } = req.body;
+    const { userIds, type, title, message, category, priority, channels } =
+      req.body;
 
     if (user.role !== "ADMIN") {
       return next(createError("Unauthorized", 403));
@@ -270,7 +276,7 @@ export const sendBulkNotification = asyncHandler(
         message,
         category: category || "SYSTEM",
         priority: priority || "NORMAL",
-        channels: channels || ["IN_APP", "EMAIL"]
+        channels: channels || ["IN_APP", "EMAIL"],
       });
 
       if (notification) {
@@ -281,7 +287,7 @@ export const sendBulkNotification = asyncHandler(
     res.status(200).json({
       success: true,
       message: `Notifications sent to ${notifications.length} users`,
-      data: { count: notifications.length }
+      data: { count: notifications.length },
     });
   }
 );

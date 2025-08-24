@@ -23,7 +23,6 @@ import {
   findCartItem,
   normalizeCartItem,
 } from "@/lib/utils/cartUtils";
-import Image from "next/image";
 
 export function ProductCard({ product, viewMode }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -170,7 +169,7 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
           <div className="flex gap-3 p-3">
             <div className="relative">
               {!imageLoaded && <Skeleton className="w-20 h-16 rounded" />}
-              <Image
+              <img
                 src={product.thumbnail || "/api/placeholder/200/150"}
                 alt={product.name}
                 className={`w-20 h-16 object-cover rounded flex-shrink-0 ${!imageLoaded ? "hidden" : ""}`}
@@ -220,7 +219,7 @@ export function ProductCard({ product, viewMode }: ProductCardProps) {
       >
         <div className="relative">
           {!imageLoaded && <Skeleton className="w-full h-40" />}
-          <Image
+          <img
             src={product.thumbnail || "/api/placeholder/200/150"}
             alt={product.name}
             className={`w-full h-40 object-cover ${!imageLoaded ? "hidden" : ""}`}

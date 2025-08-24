@@ -10,7 +10,8 @@ function NotificationsPageContent() {
   const { data: notificationsData, isLoading } = useNotifications();
   const markAsRead = useMarkNotificationAsRead();
 
-  const notifications = (notificationsData?.data?.data as any)?.notifications || [];
+  const notifications =
+    (notificationsData?.data?.data as any)?.notifications || [];
   const unreadCount = (notificationsData?.data?.data as any)?.unreadCount || 0;
 
   const handleMarkAsRead = async (id: string) => {
@@ -35,6 +36,14 @@ function NotificationsPageContent() {
         return "🚚";
       case "ORDER_DELIVERED":
         return "🎉";
+      case "WELCOME":
+        return "👋";
+      case "PROFILE_UPDATED":
+        return "👤";
+      case "PASSWORD_CHANGED":
+        return "🔒";
+      case "REVIEW_ADDED":
+        return "⭐";
       default:
         return "🔔";
     }
@@ -50,6 +59,14 @@ function NotificationsPageContent() {
         return "bg-blue-50 border-blue-400";
       case "ORDER_CREATED":
         return "bg-purple-50 border-purple-400";
+      case "WELCOME":
+        return "bg-blue-50 border-blue-400";
+      case "PROFILE_UPDATED":
+        return "bg-green-50 border-green-400";
+      case "PASSWORD_CHANGED":
+        return "bg-yellow-50 border-yellow-400";
+      case "REVIEW_ADDED":
+        return "bg-purple-50 border-purple-400";
       default:
         return "bg-blue-50 border-blue-400";
     }
@@ -64,6 +81,14 @@ function NotificationsPageContent() {
       case "ORDER_PAYMENT_RECEIVED":
         return "text-blue-900";
       case "ORDER_CREATED":
+        return "text-purple-900";
+      case "WELCOME":
+        return "text-blue-900";
+      case "PROFILE_UPDATED":
+        return "text-green-900";
+      case "PASSWORD_CHANGED":
+        return "text-yellow-900";
+      case "REVIEW_ADDED":
         return "text-purple-900";
       default:
         return "text-blue-900";

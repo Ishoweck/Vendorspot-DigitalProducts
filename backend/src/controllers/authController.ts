@@ -7,6 +7,7 @@ import { config } from "@/config/config";
 import { emailService } from "@/services/emailService";
 import { logger } from "@/utils/logger";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
+import { createNotification } from "./NotificationController";
 
 const generateTokens = (userId: string) => {
   const signOptions: jwt.SignOptions = {
@@ -118,6 +119,23 @@ export const register = asyncHandler(
       });
     } catch (error) {
       logger.error(`Failed to send welcome email to ${user.email}:`, {
+        error: error instanceof Error ? error.message : String(error),
+        userId: String(user._id),
+      });
+    }
+
+    try {
+      await createNotification({
+        userId: String(user._id),
+        type: "WELCOME",
+        title: "Welcome to Vendorspot!",
+        message: `Hi ${user.firstName}, welcome to Vendorspot! We're excited to have you on board.`,
+        category: "ACCOUNT",
+        priority: "NORMAL",
+        channels: ["IN_APP"],
+      });
+    } catch (error) {
+      logger.error(`Failed to create welcome notification for ${user.email}:`, {
         error: error instanceof Error ? error.message : String(error),
         userId: String(user._id),
       });

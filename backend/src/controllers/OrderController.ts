@@ -6,6 +6,7 @@ import { Vendor } from "@/models/Vendor";
 import { Payment } from "@/models/Payment";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
+import { createNotification } from "./NotificationController";
 
 const generateOrderNumber = (): string => {
   const timestamp = Date.now().toString();
@@ -103,6 +104,25 @@ export const createOrder = asyncHandler(
       console.log("Socket emit error:", error);
     }
 
+    try {
+      await createNotification({
+        userId: String(user._id),
+        type: "ORDER_CREATED",
+        title: "Order Placed Successfully",
+        message: `Your order #${order.orderNumber} has been placed successfully. Total: ₦${order.total.toLocaleString()}`,
+        category: "ORDER",
+        priority: "NORMAL",
+        channels: ["IN_APP"],
+        data: {
+          orderId: order._id,
+          orderNumber: order.orderNumber,
+          total: order.total,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to create order notification:", error);
+    }
+
     res.status(201).json({
       success: true,
       message: "Order created successfully",
@@ -186,7 +206,7 @@ export const getOrderById = asyncHandler(
 export const getOrderByPaymentReference = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { reference } = req.params;
-    
+
     const order = await Order.findOne({
       paymentReference: reference,
     })

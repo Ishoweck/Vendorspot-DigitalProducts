@@ -6,6 +6,7 @@ import { Vendor } from "@/models/Vendor";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
+import { createNotification } from "./NotificationController";
 
 export const createReview = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -84,6 +85,25 @@ export const createReview = asyncHandler(
       });
     } catch (error) {
       console.log("Socket emit error:", error);
+    }
+
+    try {
+      await createNotification({
+        userId: String(user._id),
+        type: "REVIEW_ADDED",
+        title: "Review Submitted Successfully",
+        message: `Your review for "${product.name}" has been submitted successfully.`,
+        category: "REVIEW",
+        priority: "NORMAL",
+        channels: ["IN_APP"],
+        data: {
+          reviewId: review._id,
+          productId,
+          productName: product.name,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to create review notification:", error);
     }
 
     res.status(201).json({

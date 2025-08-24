@@ -11,11 +11,35 @@ interface ReviewsSectionProps {
 
 export default function ReviewsSection({ productId }: ReviewsSectionProps) {
   const [page, setPage] = useState(1);
+  const [reportModal, setReportModal] = useState<{
+    isOpen: boolean;
+    reviewId: string;
+  }>({ isOpen: false, reviewId: "" });
   const { data: reviewsData, isLoading } = useProductReviews(productId);
 
   const reviews = reviewsData?.data?.data?.reviews || [];
   const stats = reviewsData?.data?.data?.stats;
   const pagination = reviewsData?.data?.pagination;
+
+  const handleHelpfulClick = async (reviewId: string) => {
+    try {
+      const response = await fetch(`/api/reviews/${reviewId}/helpful`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.ok) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Failed to mark review as helpful:", error);
+    }
+  };
+
+  const handleReportClick = (reviewId: string) => {
+    setReportModal({ isOpen: true, reviewId });
+  };
 
   const renderStars = (rating: number) => {
     const stars = [];
@@ -208,11 +232,21 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
                 )}
 
                 <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
-                  <button className="flex items-center space-x-1 hover:text-gray-700 transition-colors">
-                    <ThumbsUp className="w-4 h-4" />
+                  <button
+                    onClick={() => handleHelpfulClick(review._id)}
+                    className={`flex items-center space-x-1 transition-colors ${
+                      review.isHelpful ? "text-blue-600" : "hover:text-gray-700"
+                    }`}
+                  >
+                    <ThumbsUp
+                      className={`w-4 h-4 ${review.isHelpful ? "fill-current" : ""}`}
+                    />
                     <span>{review.helpfulCount || 0} helpful</span>
                   </button>
-                  <button className="flex items-center space-x-1 hover:text-gray-700 transition-colors">
+                  <button
+                    onClick={() => handleReportClick(review._id)}
+                    className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
+                  >
                     <Flag className="w-4 h-4" />
                     <span>Report</span>
                   </button>
@@ -245,6 +279,51 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
           </div>
         )}
       </div>
+
+      {reportModal.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Report Review</h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to report this review? This action cannot be
+              undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setReportModal({ isOpen: false, reviewId: "" })}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch(
+                      `/api/reviews/${reportModal.reviewId}/report`,
+                      {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          reason: "Inappropriate content",
+                        }),
+                      }
+                    );
+                    if (response.ok) {
+                      setReportModal({ isOpen: false, reviewId: "" });
+                      window.location.reload();
+                    }
+                  } catch (error) {
+                    console.error("Failed to report review:", error);
+                  }
+                }}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
