@@ -178,7 +178,7 @@ export default function OrdersPage() {
                 No orders found
               </h3>
               <p className="text-neutral-600 mb-6">
-                You haven't placed any orders yet.
+                You haven&apos;t placed any orders yet.
               </p>
               <Link href="/products" className="btn-primary">
                 Browse Products

@@ -106,7 +106,7 @@ function VerifyEmailContent() {
                 Account Verification
               </h2>
               <p className="text-gray-600">
-                We've sent a verification code to{" "}
+                We&apos;ve sent a verification code to{" "}
                 <span className="font-medium text-gray-900">{userEmail}</span>
               </p>
             </div>
@@ -135,7 +135,7 @@ function VerifyEmailContent() {
 
               <div className="text-center">
                 <span className="text-[#565454]">
-                  Didn't receive verification code?{" "}
+                  Didn&apos;t receive verification code?{" "}
                 </span>
                 <button
                   type="button"

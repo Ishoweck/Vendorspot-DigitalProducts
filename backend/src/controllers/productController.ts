@@ -491,12 +491,14 @@ export const downloadProduct = asyncHandler(
     }
 
     if (
-      product.downloadLimit &&
-      product.downloadLimit > 0 &&
+      orderItem.downloadLimit &&
+      orderItem.downloadLimit > 0 &&
       orderItem.downloadCount &&
-      orderItem.downloadCount >= product.downloadLimit
+      orderItem.downloadCount >= orderItem.downloadLimit
     ) {
-      return next(createError("Download limit exceeded", 403));
+      return next(
+        createError("Download limit exceeded for this purchase", 403)
+      );
     }
 
     if (!product.fileUrl) {
@@ -508,16 +510,12 @@ export const downloadProduct = asyncHandler(
       { $inc: { "items.$.downloadCount": 1 } }
     );
 
-    await Product.findByIdAndUpdate(productId, {
-      $inc: { downloadCount: 1 },
-    });
-
     res.status(200).json({
       success: true,
       data: {
         downloadUrl: product.fileUrl,
         downloadCount: (orderItem.downloadCount || 0) + 1,
-        downloadLimit: product.downloadLimit,
+        downloadLimit: orderItem.downloadLimit,
       },
     });
   }

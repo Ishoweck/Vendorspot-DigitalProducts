@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  useWishlist,
-  useRemoveFromWishlist,
-  useAllWishlist,
-} from "@/hooks/useAPI";
+import { useWishlist, useRemoveFromWishlist } from "@/hooks/useAPI";
 import { Heart } from "lucide-react";
 import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
@@ -13,15 +9,16 @@ import AuthWrapper from "@/components/auth/AuthWrapper";
 import { useTempStore } from "@/stores/tempStore";
 import Link from "next/link";
 import Pagination from "@/components/ui/Pagination";
+import Image from "next/image";
 
 function SavedItemsPageContent() {
   const { isVendor } = useTempStore();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
-  const { data: wishlistData, isLoading } = useWishlist(!isVendor, { 
-    page: currentPage, 
-    limit: itemsPerPage 
+  const { data: wishlistData, isLoading } = useWishlist(!isVendor, {
+    page: currentPage,
+    limit: itemsPerPage,
   });
   const removeFromWishlist = useRemoveFromWishlist();
 
@@ -111,7 +108,7 @@ function SavedItemsPageContent() {
                       className="block bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
                       <div className="aspect-video bg-gray-100 rounded-lg mb-3 overflow-hidden">
-                        <img
+                        <Image
                           src={item.thumbnail || "/api/placeholder/200/150"}
                           alt={item.name}
                           className="w-full h-full object-cover"

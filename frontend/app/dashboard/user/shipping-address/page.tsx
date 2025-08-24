@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { MapPin, Plus, Edit3, Trash2, Check } from "lucide-react";
+import { useState } from "react";
+import { MapPin, Plus, Edit3, Trash2 } from "lucide-react";
 import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";

@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { Payment } from "@/models/Payment";
 import { Order } from "@/models/Order";
 import { Product } from "@/models/Product";
+import { User } from "@/models/User";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
 import { createNotification } from "./NotificationController";
@@ -82,8 +83,9 @@ const handleSuccessfulPayment = async (data: any) => {
     const order = await Order.findById(payment.orderId);
     if (order) {
       order.paymentStatus = "PAID";
-      order.status = "CONFIRMED";
+      order.status = "DELIVERED";
       order.paymentReference = data.reference;
+      order.deliveredAt = new Date();
       await order.save();
 
       for (const item of order.items) {
@@ -91,6 +93,10 @@ const handleSuccessfulPayment = async (data: any) => {
           $inc: { soldCount: item.quantity },
         });
       }
+
+      await User.findByIdAndUpdate(payment.userId, {
+        cart: { items: [] },
+      });
 
       await createNotification({
         userId: payment.userId.toString(),

@@ -50,7 +50,9 @@ export default function CheckoutShippingPage() {
       const products = productsData.data.data;
       const cartProductData = cartItems
         .map((cartItem) => {
-          const product = products.find((p: any) => p._id === cartItem.productId);
+          const product = products.find(
+            (p: any) => p._id === cartItem.productId
+          );
           return product ? { ...product, quantity: cartItem.quantity } : null;
         })
         .filter(Boolean);
@@ -69,14 +71,21 @@ export default function CheckoutShippingPage() {
 
   const handleSaveShipping = () => {
     if (selectedShipping) {
-      const selected = shippingOptions.find(opt => opt.id === selectedShipping);
-      localStorage.setItem('selectedShipping', JSON.stringify(selected));
+      const selected = shippingOptions.find(
+        (opt) => opt.id === selectedShipping
+      );
+      localStorage.setItem("selectedShipping", JSON.stringify(selected));
       window.location.href = "/checkout";
     }
   };
 
-  const subtotal = cartProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const selectedOption = shippingOptions.find(opt => opt.id === selectedShipping);
+  const subtotal = cartProducts.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const selectedOption = shippingOptions.find(
+    (opt) => opt.id === selectedShipping
+  );
   const total = subtotal + (selectedOption?.price || 0);
 
   if (isLoading) {
@@ -111,7 +120,7 @@ export default function CheckoutShippingPage() {
             Select Delivery Option
           </h1>
           <p className="text-neutral-600">
-            Choose how you'd like your order delivered
+            Choose how you&apos;d like your order delivered
           </p>
         </div>
 
@@ -119,7 +128,7 @@ export default function CheckoutShippingPage() {
           {shippingOptions.map((option) => {
             const Icon = option.icon;
             const isRestricted = option.restricted && true;
-            
+
             return (
               <div
                 key={option.id}
@@ -135,7 +144,9 @@ export default function CheckoutShippingPage() {
                     <input
                       type="radio"
                       checked={selectedShipping === option.id}
-                      onChange={() => !isRestricted && handleShippingSelect(option.id)}
+                      onChange={() =>
+                        !isRestricted && handleShippingSelect(option.id)
+                      }
                       disabled={isRestricted}
                       className="mr-4 text-primary-600"
                     />
@@ -167,7 +178,9 @@ export default function CheckoutShippingPage() {
                   <div className="flex items-center">
                     <div className="text-right mr-4">
                       <div className="font-semibold text-neutral-900">
-                        {option.price === 0 ? "Free" : `₦${option.price.toLocaleString()}`}
+                        {option.price === 0
+                          ? "Free"
+                          : `₦${option.price.toLocaleString()}`}
                       </div>
                       <div className="text-sm text-neutral-500">
                         {option.estimatedDays} days
@@ -184,35 +197,52 @@ export default function CheckoutShippingPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <h3 className="font-semibold text-neutral-900 mb-4">Delivery Information</h3>
+          <h3 className="font-semibold text-neutral-900 mb-4">
+            Delivery Information
+          </h3>
           <div className="space-y-3 text-sm text-neutral-600">
             <div className="flex items-start">
               <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-              <p>All delivery times are estimates and may vary based on location and product availability.</p>
+              <p>
+                All delivery times are estimates and may vary based on location
+                and product availability.
+              </p>
             </div>
             <div className="flex items-start">
               <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-              <p>Express and Same Day delivery options may not be available for all products.</p>
+              <p>
+                Express and Same Day delivery options may not be available for
+                all products.
+              </p>
             </div>
             <div className="flex items-start">
               <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-              <p>Delivery fees include insurance and tracking for your peace of mind.</p>
+              <p>
+                Delivery fees include insurance and tracking for your peace of
+                mind.
+              </p>
             </div>
           </div>
         </div>
 
         {selectedOption && (
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <h3 className="font-semibold text-neutral-900 mb-4">Order Summary</h3>
+            <h3 className="font-semibold text-neutral-900 mb-4">
+              Order Summary
+            </h3>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-neutral-600">Subtotal</span>
                 <span>₦{subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-neutral-600">Delivery ({selectedOption.name})</span>
+                <span className="text-neutral-600">
+                  Delivery ({selectedOption.name})
+                </span>
                 <span>
-                  {selectedOption.price === 0 ? "Free" : `₦${selectedOption.price.toLocaleString()}`}
+                  {selectedOption.price === 0
+                    ? "Free"
+                    : `₦${selectedOption.price.toLocaleString()}`}
                 </span>
               </div>
               <div className="border-t border-neutral-200 pt-2 mt-2">

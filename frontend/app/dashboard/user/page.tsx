@@ -2,7 +2,6 @@
 
 import {
   useUserProfile,
-  useWishlist,
   useCart,
   useOrders,
   useAllWishlist,

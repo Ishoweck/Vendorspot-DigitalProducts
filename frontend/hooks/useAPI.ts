@@ -12,6 +12,7 @@ import {
   categoriesAPI,
   notificationsAPI,
   paymentsAPI,
+  reviewsAPI,
 } from "@/lib/api";
 import { useTempStore } from "@/stores/tempStore";
 import { useRouter } from "next/navigation";
@@ -238,7 +239,13 @@ export const useDownloadProduct = () => {
     onSuccess: (data: any) => {
       const downloadUrl = data?.data?.data?.downloadUrl;
       if (downloadUrl) {
-        window.open(downloadUrl, "_blank");
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = "";
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
     },
     onError: (error: any) => {
@@ -259,6 +266,16 @@ export const useOrder = (id: string) => {
   return useQuery(["order", id], () => ordersAPI.getById(id), {
     enabled: !!id,
   });
+};
+
+export const useOrderByPaymentReference = (reference: string) => {
+  return useQuery(
+    ["order-by-payment", reference],
+    () => ordersAPI.getByPaymentReference(reference),
+    {
+      enabled: !!reference,
+    }
+  );
 };
 
 export const useCreateOrder = () => {
@@ -676,6 +693,69 @@ export const useMarkNotificationAsRead = () => {
   return useMutation((id: string) => notificationsAPI.markAsRead(id), {
     onSuccess: () => {
       queryClient.invalidateQueries(["notifications"]);
+    },
+  });
+};
+
+// =====================================
+// REVIEW HOOKS
+// =====================================
+
+export const useProductReviews = (
+  productId: string,
+  enabled: boolean = true
+) => {
+  return useQuery(
+    ["reviews", productId],
+    () => reviewsAPI.getProductReviews(productId),
+    {
+      enabled: !!productId && enabled,
+    }
+  );
+};
+
+export const useCreateReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(reviewsAPI.create, {
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries(["reviews", variables.productId]);
+      queryClient.invalidateQueries(["product", variables.productId]);
+      toast.success("Review submitted successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to submit review");
+    },
+  });
+};
+
+export const useUpdateReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    ({ id, data }: { id: string; data: any }) => reviewsAPI.update(id, data),
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries(["reviews"]);
+        toast.success("Review updated successfully!");
+      },
+      onError: (error: any) => {
+        toast.error(error.response?.data?.message || "Failed to update review");
+      },
+    }
+  );
+};
+
+export const useDeleteReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(reviewsAPI.delete, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["reviews"]);
+      toast.success("Review deleted successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to delete review");
     },
   });
 };

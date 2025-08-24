@@ -6,4 +6,5 @@ export { vendorsAPI } from "./vendors";
 export { categoriesAPI } from "./categories";
 export { paymentsAPI } from "./payments";
 export { notificationsAPI } from "./notifications";
+export { reviewsAPI } from "./reviews";
 export { api } from "./base";

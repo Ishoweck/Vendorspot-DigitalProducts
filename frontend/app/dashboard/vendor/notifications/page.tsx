@@ -83,7 +83,8 @@ const mockVendorNotifications = [
     id: 9,
     type: "new_order",
     title: "New Order Received",
-    message: "Order #VS-2024-007 for 'Digital Marketing Course' has been placed",
+    message:
+      "Order #VS-2024-007 for 'Digital Marketing Course' has been placed",
     timestamp: "3 weeks ago",
     isRead: true,
     orderId: "VS-2024-007",
@@ -102,11 +103,16 @@ const mockVendorNotifications = [
 export default function VendorNotificationsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const notificationsPerPage = 5;
-  const totalPages = Math.ceil(mockVendorNotifications.length / notificationsPerPage);
-  
+  const totalPages = Math.ceil(
+    mockVendorNotifications.length / notificationsPerPage
+  );
+
   const startIndex = (currentPage - 1) * notificationsPerPage;
   const endIndex = startIndex + notificationsPerPage;
-  const currentNotifications = mockVendorNotifications.slice(startIndex, endIndex);
+  const currentNotifications = mockVendorNotifications.slice(
+    startIndex,
+    endIndex
+  );
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -125,7 +131,7 @@ export default function VendorNotificationsPage() {
 
   const getNotificationColor = (type: string, isRead: boolean) => {
     if (isRead) return "bg-gray-50 border-gray-400";
-    
+
     switch (type) {
       case "new_order":
         return "bg-blue-50 border-blue-400";
@@ -150,21 +156,23 @@ export default function VendorNotificationsPage() {
               <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
                 Notifications
               </h1>
-              
+
               {currentNotifications.length === 0 ? (
                 <div className="text-center py-12">
                   <Bell className="w-12 h-12 md:w-16 md:h-16 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
                     No notifications
                   </h3>
-                  <p className="text-sm md:text-base text-gray-600">You're all caught up!</p>
+                  <p className="text-sm md:text-base text-gray-600">
+                    You're all caught up!
+                  </p>
                 </div>
               ) : (
                 <>
                   <div className="space-y-3 md:space-y-4">
                     {currentNotifications.map((notification) => (
-                      <div 
-                        key={notification.id} 
+                      <div
+                        key={notification.id}
                         className={`border-l-4 p-3 md:p-4 ${getNotificationColor(notification.type, notification.isRead)}`}
                       >
                         <div className="flex items-start justify-between">

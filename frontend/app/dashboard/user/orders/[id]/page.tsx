@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -13,16 +13,36 @@ import {
   Calendar,
   CreditCard,
   MapPin,
+  Star,
 } from "lucide-react";
 import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import AuthWrapper from "@/components/auth/AuthWrapper";
-import { useOrder, useDownloadProduct } from "@/hooks/useAPI";
+import {
+  useOrder,
+  useDownloadProduct,
+  useUserProfile,
+} from "@/hooks/useAPI";
+import ReviewModal from "@/components/modals/ReviewModal";
 
 function OrderDetailsPageContent({ params }: { params: { id: string } }) {
   const { data: orderData, isLoading } = useOrder(params.id);
+  const { data: userProfile } = useUserProfile();
   const downloadProduct = useDownloadProduct();
   const order = orderData?.data?.data;
+  const user = userProfile?.data?.data;
+
+  const [reviewModal, setReviewModal] = useState<{
+    isOpen: boolean;
+    productId: string;
+    orderId: string;
+    productName: string;
+  }>({
+    isOpen: false,
+    productId: "",
+    orderId: "",
+    productName: "",
+  });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -41,6 +61,18 @@ function OrderDetailsPageContent({ params }: { params: { id: string } }) {
     const productId = item.productId?._id || item.productId;
     if (productId) {
       downloadProduct.mutate(productId);
+    }
+  };
+
+  const handleReviewClick = (item: any) => {
+    const productId = item.productId?._id || item.productId;
+    if (productId) {
+      setReviewModal({
+        isOpen: true,
+        productId,
+        orderId: order._id,
+        productName: item.productId?.name || "Product",
+      });
     }
   };
 
@@ -108,7 +140,9 @@ function OrderDetailsPageContent({ params }: { params: { id: string } }) {
                         {getStatusIcon(order.status)}
                         <div>
                           <h2 className="font-semibold text-gray-900 text-sm md:text-base">
-                            {order.status}
+                            {order.status === "DELIVERED"
+                              ? "Ready for Download"
+                              : order.status}
                           </h2>
                           <p className="text-xs md:text-sm text-gray-500">
                             Order placed on{" "}
@@ -146,14 +180,15 @@ function OrderDetailsPageContent({ params }: { params: { id: string } }) {
                                   "Unknown Vendor"}
                               </p>
                               <p className="text-xs md:text-sm text-gray-600 mt-1">
-                                {item.product.description}
+                                {item.productId?.description ||
+                                  "Digital product"}
                               </p>
                               <div className="mt-2 text-xs md:text-sm text-gray-500">
                                 <span> Quantity: {item.quantity || 1}</span>
                                 <span className="mx-2">•</span>
                                 <span>
                                   Downloads: {item.downloadCount || 0}/
-                                  {item.maxDownloads || "∞"}
+                                  {item.downloadLimit || "∞"}
                                 </span>
                               </div>
                             </div>
@@ -163,13 +198,24 @@ function OrderDetailsPageContent({ params }: { params: { id: string } }) {
                                 {(item.price * item.quantity)?.toLocaleString()}
                               </div>
                               {order.status === "DELIVERED" && (
-                                <button
-                                  onClick={() => handleDownload(item)}
-                                  className="inline-flex items-center px-2 md:px-3 py-1 border border-[#D7195B] rounded-md text-xs md:text-sm font-medium text-[#D7195B] hover:bg-[#D7195B] hover:text-white transition-colors"
-                                >
-                                  <Download className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                                  Download
-                                </button>
+                                <div className="flex flex-col gap-2">
+                                  <button
+                                    onClick={() => handleDownload(item)}
+                                    className="inline-flex items-center px-2 md:px-3 py-1 border border-[#D7195B] rounded-md text-xs md:text-sm font-medium text-[#D7195B] hover:bg-[#D7195B] hover:text-white transition-colors"
+                                  >
+                                    <Download className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                                    Download
+                                  </button>
+                                  {user && user.role === "CUSTOMER" && (
+                                    <button
+                                      onClick={() => handleReviewClick(item)}
+                                      className="inline-flex items-center px-2 md:px-3 py-1 border border-gray-300 rounded-md text-xs md:text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                                    >
+                                      <Star className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                                      Review
+                                    </button>
+                                  )}
+                                </div>
                               )}
                             </div>
                           </div>
@@ -266,6 +312,14 @@ function OrderDetailsPageContent({ params }: { params: { id: string } }) {
           </div>
         </div>
       </SectionWrapper>
+
+      <ReviewModal
+        isOpen={reviewModal.isOpen}
+        onClose={() => setReviewModal({ ...reviewModal, isOpen: false })}
+        productId={reviewModal.productId}
+        orderId={reviewModal.orderId}
+        productName={reviewModal.productName}
+      />
     </div>
   );
 }

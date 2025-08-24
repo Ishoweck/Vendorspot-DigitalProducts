@@ -8,8 +8,8 @@ export interface IOrderItem {
   quantity: number;
   licenseKey?: string;
   downloadUrl?: string;
-  downloadCount?: number;
-  downloadLimit?: number;
+  downloadCount: number;
+  downloadLimit: number;
 }
 
 export interface IShippingAddress {
@@ -79,11 +79,13 @@ const orderItemSchema = new Schema<IOrderItem>({
   downloadUrl: String,
   downloadCount: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   },
   downloadLimit: {
     type: Number,
-    default: -1
+    default: -1,
+    min: -1
   }
 });
 

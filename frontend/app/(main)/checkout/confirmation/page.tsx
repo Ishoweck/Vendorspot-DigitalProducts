@@ -14,7 +14,7 @@ import {
   ArrowRight,
   RefreshCw,
 } from "lucide-react";
-import { useVerifyPayment, useOrder } from "@/hooks/useAPI";
+import { useVerifyPayment, useOrderByPaymentReference } from "@/hooks/useAPI";
 import AuthWrapper from "@/components/auth/AuthWrapper";
 
 export default function CheckoutConfirmationPage() {
@@ -28,7 +28,7 @@ export default function CheckoutConfirmationPage() {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const verifyPayment = useVerifyPayment();
-  const { data: orderResponse } = useOrder(reference || "");
+  const { data: orderResponse } = useOrderByPaymentReference(reference || "");
 
   useEffect(() => {
     if (reference && trxref && status) {
@@ -272,11 +272,11 @@ export default function CheckoutConfirmationPage() {
                     <ul className="space-y-2 text-sm text-blue-800">
                       <li className="flex items-center">
                         <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
-                        You'll receive an email confirmation shortly
+                        You&apos;ll receive an email confirmation shortly
                       </li>
                       <li className="flex items-center">
                         <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
-                        We'll notify you when your order ships
+                        We&apos;ll notify you when your order ships
                       </li>
                       <li className="flex items-center">
                         <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>

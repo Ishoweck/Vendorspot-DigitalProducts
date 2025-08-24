@@ -65,9 +65,7 @@ function SettingsPageContent() {
       setEditingField(null);
       setEditValue("");
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to update profile";
-      // toast.error(errorMessage);
+      toast.error(error?.response?.data?.message || "Failed to update profile");
     }
   };
 

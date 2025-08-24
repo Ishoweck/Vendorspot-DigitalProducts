@@ -167,8 +167,9 @@ export const verifyPayment = asyncHandler(
         const order = await Order.findById(payment.orderId);
         if (order) {
           order.paymentStatus = "PAID";
-          order.status = "CONFIRMED";
+          order.status = "DELIVERED";
           order.paymentReference = reference;
+          order.deliveredAt = new Date();
           await order.save();
 
           for (const item of order.items) {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Edit2, ArrowRight, MapPin, Truck, CreditCard } from "lucide-react";
+import { Edit2, ArrowRight, MapPin, CreditCard } from "lucide-react";
 import {
   useUserProfile,
   useCart,

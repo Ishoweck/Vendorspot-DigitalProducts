@@ -4,6 +4,7 @@ import {
   createOrder,
   getUserOrders,
   getOrderById,
+  getOrderByPaymentReference,
   getVendorOrders,
   updateOrderStatus,
   cancelOrder
@@ -14,6 +15,7 @@ const router: Router = Router();
 router.post("/", authenticate, createOrder);
 router.get("/", authenticate, getUserOrders);
 router.get("/vendor", authenticate, authorize("VENDOR", "ADMIN"), getVendorOrders);
+router.get("/payment/:reference", getOrderByPaymentReference);
 router.get("/:id", authenticate, getOrderById);
 router.patch("/:id/status", authenticate, authorize("VENDOR", "ADMIN"), updateOrderStatus);
 router.patch("/:id/cancel", authenticate, cancelOrder);

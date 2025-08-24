@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Product } from "@/types/product";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 
 interface ProductThumbnailProps {
   product: Product;
@@ -28,7 +29,7 @@ export function ProductThumbnail({
     >
       <div className="bg-[#FFDD00] relative w-full" style={{ height: "72.2%" }}>
         {!imageLoaded && <Skeleton className="w-full h-full" />}
-        <img
+        <Image
           src={product.thumbnail || "/api/placeholder/200/150"}
           alt={product.name}
           className={`w-full h-full object-cover ${!imageLoaded ? "hidden" : ""}`}
@@ -55,7 +56,10 @@ export function ProductThumbnail({
               ₦{product.price.toLocaleString()}
             </span>
             {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-gray-400 line-through" style={{ fontSize: "12px" }}>
+              <span
+                className="text-gray-400 line-through"
+                style={{ fontSize: "12px" }}
+              >
                 ₦{product.originalPrice.toLocaleString()}
               </span>
             )}

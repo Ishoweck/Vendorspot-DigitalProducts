@@ -5,6 +5,9 @@ export const ordersAPI = {
 
   getById: (id: string) => api.get<any>(`/orders/${id}`),
 
+  getByPaymentReference: (reference: string) =>
+    api.get<any>(`/orders/payment/${reference}`),
+
   create: (orderData: {
     items: Array<{ productId: string; quantity: number }>;
     shippingAddress: any;

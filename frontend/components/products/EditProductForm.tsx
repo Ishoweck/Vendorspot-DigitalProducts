@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUpdateProduct } from "@/hooks/useAPI";
 import { toast } from "react-hot-toast";
+import Image from "next/image";
 
 interface Product {
   _id: string;
@@ -26,7 +27,12 @@ interface Product {
   features: string[];
   requirements?: string;
   instructions?: string;
-  licenseType?: "SINGLE_USE" | "MULTIPLE_USE" | "UNLIMITED" | "TIME_LIMITED" | "SUBSCRIPTION";
+  licenseType?:
+    | "SINGLE_USE"
+    | "MULTIPLE_USE"
+    | "UNLIMITED"
+    | "TIME_LIMITED"
+    | "SUBSCRIPTION";
   licenseDuration?: number;
   downloadLimit?: number;
   isActive: boolean;
@@ -55,7 +61,11 @@ export default function EditProductForm({ product }: EditProductFormProps) {
     if (updateProductMutation.isSuccess && !updateProductMutation.isLoading) {
       router.push("/dashboard/vendor/products");
     }
-  }, [updateProductMutation.isSuccess, updateProductMutation.isLoading, router]);
+  }, [
+    updateProductMutation.isSuccess,
+    updateProductMutation.isLoading,
+    router,
+  ]);
 
   const [formData, setFormData] = useState({
     name: product.name || "",
@@ -63,7 +73,10 @@ export default function EditProductForm({ product }: EditProductFormProps) {
     price: product.price || "",
     originalPrice: product.originalPrice || "",
     discountPercentage: product.discountPercentage || "",
-    categoryId: typeof product.categoryId === 'string' ? product.categoryId : product.categoryId?._id || "",
+    categoryId:
+      typeof product.categoryId === "string"
+        ? product.categoryId
+        : product.categoryId?._id || "",
     tags: product.tags?.join(", ") || "",
     features: product.features?.join(", ") || "",
     requirements: product.requirements || "",
@@ -150,7 +163,10 @@ export default function EditProductForm({ product }: EditProductFormProps) {
     submitData.append("description", formData.description);
     submitData.append("price", formData.price.toString());
     submitData.append("originalPrice", formData.originalPrice.toString());
-    submitData.append("discountPercentage", formData.discountPercentage.toString());
+    submitData.append(
+      "discountPercentage",
+      formData.discountPercentage.toString()
+    );
     submitData.append("categoryId", formData.categoryId);
 
     if (formData.tags) {
@@ -431,7 +447,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
             />
             {previews.thumbnail && (
               <div className="mt-2">
-                <img
+                <Image
                   src={previews.thumbnail}
                   alt="Thumbnail preview"
                   className="w-32 h-32 object-cover rounded-lg border"
@@ -453,7 +469,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
             />
             {previews.preview && (
               <div className="mt-2">
-                <img
+                <Image
                   src={previews.preview}
                   alt="Preview image"
                   className="w-32 h-32 object-cover rounded-lg border"
@@ -477,7 +493,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
             {previews.images.length > 0 && (
               <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
                 {previews.images.map((image: string, index: number) => (
-                  <img
+                  <Image
                     key={index}
                     src={image}
                     alt={`Preview ${index + 1}`}

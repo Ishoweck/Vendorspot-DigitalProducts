@@ -53,7 +53,8 @@ export const createOrder = asyncHandler(
         name: product.name,
         price: product.price,
         quantity,
-        downloadLimit: product.downloadLimit,
+        downloadLimit: product.downloadLimit || -1,
+        downloadCount: 0,
       });
 
       subtotal += itemTotal;
@@ -132,6 +133,10 @@ export const getUserOrders = asyncHandler(
         path: "items.productId",
         select: "name thumbnail",
       })
+      .populate({
+        path: "items.vendorId",
+        select: "businessName",
+      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -161,6 +166,33 @@ export const getOrderById = asyncHandler(
       .populate({
         path: "items.productId",
         select: "name thumbnail",
+      })
+      .populate({
+        path: "items.vendorId",
+        select: "businessName",
+      });
+
+    if (!order) {
+      return next(createError("Order not found", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      data: order,
+    });
+  }
+);
+
+export const getOrderByPaymentReference = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { reference } = req.params;
+    
+    const order = await Order.findOne({
+      paymentReference: reference,
+    })
+      .populate({
+        path: "items.productId",
+        select: "name thumbnail description",
       })
       .populate({
         path: "items.vendorId",

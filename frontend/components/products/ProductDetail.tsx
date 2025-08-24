@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -34,6 +34,7 @@ import {
 } from "@/hooks/useAPI";
 import { useTempStore } from "@/stores/tempStore";
 import { ProductThumbnail } from "./ProductThumbnail";
+import ReviewsSection from "./ReviewsSection";
 import { Notification } from "@/components/ui/Notification";
 import { Skeleton } from "@/components/ui/skeleton";
 import { smoothScrollToSection } from "@/lib/utils";
@@ -254,7 +255,7 @@ export default function ProductDetail() {
           Product not found
         </h2>
         <p className="text-gray-600">
-          The product you're looking for doesn't exist or has been removed.
+          The product you&apos;re looking for doesn&apos;t exist or has been removed.
         </p>
       </div>
     );
@@ -610,14 +611,8 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          <div className="mt-8 p-4 border border-gray-200 rounded-lg bg-white">
-            <h3 className="font-medium text-gray-900 mb-3">Customer Reviews</h3>
-            <div className="text-center py-8 text-gray-500">
-              <p>Review functionality will be implemented later</p>
-              <p className="text-sm">
-                Only customers with verified purchases can leave reviews
-              </p>
-            </div>
+          <div className="mt-8">
+            <ReviewsSection productId={productId} />
           </div>
         </div>
 

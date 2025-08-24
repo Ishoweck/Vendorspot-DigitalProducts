@@ -61,7 +61,7 @@ function OrdersPageContent() {
     { id: "all", label: "All Orders", count: orders.length },
     {
       id: "delivered",
-      label: "Delivered",
+      label: "Ready for Download",
       count: orders.filter((o: any) => o.status === "DELIVERED").length,
     },
     {
@@ -168,7 +168,7 @@ function OrdersPageContent() {
                       No orders found
                     </h3>
                     <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">
-                      You haven't placed any orders yet.
+                      You haven&apos;t placed any orders yet.
                     </p>
                     <Link
                       href="/products"
@@ -204,7 +204,9 @@ function OrdersPageContent() {
                               <span
                                 className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium ${getStatusColor(order.status)}`}
                               >
-                                {order.status}
+                                {order.status === "DELIVERED"
+                                  ? "Ready for Download"
+                                  : order.status}
                               </span>
                             </div>
                           </div>
@@ -301,14 +303,12 @@ function OrdersPageContent() {
 
                         <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-gray-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                           <div className="text-xs md:text-sm text-gray-500">
-                            {order.status === "DELIVERED" &&
-                              order.items[0] &&
-                              "downloadCount" in order.items[0] && (
-                                <span>
-                                  Downloads: {order.items[0].downloadCount || 0}/
-                                  {order.items[0].maxDownloads || "∞"}
-                                </span>
-                              )}
+                            {order.status === "DELIVERED" && order.items[0] && (
+                              <span>
+                                Downloads: {order.items[0].downloadCount || 0}/
+                                {order.items[0].downloadLimit || "∞"}
+                              </span>
+                            )}
                           </div>
                           <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                             <Link
