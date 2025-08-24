@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { Payment } from "@/models/Payment";
 import { Order } from "@/models/Order";
 import { Product } from "@/models/Product";
+import { User } from "@/models/User";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
 import config from "@/config/config";
@@ -175,6 +176,10 @@ export const verifyPayment = asyncHandler(
               $inc: { soldCount: item.quantity },
             });
           }
+
+          await User.findByIdAndUpdate(payment.userId, {
+            cart: { items: [] },
+          });
 
           try {
             const io = SocketService.getIO();

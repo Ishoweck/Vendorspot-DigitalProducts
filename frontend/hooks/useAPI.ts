@@ -708,6 +708,7 @@ export const useVerifyPayment = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(["orders"]);
       queryClient.invalidateQueries(["notifications"]);
+      queryClient.invalidateQueries(["cart"]);
     },
     onError: (error: any) => {
       toast.error(
