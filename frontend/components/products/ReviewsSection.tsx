@@ -239,9 +239,14 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
                   </button>
                   <button
                     onClick={() => handleReportClick(review._id)}
-                    className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
+                    disabled={!!review.isReported}
+                    className={`flex items-center space-x-1 transition-colors ${
+                      review.isReported ? "text-red-600 cursor-not-allowed" : "hover:text-gray-700"
+                    }`}
                   >
-                    <Flag className="w-4 h-4" />
+                    <Flag
+                      className={`w-4 h-4 ${review.isReported ? "fill-current" : ""}`}
+                    />
                     <span>Report</span>
                   </button>
                 </div>

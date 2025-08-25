@@ -755,6 +755,11 @@ export const useUpdateReview = () => {
     {
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries(["reviews"]);
+        if ((variables as any)?.data?.productId) {
+          const pid = (variables as any).data.productId;
+          queryClient.invalidateQueries(["product", pid]);
+          queryClient.invalidateQueries(["products"]);
+        }
         toast.success("Review updated successfully!");
       },
       onError: (error: any) => {
@@ -770,6 +775,7 @@ export const useDeleteReview = () => {
   return useMutation(reviewsAPI.delete, {
     onSuccess: () => {
       queryClient.invalidateQueries(["reviews"]);
+      queryClient.invalidateQueries(["products"]);
       toast.success("Review deleted successfully!");
     },
     onError: (error: any) => {

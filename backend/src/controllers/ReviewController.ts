@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import mongoose from "mongoose";
 import { Review } from "@/models/Review";
 import { Product } from "@/models/Product";
 import { Order } from "@/models/Order";
@@ -121,8 +122,10 @@ export const getProductReviews = asyncHandler(
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
+    const productObjectId = new mongoose.Types.ObjectId(productId);
+
     const query: any = {
-      productId,
+      productId: productObjectId,
       status: "APPROVED",
     };
 
@@ -140,13 +143,13 @@ export const getProductReviews = asyncHandler(
     const total = await Review.countDocuments(query);
 
     const ratingDistribution = await Review.aggregate([
-      { $match: { productId: productId, status: "APPROVED" } },
+      { $match: { productId: productObjectId, status: "APPROVED" } },
       { $group: { _id: "$rating", count: { $sum: 1 } } },
       { $sort: { _id: -1 } },
     ]);
 
     const avgRating = await Review.aggregate([
-      { $match: { productId: productId, status: "APPROVED" } },
+      { $match: { productId: productObjectId, status: "APPROVED" } },
       { $group: { _id: null, average: { $avg: "$rating" } } },
     ]);
 
@@ -156,6 +159,11 @@ export const getProductReviews = asyncHandler(
       isHelpful: currentUserId
         ? (r.helpfulBy || []).some((id: any) => id.toString() === currentUserId)
         : false,
+      isReported: currentUserId
+        ? (r.reportedBy || []).some(
+            (id: any) => id.toString() === currentUserId
+          )
+        : false,
     }));
 
     res.status(200).json({
@@ -164,7 +172,9 @@ export const getProductReviews = asyncHandler(
         reviews: reviewsWithHelpful,
         stats: {
           total,
-          averageRating: avgRating[0]?.average || 0,
+          averageRating: avgRating[0]
+            ? Math.round(avgRating[0].average * 10) / 10
+            : 0,
           ratingDistribution,
         },
       },
@@ -338,6 +348,24 @@ export const markReviewHelpful = asyncHandler(
     } else {
       review.helpfulBy = [...(review.helpfulBy || []), user._id] as any;
       review.helpfulCount = (review.helpfulCount || 0) + 1;
+      try {
+        await createNotification({
+          userId: String(review.userId),
+          type: "REVIEW_HELPFUL",
+          title: "Someone found your review helpful",
+          message: `"${(review.title || review.comment || "").toString().slice(0, 80)}" was marked helpful`,
+          category: "REVIEW",
+          priority: "NORMAL",
+          channels: ["IN_APP"],
+          data: {
+            reviewId: review._id,
+            productId: review.productId,
+            helpfulCount: review.helpfulCount,
+          },
+        });
+      } catch (err) {
+        console.error("Failed to send helpful notification:", err);
+      }
     }
 
     await review.save();
@@ -363,12 +391,23 @@ export const reportReview = asyncHandler(
       return next(createError("Review not found", 404));
     }
 
+    const userIdStr = user._id.toString();
+    const hasReported = (review.reportedBy || []).some(
+      (id: any) => id.toString() === userIdStr
+    );
+
+    if (hasReported) {
+      return next(createError("You have already reported this review", 400));
+    }
+
+    review.reportedBy = [...(review.reportedBy || []), user._id] as any;
     review.reportCount += 1;
     await review.save();
 
     res.status(200).json({
       success: true,
       message: "Review reported successfully",
+      data: { isReported: true, reportCount: review.reportCount },
     });
   }
 );

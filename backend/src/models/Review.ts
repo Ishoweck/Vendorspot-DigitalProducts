@@ -14,6 +14,7 @@ export interface IReview extends Document {
   moderationReason?: string;
   helpfulCount: number;
   helpfulBy?: mongoose.Types.ObjectId[];
+  reportedBy?: mongoose.Types.ObjectId[];
   reportCount: number;
   response?: {
     message: string;
@@ -24,72 +25,76 @@ export interface IReview extends Document {
   updatedAt: Date;
 }
 
-const reviewSchema = new Schema<IReview>({
-  productId: {
-    type: Schema.Types.ObjectId,
-    ref: "Product",
-    required: true
-  },
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true
-  },
-  vendorId: {
-    type: Schema.Types.ObjectId,
-    ref: "Vendor",
-    required: true
-  },
-  orderId: {
-    type: Schema.Types.ObjectId,
-    ref: "Order",
-    required: true
-  },
-  rating: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 5
-  },
-  title: {
-    type: String,
-    maxlength: 100
-  },
-  comment: {
-    type: String,
-    maxlength: 1000
-  },
-  images: [String],
-  isVerified: {
-    type: Boolean,
-    default: false
-  },
-  status: {
-    type: String,
-    enum: ["PENDING", "APPROVED", "REJECTED", "HIDDEN"],
-    default: "PENDING"
-  },
-  moderationReason: String,
-  helpfulCount: {
-    type: Number,
-    default: 0
-  },
-  helpfulBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
-  reportCount: {
-    type: Number,
-    default: 0
-  },
-  response: {
-    message: String,
-    respondedAt: Date,
-    respondedBy: {
+const reviewSchema = new Schema<IReview>(
+  {
+    productId: {
       type: Schema.Types.ObjectId,
-      ref: "User"
-    }
+      ref: "Product",
+      required: true,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    vendorId: {
+      type: Schema.Types.ObjectId,
+      ref: "Vendor",
+      required: true,
+    },
+    orderId: {
+      type: Schema.Types.ObjectId,
+      ref: "Order",
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    title: {
+      type: String,
+      maxlength: 100,
+    },
+    comment: {
+      type: String,
+      maxlength: 1000,
+    },
+    images: [String],
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    status: {
+      type: String,
+      enum: ["PENDING", "APPROVED", "REJECTED", "HIDDEN"],
+      default: "PENDING",
+    },
+    moderationReason: String,
+    helpfulCount: {
+      type: Number,
+      default: 0,
+    },
+    helpfulBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    reportedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    reportCount: {
+      type: Number,
+      default: 0,
+    },
+    response: {
+      message: String,
+      respondedAt: Date,
+      respondedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    },
+  },
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
-});
+);
 
 reviewSchema.index({ productId: 1 });
 reviewSchema.index({ userId: 1 });

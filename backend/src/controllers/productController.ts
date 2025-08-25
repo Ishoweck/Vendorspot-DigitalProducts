@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { URL } from "url";
+import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import { Product } from "@/models/Product";
+import { Review } from "@/models/Review";
 import { Vendor } from "@/models/Vendor";
 import { Order } from "@/models/Order";
 import { cloudinaryService } from "@/services/cloudinaryService";
@@ -91,11 +93,38 @@ export const getProducts = asyncHandler(
         .skip(skip)
         .limit(limit);
 
+      const productIds = products.map((p) => p._id);
+      const reviewStats = await Review.aggregate([
+        { $match: { productId: { $in: productIds }, status: "APPROVED" } },
+        {
+          $group: {
+            _id: "$productId",
+            average: { $avg: "$rating" },
+            total: { $sum: 1 },
+          },
+        },
+      ]);
+      const idToStats = new Map(
+        reviewStats.map((s: any) => [
+          s._id.toString(),
+          { average: Math.round((s.average || 0) * 10) / 10, total: s.total },
+        ])
+      );
+      const productsWithLive = products.map((p: any) => {
+        const stats = idToStats.get(p._id.toString());
+        const obj = p.toObject();
+        return {
+          ...obj,
+          rating: stats ? stats.average : obj.rating,
+          reviewCount: stats ? stats.total : obj.reviewCount,
+        };
+      });
+
       const total = await Product.countDocuments(query);
 
       return res.status(200).json({
         success: true,
-        data: products,
+        data: productsWithLive,
         pagination: {
           total,
           page,
@@ -111,7 +140,9 @@ export const getProducts = asyncHandler(
 
 export const getProductById = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const product = await Product.findById(req.params.id)
+    const { id } = req.params;
+
+    const product = await Product.findById(id)
       .populate("vendorId", "businessName")
       .populate("categoryId", "name")
       .select("-fileUrl");
@@ -120,13 +151,45 @@ export const getProductById = asyncHandler(
       return next(createError("Product not found", 404));
     }
 
-    await Product.findByIdAndUpdate(req.params.id, {
+    await Product.findByIdAndUpdate(id, {
       $inc: { viewCount: 1 },
+    });
+
+    const liveStats = await Review.aggregate([
+      {
+        $match: {
+          productId: new mongoose.Types.ObjectId(id),
+          status: "APPROVED",
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          average: { $avg: "$rating" },
+          total: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const average = liveStats[0]?.average
+      ? Math.round(liveStats[0].average * 10) / 10
+      : 0;
+    const totalReviews = liveStats[0]?.total || 0;
+
+    await Product.findByIdAndUpdate(id, {
+      $set: {
+        rating: average,
+        reviewCount: totalReviews,
+      },
     });
 
     res.status(200).json({
       success: true,
-      data: product,
+      data: {
+        ...product.toObject(),
+        rating: average,
+        reviewCount: totalReviews,
+      },
     });
   }
 );
