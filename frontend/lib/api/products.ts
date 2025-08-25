@@ -33,5 +33,8 @@ export const productsAPI = {
 
   delete: (id: string) => api.delete(`/products/${id}`),
 
-  download: (productId: string) => api.get<any>(`/products/${productId}/download`),
+  download: (productId: string, orderId: string) =>
+    api.get(`/products/${productId}/download`, {
+      params: { orderId },
+    }),
 };

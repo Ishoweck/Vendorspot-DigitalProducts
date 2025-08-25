@@ -31,7 +31,14 @@ export interface IOrder extends Document {
   shippingFee: number;
   total: number;
   currency: string;
-  status: "PENDING" | "CONFIRMED" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED" | "REFUNDED";
+  status:
+    | "PENDING"
+    | "CONFIRMED"
+    | "PROCESSING"
+    | "SHIPPED"
+    | "DELIVERED"
+    | "CANCELLED"
+    | "REFUNDED";
   paymentStatus: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
   paymentMethod: "PAYSTACK" | "BANK_TRANSFER" | "WALLET";
   paymentReference?: string;
@@ -53,144 +60,155 @@ const orderItemSchema = new Schema<IOrderItem>({
   productId: {
     type: Schema.Types.ObjectId,
     ref: "Product",
-    required: true
+    required: true,
   },
   vendorId: {
     type: Schema.Types.ObjectId,
     ref: "Vendor",
-    required: true
+    required: true,
   },
   name: {
     type: String,
-    required: true
+    required: true,
   },
   price: {
     type: Number,
     required: true,
-    min: 0
+    min: 0,
   },
   quantity: {
     type: Number,
     required: true,
     min: 1,
-    default: 1
+    default: 1,
   },
   licenseKey: String,
   downloadUrl: String,
   downloadCount: {
     type: Number,
     default: 0,
-    min: 0
+    min: 0,
   },
   downloadLimit: {
     type: Number,
     default: -1,
-    min: -1
-  }
+    min: -1,
+  },
 });
 
 const shippingAddressSchema = new Schema<IShippingAddress>({
   fullName: {
     type: String,
-    required: true
+    required: true,
   },
   street: {
     type: String,
-    required: true
+    required: true,
   },
   city: {
     type: String,
-    required: true
+    required: true,
   },
   state: {
     type: String,
-    required: true
+    required: true,
   },
   country: {
     type: String,
     required: true,
-    default: "Nigeria"
+    default: "Nigeria",
   },
   postalCode: String,
   phone: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 });
 
-const orderSchema = new Schema<IOrder>({
-  orderNumber: {
-    type: String,
-    required: true,
-    unique: true
+const orderSchema = new Schema<IOrder>(
+  {
+    orderNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    items: [orderItemSchema],
+    subtotal: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    tax: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    shippingFee: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+    total: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    currency: {
+      type: String,
+      default: "NGN",
+    },
+    status: {
+      type: String,
+      enum: [
+        "PENDING",
+        "CONFIRMED",
+        "PROCESSING",
+        "SHIPPED",
+        "DELIVERED",
+        "CANCELLED",
+        "REFUNDED",
+      ],
+      default: "PENDING",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["PENDING", "PAID", "FAILED", "REFUNDED"],
+      default: "PENDING",
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["PAYSTACK", "BANK_TRANSFER", "WALLET"],
+      default: "PAYSTACK",
+    },
+    paymentReference: String,
+    shippingAddress: shippingAddressSchema,
+    shippingMethod: {
+      type: String,
+      enum: ["STANDARD", "EXPRESS", "SAME_DAY"],
+    },
+    trackingNumber: String,
+    estimatedDelivery: Date,
+    deliveredAt: Date,
+    cancelledAt: Date,
+    cancellationReason: String,
+    refundAmount: {
+      type: Number,
+      min: 0,
+    },
+    refundReason: String,
+    notes: String,
   },
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true
-  },
-  items: [orderItemSchema],
-  subtotal: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  tax: {
-    type: Number,
-    required: true,
-    min: 0,
-    default: 0
-  },
-  shippingFee: {
-    type: Number,
-    required: true,
-    min: 0,
-    default: 0
-  },
-  total: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  currency: {
-    type: String,
-    default: "NGN"
-  },
-  status: {
-    type: String,
-    enum: ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"],
-    default: "PENDING"
-  },
-  paymentStatus: {
-    type: String,
-    enum: ["PENDING", "PAID", "FAILED", "REFUNDED"],
-    default: "PENDING"
-  },
-  paymentMethod: {
-    type: String,
-    enum: ["PAYSTACK", "BANK_TRANSFER", "WALLET"],
-    default: "PAYSTACK"
-  },
-  paymentReference: String,
-  shippingAddress: shippingAddressSchema,
-  shippingMethod: {
-    type: String,
-    enum: ["STANDARD", "EXPRESS", "SAME_DAY"]
-  },
-  trackingNumber: String,
-  estimatedDelivery: Date,
-  deliveredAt: Date,
-  cancelledAt: Date,
-  cancellationReason: String,
-  refundAmount: {
-    type: Number,
-    min: 0
-  },
-  refundReason: String,
-  notes: String
-}, {
-  timestamps: true
-});
+  {
+    timestamps: true,
+  }
+);
 
 orderSchema.index({ userId: 1 });
 orderSchema.index({ status: 1 });

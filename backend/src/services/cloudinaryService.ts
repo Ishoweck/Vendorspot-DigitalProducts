@@ -10,12 +10,14 @@ cloudinary.config({
 export const cloudinaryService = {
   uploadFile: async (
     file: Express.Multer.File,
-    folder: string = "products"
+    folder: string = "products",
+    resourceType: "image" | "raw" | "auto" = "auto"
   ) => {
     try {
       const result = await cloudinary.uploader.upload(file.path, {
         folder: `vendorspot/${folder}`,
-        resource_type: "auto",
+        resource_type: resourceType,
+        use_filename: true,
       });
       return {
         url: result.secure_url,
@@ -36,18 +38,20 @@ export const cloudinaryService = {
 
   extractPublicId: (url: string): string | null => {
     try {
-      const urlParts = url.split('/');
-      const uploadIndex = urlParts.findIndex(part => part === 'upload');
+      const urlParts = url.split("/");
+      const uploadIndex = urlParts.findIndex((part) => part === "upload");
       if (uploadIndex === -1) return null;
-      
+
       const pathAfterUpload = urlParts.slice(uploadIndex + 1);
-      if (pathAfterUpload[0] && pathAfterUpload[0].startsWith('v')) {
+      if (pathAfterUpload[0] && pathAfterUpload[0].startsWith("v")) {
         pathAfterUpload.shift();
       }
-      
-      const publicIdWithExt = pathAfterUpload.join('/');
-      const lastDotIndex = publicIdWithExt.lastIndexOf('.');
-      return lastDotIndex > 0 ? publicIdWithExt.substring(0, lastDotIndex) : publicIdWithExt;
+
+      const publicIdWithExt = pathAfterUpload.join("/");
+      const lastDotIndex = publicIdWithExt.lastIndexOf(".");
+      return lastDotIndex > 0
+        ? publicIdWithExt.substring(0, lastDotIndex)
+        : publicIdWithExt;
     } catch (error) {
       console.error("Failed to extract public ID from URL:", error);
       return null;
@@ -61,7 +65,7 @@ export const cloudinaryService = {
         await cloudinaryService.deleteFile(publicId);
       }
     });
-    
+
     await Promise.allSettled(deletePromises);
   },
 };

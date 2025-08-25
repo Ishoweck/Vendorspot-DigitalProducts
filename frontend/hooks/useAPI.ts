@@ -236,27 +236,39 @@ export const useDeleteProduct = () => {
 
 export const useDownloadProduct = () => {
   const queryClient = useQueryClient();
-  
-  return useMutation((productId: string) => productsAPI.download(productId), {
-    onSuccess: (data: any) => {
-      const downloadUrl = data?.data?.data?.downloadUrl;
-      if (downloadUrl) {
+
+  return useMutation(
+    async ({ productId, orderId }: { productId: string; orderId: string }) => {
+      const response = await productsAPI.download(productId, orderId);
+      return response.data;
+    },
+    {
+      onSuccess: (data: any) => {
         const link = document.createElement("a");
-        link.href = downloadUrl;
-        link.download = "";
-        link.target = "_blank";
+        link.href = data.data.downloadUrl;
+        link.setAttribute("download", data.data.filename);
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         queryClient.invalidateQueries(["orders"]);
         queryClient.invalidateQueries(["order"]);
-      }
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Download failed");
-    },
-  });
+
+        toast.success("Download started successfully!");
+
+        if (
+          data.data.remainingDownloads !== -1 &&
+          data.data.remainingDownloads >= 0
+        ) {
+          toast.success(`${data.data.remainingDownloads} downloads remaining`);
+        }
+      },
+      onError: (error: any) => {
+        toast.error(error.response?.data?.message || "Download failed");
+      },
+    }
+  );
 };
 
 // =====================================

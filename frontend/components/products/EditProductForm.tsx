@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUpdateProduct } from "@/hooks/useAPI";
 import { toast } from "react-hot-toast";
-import Image from "next/image";
 
 interface Product {
   _id: string;
@@ -447,7 +446,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
             />
             {previews.thumbnail && (
               <div className="mt-2">
-                <Image
+                <img
                   src={previews.thumbnail}
                   alt="Thumbnail preview"
                   className="w-32 h-32 object-cover rounded-lg border"
@@ -469,7 +468,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
             />
             {previews.preview && (
               <div className="mt-2">
-                <Image
+                <img
                   src={previews.preview}
                   alt="Preview image"
                   className="w-32 h-32 object-cover rounded-lg border"
@@ -493,7 +492,7 @@ export default function EditProductForm({ product }: EditProductFormProps) {
             {previews.images.length > 0 && (
               <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
                 {previews.images.map((image: string, index: number) => (
-                  <Image
+                  <img
                     key={index}
                     src={image}
                     alt={`Preview ${index + 1}`}

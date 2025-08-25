@@ -8,8 +8,12 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
-  downloadProduct,
+  downloadProductFile,
 } from "@/controllers/productController";
+import {
+  accessFileWithToken,
+  downloadRateLimit,
+} from "@/services/downloadSecurityService";
 
 const router: Router = Router();
 
@@ -26,7 +30,6 @@ const uploadFields = upload.fields([
 ]);
 
 router.get("/", getProducts);
-router.get("/:id", getProductById);
 router.get(
   "/vendor",
   authenticate,
@@ -36,8 +39,11 @@ router.get(
 router.get(
   "/:productId/download",
   authenticate,
-  downloadProduct
+  downloadRateLimit(5, 60000),
+  downloadProductFile
 );
+router.get("/download/:token", accessFileWithToken);
+router.get("/:id", getProductById);
 router.post(
   "/",
   authenticate,

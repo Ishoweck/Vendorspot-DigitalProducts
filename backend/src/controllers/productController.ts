@@ -1,10 +1,17 @@
 import { Request, Response, NextFunction } from "express";
+import { URL } from "url";
+import { v2 as cloudinary } from "cloudinary";
 import { Product } from "@/models/Product";
 import { Vendor } from "@/models/Vendor";
+import { Order } from "@/models/Order";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
-import { Order } from "@/models/Order";
+import {
+  generateDownloadToken,
+  logDownloadActivity,
+  DownloadToken,
+} from "@/services/downloadSecurityService";
 
 export const getProducts = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -79,7 +86,7 @@ export const getProducts = asyncHandler(
       const products = await Product.find(query)
         .populate("vendorId", "businessName")
         .populate("categoryId", "name")
-        .select("-fileUrl -downloadCount")
+        .select("-fileUrl")
         .sort(sortOptions)
         .skip(skip)
         .limit(limit);
@@ -107,7 +114,7 @@ export const getProductById = asyncHandler(
     const product = await Product.findById(req.params.id)
       .populate("vendorId", "businessName")
       .populate("categoryId", "name")
-      .select("-fileUrl -downloadCount");
+      .select("-fileUrl");
 
     if (!product) {
       return next(createError("Product not found", 404));
@@ -139,7 +146,7 @@ export const getVendorProducts = asyncHandler(
 
     const products = await Product.find({ vendorId: vendor._id })
       .populate("categoryId", "name")
-      .select("-fileUrl -downloadCount")
+      .select("-fileUrl")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -204,7 +211,8 @@ export const createProduct = asyncHandler(
       if (files.file && files.file[0]) {
         const fileUpload = await cloudinaryService.uploadFile(
           files.file[0],
-          "products/files"
+          "products/files",
+          "raw"
         );
         fileUrl = fileUpload.url;
       }
@@ -318,14 +326,33 @@ export const updateProduct = asyncHandler(
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
       if (files.file && files.file[0]) {
+        if (product.fileUrl) {
+          const oldPublicId = cloudinaryService.extractPublicId(
+            product.fileUrl
+          );
+          if (oldPublicId) {
+            await cloudinaryService.deleteFile(oldPublicId);
+          }
+        }
+
         const fileUpload = await cloudinaryService.uploadFile(
           files.file[0],
-          "products/files"
+          "products/files",
+          "raw"
         );
         product.fileUrl = fileUpload.url;
       }
 
       if (files.thumbnail && files.thumbnail[0]) {
+        if (product.thumbnail) {
+          const oldPublicId = cloudinaryService.extractPublicId(
+            product.thumbnail
+          );
+          if (oldPublicId) {
+            await cloudinaryService.deleteFile(oldPublicId);
+          }
+        }
+
         const thumbnailUpload = await cloudinaryService.uploadFile(
           files.thumbnail[0],
           "products/thumbnails"
@@ -334,6 +361,15 @@ export const updateProduct = asyncHandler(
       }
 
       if (files.preview && files.preview[0]) {
+        if (product.previewUrl) {
+          const oldPublicId = cloudinaryService.extractPublicId(
+            product.previewUrl
+          );
+          if (oldPublicId) {
+            await cloudinaryService.deleteFile(oldPublicId);
+          }
+        }
+
         const previewUpload = await cloudinaryService.uploadFile(
           files.preview[0],
           "products/previews"
@@ -342,6 +378,17 @@ export const updateProduct = asyncHandler(
       }
 
       if (files.images) {
+        if (product.images && product.images.length > 0) {
+          await cloudinaryService
+            .deleteMultipleFiles(product.images)
+            .catch((error) => {
+              console.error(
+                "Failed to delete old images from Cloudinary:",
+                error
+              );
+            });
+        }
+
         const newImages: string[] = [];
         for (const image of files.images) {
           const imageUpload = await cloudinaryService.uploadFile(
@@ -462,61 +509,172 @@ export const deleteProduct = asyncHandler(
   }
 );
 
-export const downloadProduct = asyncHandler(
+export const downloadProductFile = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as any;
     const { productId } = req.params;
+    const { orderId } = req.query;
 
-    const product = await Product.findById(productId);
-    if (!product) {
-      return next(createError("Product not found", 404));
-    }
+    try {
+      const product = await Product.findById(productId);
+      if (!product) {
+        return next(createError("Product not found", 404));
+      }
 
-    const order = await Order.findOne({
-      userId: user._id,
-      "items.productId": productId,
-      status: "DELIVERED",
-    });
+      const order = await Order.findOne({
+        _id: orderId,
+        userId: user._id,
+        "items.productId": productId,
+        status: "DELIVERED",
+      }).sort({ createdAt: -1 });
 
-    if (!order) {
-      return next(createError("No valid order found for this product", 403));
-    }
+      if (!order) {
+        await logDownloadActivity(
+          user._id,
+          productId,
+          orderId as string,
+          "FAILED",
+          {
+            reason: "No valid order found",
+            ip: req.ip,
+            userAgent: req.get("User-Agent"),
+          }
+        );
+        return next(createError("No valid order found for this product", 403));
+      }
 
-    const orderItem = order.items.find(
-      (item: any) => item.productId.toString() === productId
-    );
-
-    if (!orderItem) {
-      return next(createError("Product not found in order", 404));
-    }
-
-    if (
-      orderItem.downloadLimit &&
-      orderItem.downloadLimit > 0 &&
-      orderItem.downloadCount &&
-      orderItem.downloadCount >= orderItem.downloadLimit
-    ) {
-      return next(
-        createError("Download limit exceeded for this purchase", 403)
+      const orderItemIndex = order.items.findIndex(
+        (item: any) => item.productId.toString() === productId
       );
+
+      if (orderItemIndex === -1) {
+        return next(createError("Product not found in order", 404));
+      }
+
+      const orderItem = order.items[orderItemIndex];
+
+      if (
+        orderItem.downloadLimit &&
+        orderItem.downloadLimit > 0 &&
+        orderItem.downloadCount &&
+        orderItem.downloadCount >= orderItem.downloadLimit
+      ) {
+        await logDownloadActivity(
+          user._id,
+          productId,
+          orderId as string,
+          "FAILED",
+          {
+            reason: "Download limit exceeded",
+            downloadCount: orderItem.downloadCount,
+            downloadLimit: orderItem.downloadLimit,
+            ip: req.ip,
+            userAgent: req.get("User-Agent"),
+          }
+        );
+        return next(
+          createError("Download limit exceeded for this purchase", 403)
+        );
+      }
+
+      if (
+        orderItem.licenseExpiration &&
+        orderItem.licenseExpiration < new Date()
+      ) {
+        await logDownloadActivity(
+          user._id,
+          productId,
+          orderId as string,
+          "FAILED",
+          {
+            reason: "License expired",
+            licenseExpiration: orderItem.licenseExpiration,
+            ip: req.ip,
+            userAgent: req.get("User-Agent"),
+          }
+        );
+        return next(createError("License has expired", 403));
+      }
+
+      if (!product.fileUrl) {
+        return next(createError("Product file not available", 404));
+      }
+
+      const downloadToken = generateDownloadToken(
+        productId,
+        orderId as string,
+        user._id,
+        orderItem.downloadCount || 0
+      );
+
+      const fileExtension = product.fileUrl.split(".").pop() || "pdf";
+      const safeFilename = `${product.name
+        .replace(/[^a-zA-Z0-9\s.-]/g, "_")
+        .replace(/\s+/g, "_")
+        .trim()}.${fileExtension}`;
+
+      const publicId = cloudinaryService.extractPublicId(product.fileUrl);
+      if (!publicId) {
+        return next(createError("Invalid file URL", 500));
+      }
+
+      const downloadUrl = cloudinary.url(publicId, {
+        resource_type: "raw",
+        flags: "attachment",
+        transformation: [{ flags: `attachment:${safeFilename}` }],
+      });
+
+      await Order.updateOne(
+        {
+          _id: order._id,
+          "items.productId": productId,
+        },
+        {
+          $inc: { [`items.${orderItemIndex}.downloadCount`]: 1 },
+          $set: { [`items.${orderItemIndex}.lastDownloadAt`]: new Date() },
+        }
+      );
+
+      await logDownloadActivity(
+        user._id,
+        productId,
+        orderId as string,
+        "INITIATED",
+        {
+          filename: safeFilename,
+          downloadCount: (orderItem.downloadCount || 0) + 1,
+          ip: req.ip,
+          userAgent: req.get("User-Agent"),
+        }
+      );
+
+      res.status(200).json({
+        success: true,
+        data: {
+          downloadUrl,
+          filename: safeFilename,
+          token: downloadToken,
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+          remainingDownloads:
+            orderItem.downloadLimit === -1
+              ? -1
+              : orderItem.downloadLimit - (orderItem.downloadCount + 1),
+        },
+      });
+    } catch (error) {
+      console.error("Download error:", error);
+      await logDownloadActivity(
+        user._id,
+        productId,
+        orderId as string,
+        "FAILED",
+        {
+          error: (error as Error).message,
+          ip: req.ip,
+          userAgent: req.get("User-Agent"),
+        }
+      );
+      return next(createError("Download failed", 500));
     }
-
-    if (!product.fileUrl) {
-      return next(createError("Product file not available", 404));
-    }
-
-    await Order.updateOne(
-      { _id: order._id, "items.productId": productId },
-      { $inc: { "items.$.downloadCount": 1 } }
-    );
-
-    res.status(200).json({
-      success: true,
-      data: {
-        downloadUrl: product.fileUrl,
-        downloadCount: (orderItem.downloadCount || 0) + 1,
-        downloadLimit: orderItem.downloadLimit,
-      },
-    });
   }
 );

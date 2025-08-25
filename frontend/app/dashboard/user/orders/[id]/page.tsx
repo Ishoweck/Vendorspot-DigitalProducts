@@ -53,10 +53,10 @@ function OrderDetailsPageContent({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleDownload = (item: any) => {
+  const handleDownload = (item: any, orderId: string) => {
     const productId = item.productId?._id || item.productId;
-    if (productId) {
-      downloadProduct.mutate(productId);
+    if (productId && orderId) {
+      downloadProduct.mutate({ productId, orderId });
     }
   };
 
@@ -196,7 +196,7 @@ function OrderDetailsPageContent({ params }: { params: { id: string } }) {
                               {order.status === "DELIVERED" && (
                                 <div className="flex flex-col gap-2">
                                   <button
-                                    onClick={() => handleDownload(item)}
+                                    onClick={() => handleDownload(item, order._id)}
                                     disabled={
                                       item.downloadCount >=
                                         item.downloadLimit &&

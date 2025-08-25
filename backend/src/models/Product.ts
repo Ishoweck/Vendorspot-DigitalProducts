@@ -28,7 +28,6 @@ export interface IProduct extends Document {
     | "SUBSCRIPTION";
   licenseDuration?: number;
   downloadLimit?: number;
-  downloadCount: number;
   isActive: boolean;
   isFeatured: boolean;
   isApproved: boolean;
@@ -110,10 +109,6 @@ const productSchema = new Schema<IProduct>(
     downloadLimit: {
       type: Number,
       default: -1,
-    },
-    downloadCount: {
-      type: Number,
-      default: 0,
     },
     isActive: {
       type: Boolean,
