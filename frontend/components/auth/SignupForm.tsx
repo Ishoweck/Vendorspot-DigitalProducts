@@ -72,8 +72,8 @@ export default function SignupForm() {
   };
 
   const validatePhone = (phone: string): string => {
-    if (phone && !/^\+?[1-9]\d{1,14}$/.test(phone)) {
-      return "Please enter a valid phone number";
+    if (phone && !/^(0|\+234)[789][01]\d{8}$/.test(phone)) {
+      return "Please enter a valid Nigerian phone number";
     }
     return "";
   };
@@ -202,16 +202,15 @@ export default function SignupForm() {
                   required
                   value={formData.firstName}
                   onChange={handleChange}
+                  onBlur={(e) => {
+                    const error = validateName(e.target.value);
+                    if (error) toast.error(error);
+                  }}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent ${
                     errors.firstName ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="First name"
                 />
-                {errors.firstName && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {errors.firstName}
-                  </p>
-                )}
               </div>
             </div>
 
@@ -256,14 +255,15 @@ export default function SignupForm() {
                 required
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={(e) => {
+                  const error = validateEmail(e.target.value);
+                  if (error) toast.error(error);
+                }}
                 className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent ${
                   errors.email ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter your email"
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-              )}
             </div>
           </div>
 
