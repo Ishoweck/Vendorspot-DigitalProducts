@@ -150,10 +150,18 @@ export const getProductReviews = asyncHandler(
       { $group: { _id: null, average: { $avg: "$rating" } } },
     ]);
 
+    const currentUserId = (req.user as any)?._id?.toString();
+    const reviewsWithHelpful = reviews.map((r: any) => ({
+      ...r.toObject(),
+      isHelpful: currentUserId
+        ? (r.helpfulBy || []).some((id: any) => id.toString() === currentUserId)
+        : false,
+    }));
+
     res.status(200).json({
       success: true,
       data: {
-        reviews,
+        reviews: reviewsWithHelpful,
         stats: {
           total,
           averageRating: avgRating[0]?.average || 0,
@@ -311,18 +319,36 @@ export const respondToReview = asyncHandler(
 
 export const markReviewHelpful = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as any;
     const review = await Review.findById(req.params.id);
     if (!review) {
       return next(createError("Review not found", 404));
     }
 
-    review.helpfulCount += 1;
+    const userIdStr = user._id.toString();
+    const hasVoted = (review.helpfulBy || []).some(
+      (id: any) => id.toString() === userIdStr
+    );
+
+    if (hasVoted) {
+      review.helpfulBy = (review.helpfulBy || []).filter(
+        (id: any) => id.toString() !== userIdStr
+      ) as any;
+      review.helpfulCount = Math.max(0, (review.helpfulCount || 0) - 1);
+    } else {
+      review.helpfulBy = [...(review.helpfulBy || []), user._id] as any;
+      review.helpfulCount = (review.helpfulCount || 0) + 1;
+    }
+
     await review.save();
 
     res.status(200).json({
       success: true,
-      message: "Review marked as helpful",
-      data: { helpfulCount: review.helpfulCount },
+      message: hasVoted ? "Removed helpful vote" : "Marked as helpful",
+      data: {
+        helpfulCount: review.helpfulCount,
+        isHelpful: !hasVoted,
+      },
     });
   }
 );

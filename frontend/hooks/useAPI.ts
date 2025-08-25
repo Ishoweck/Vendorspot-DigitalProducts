@@ -778,6 +778,32 @@ export const useDeleteReview = () => {
   });
 };
 
+export const useMarkReviewHelpful = (productId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation((id: string) => reviewsAPI.markHelpful(id), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["reviews", productId]);
+    },
+  });
+};
+
+export const useReportReview = (productId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ id, reason }: { id: string; reason: string }) =>
+      reviewsAPI.report(id, { reason }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["reviews", productId]);
+        toast.success("Review reported");
+      },
+      onError: (error: any) => {
+        toast.error(error.response?.data?.message || "Failed to report review");
+      },
+    }
+  );
+};
+
 // =====================================
 // PAYMENT HOOKS
 // =====================================

@@ -13,6 +13,7 @@ export interface IReview extends Document {
   status: "PENDING" | "APPROVED" | "REJECTED" | "HIDDEN";
   moderationReason?: string;
   helpfulCount: number;
+  helpfulBy?: mongoose.Types.ObjectId[];
   reportCount: number;
   response?: {
     message: string;
@@ -73,6 +74,7 @@ const reviewSchema = new Schema<IReview>({
     type: Number,
     default: 0
   },
+  helpfulBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
   reportCount: {
     type: Number,
     default: 0

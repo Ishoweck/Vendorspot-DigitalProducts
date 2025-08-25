@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { Star, MessageCircle, ThumbsUp, Flag } from "lucide-react";
-import { useProductReviews } from "@/hooks/useAPI";
+import {
+  useProductReviews,
+  useMarkReviewHelpful,
+  useReportReview,
+} from "@/hooks/useAPI";
 import { formatDistanceToNow } from "date-fns";
 
 interface ReviewsSectionProps {
@@ -16,25 +20,15 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
     reviewId: string;
   }>({ isOpen: false, reviewId: "" });
   const { data: reviewsData, isLoading } = useProductReviews(productId);
+  const markHelpful = useMarkReviewHelpful(productId);
+  const reportReview = useReportReview(productId);
 
   const reviews = reviewsData?.data?.data?.reviews || [];
   const stats = reviewsData?.data?.data?.stats;
   const pagination = reviewsData?.data?.pagination;
 
   const handleHelpfulClick = async (reviewId: string) => {
-    try {
-      const response = await fetch(`/api/reviews/${reviewId}/helpful`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error("Failed to mark review as helpful:", error);
-    }
+    markHelpful.mutate(reviewId);
   };
 
   const handleReportClick = (reviewId: string) => {
@@ -296,25 +290,17 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
                 Cancel
               </button>
               <button
-                onClick={async () => {
-                  try {
-                    const response = await fetch(
-                      `/api/reviews/${reportModal.reviewId}/report`,
-                      {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          reason: "Inappropriate content",
-                        }),
-                      }
-                    );
-                    if (response.ok) {
-                      setReportModal({ isOpen: false, reviewId: "" });
-                      window.location.reload();
+                onClick={() => {
+                  reportReview.mutate(
+                    {
+                      id: reportModal.reviewId,
+                      reason: "Inappropriate content",
+                    },
+                    {
+                      onSuccess: () =>
+                        setReportModal({ isOpen: false, reviewId: "" }),
                     }
-                  } catch (error) {
-                    console.error("Failed to report review:", error);
-                  }
+                  );
                 }}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
