@@ -577,23 +577,28 @@ export const downloadProductFile = asyncHandler(
         );
       }
 
-      if (
-        orderItem.licenseExpiration &&
-        orderItem.licenseExpiration < new Date()
-      ) {
-        await logDownloadActivity(
-          user._id,
-          productId,
-          orderId as string,
-          "FAILED",
-          {
-            reason: "License expired",
-            licenseExpiration: orderItem.licenseExpiration,
-            ip: req.ip,
-            userAgent: req.get("User-Agent"),
-          }
+      if (product.licenseDuration && order.deliveredAt) {
+        const licenseExpiryDate = new Date(
+          order.deliveredAt.getTime() +
+            product.licenseDuration * 24 * 60 * 60 * 1000
         );
-        return next(createError("License has expired", 403));
+        if (licenseExpiryDate < new Date()) {
+          await logDownloadActivity(
+            user._id,
+            productId,
+            orderId as string,
+            "FAILED",
+            {
+              reason: "License expired",
+              licenseExpiryDate: licenseExpiryDate,
+              licenseDuration: product.licenseDuration,
+              deliveredAt: order.deliveredAt,
+              ip: req.ip,
+              userAgent: req.get("User-Agent"),
+            }
+          );
+          return next(createError("License has expired", 403));
+        }
       }
 
       if (!product.fileUrl) {
@@ -613,16 +618,22 @@ export const downloadProductFile = asyncHandler(
         .replace(/\s+/g, "_")
         .trim()}.${fileExtension}`;
 
-      const publicId = cloudinaryService.extractPublicId(product.fileUrl);
+      const publicId = extractPublicIdFromCloudinaryUrl(product.fileUrl);
       if (!publicId) {
+        console.error("Failed to extract public ID from URL:", product.fileUrl);
         return next(createError("Invalid file URL", 500));
       }
+
+      console.log("Extracted public ID:", publicId);
+      console.log("Safe filename:", safeFilename);
 
       const downloadUrl = cloudinary.url(publicId, {
         resource_type: "raw",
         flags: "attachment",
         transformation: [{ flags: `attachment:${safeFilename}` }],
       });
+
+      console.log("Generated download URL:", downloadUrl);
 
       await Order.updateOne(
         {
@@ -642,6 +653,8 @@ export const downloadProductFile = asyncHandler(
         "INITIATED",
         {
           filename: safeFilename,
+          publicId: publicId,
+          originalUrl: product.fileUrl,
           downloadCount: (orderItem.downloadCount || 0) + 1,
           ip: req.ip,
           userAgent: req.get("User-Agent"),
@@ -678,3 +691,33 @@ export const downloadProductFile = asyncHandler(
     }
   }
 );
+
+function extractPublicIdFromCloudinaryUrl(url: string): string | null {
+  try {
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname
+      .split("/")
+      .filter((part) => part.length > 0);
+
+    const uploadIndex = pathParts.findIndex((part) => part === "upload");
+    if (uploadIndex === -1) {
+      console.error("Could not find 'upload' in URL path:", url);
+      return null;
+    }
+
+    const afterUpload = pathParts.slice(uploadIndex + 1);
+
+    const startIndex = afterUpload[0] && afterUpload[0].match(/^v\d+$/) ? 1 : 0;
+
+    const publicId = afterUpload.slice(startIndex).join("/");
+
+    const lastDotIndex = publicId.lastIndexOf(".");
+    const finalPublicId =
+      lastDotIndex > 0 ? publicId.substring(0, lastDotIndex) : publicId;
+
+    return finalPublicId || null;
+  } catch (error) {
+    console.error("Error extracting public ID:", error);
+    return null;
+  }
+}

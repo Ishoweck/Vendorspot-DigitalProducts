@@ -10,6 +10,7 @@ export interface IOrderItem {
   downloadUrl?: string;
   downloadCount: number;
   downloadLimit: number;
+  lastDownloadAt?: Date;
 }
 
 export interface IShippingAddress {
@@ -94,6 +95,7 @@ const orderItemSchema = new Schema<IOrderItem>({
     default: -1,
     min: -1,
   },
+  lastDownloadAt: Date,
 });
 
 const shippingAddressSchema = new Schema<IShippingAddress>({

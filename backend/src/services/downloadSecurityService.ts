@@ -55,13 +55,17 @@ export const accessFileWithToken = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { token } = req.params;
 
+    if (!token) {
+      return next(createError("Token is required", 400));
+    }
+
     const tokenData = validateDownloadToken(token);
     if (!tokenData) {
       return next(createError("Invalid or expired download token", 403));
     }
 
     const product = await Product.findById(tokenData.productId);
-    if (!product) {
+    if (!product || !product.fileUrl) {
       return next(createError("Product not found", 404));
     }
 
