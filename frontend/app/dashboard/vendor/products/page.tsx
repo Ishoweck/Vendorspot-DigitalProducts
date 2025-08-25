@@ -7,7 +7,7 @@ import { useVendorProducts, useDeleteProduct } from "@/hooks/useAPI";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import AuthWrapper from "@/components/auth/AuthWrapper";
-import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 import Pagination from "@/components/ui/Pagination";
 import { useSocket } from "@/hooks/useSocket";
 

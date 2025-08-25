@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import UserSidebar from "@/components/dashboard/UserSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
-import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 import AuthWrapper from "@/components/auth/AuthWrapper";
 import {
   useUserProfile,

@@ -319,6 +319,25 @@ export const respondToReview = asyncHandler(
       console.log("Socket emit error:", error);
     }
 
+    try {
+      await createNotification({
+        userId: String(review.userId),
+        type: "REVIEW_RESPONSE",
+        title: "Vendor Responded to Your Review",
+        message: `${vendor.businessName} responded to your review: "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"`,
+        category: "REVIEW",
+        priority: "NORMAL",
+        channels: ["IN_APP", "EMAIL"],
+        data: {
+          reviewId: review._id,
+          vendorName: vendor.businessName,
+          message,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to create review response notification:", error);
+    }
+
     res.status(200).json({
       success: true,
       message: "Response added successfully",

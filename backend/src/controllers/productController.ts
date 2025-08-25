@@ -9,6 +9,7 @@ import { Order } from "@/models/Order";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
+import { createNotification } from "./NotificationController";
 import {
   generateDownloadToken,
   logDownloadActivity,
@@ -343,6 +344,25 @@ export const createProduct = asyncHandler(
       console.log("Socket emit error:", error);
     }
 
+    try {
+      await createNotification({
+        userId: vendor.userId.toString(),
+        type: "PRODUCT_UPDATED",
+        title: "Product Created Successfully",
+        message: `Your product "${product.name}" has been created and is pending approval.`,
+        category: "PRODUCT",
+        priority: "NORMAL",
+        channels: ["IN_APP"],
+        data: {
+          productId: product._id,
+          productName: product.name,
+          status: "PENDING",
+        },
+      });
+    } catch (error) {
+      console.error("Failed to create product notification:", error);
+    }
+
     res.status(201).json({
       success: true,
       message: "Product created successfully",
@@ -507,6 +527,25 @@ export const updateProduct = asyncHandler(
       console.log("Socket emit error:", error);
     }
 
+    try {
+      await createNotification({
+        userId: vendor.userId.toString(),
+        type: "PRODUCT_UPDATED",
+        title: "Product Updated Successfully",
+        message: `Your product "${product.name}" has been updated successfully.`,
+        category: "PRODUCT",
+        priority: "NORMAL",
+        channels: ["IN_APP"],
+        data: {
+          productId: product._id,
+          productName: product.name,
+          status: product.isApproved ? "APPROVED" : "PENDING",
+        },
+      });
+    } catch (error) {
+      console.error("Failed to create product update notification:", error);
+    }
+
     res.status(200).json({
       success: true,
       message: "Product updated successfully",
@@ -563,6 +602,24 @@ export const deleteProduct = asyncHandler(
       });
     } catch (error) {
       console.log("Socket emit error:", error);
+    }
+
+    try {
+      await createNotification({
+        userId: vendor.userId.toString(),
+        type: "PRODUCT_DISCONTINUED",
+        title: "Product Deleted Successfully",
+        message: `Your product "${product.name}" has been deleted successfully.`,
+        category: "PRODUCT",
+        priority: "NORMAL",
+        channels: ["IN_APP"],
+        data: {
+          productId: product._id,
+          productName: product.name,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to create product deletion notification:", error);
     }
 
     res.status(200).json({

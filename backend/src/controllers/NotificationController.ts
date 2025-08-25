@@ -18,17 +18,35 @@ export const createNotification = async (data: {
 }) => {
   try {
     const user = await User.findById(data.userId);
-    if (!user) return;
+    if (!user) return null;
 
+    const isVendor = user.role === "VENDOR";
+    const maxNotifications = isVendor ? 300 : 100;
+    
     const existingNotifications = await Notification.countDocuments({
       userId: data.userId,
     });
-    if (existingNotifications >= 100) {
-      const oldestNotification = await Notification.findOne({
+
+    if (existingNotifications >= maxNotifications) {
+      const oldestReadNotifications = await Notification.find({
         userId: data.userId,
-      }).sort({ createdAt: 1 });
-      if (oldestNotification) {
-        await Notification.findByIdAndDelete(oldestNotification._id);
+        isRead: true,
+      })
+        .sort({ createdAt: 1 })
+        .limit(existingNotifications - maxNotifications + 1);
+
+      for (const notification of oldestReadNotifications) {
+        await Notification.findByIdAndDelete(notification._id);
+      }
+    }
+
+    let finalExpiresAt = data.expiresAt;
+    if (data.category === "PROMOTION" || data.category === "SYSTEM") {
+      if (!finalExpiresAt) {
+        const expiryDays = data.category === "PROMOTION" ? 30 : 60;
+        finalExpiresAt = new Date(
+          Date.now() + expiryDays * 24 * 60 * 60 * 1000
+        );
       }
     }
 
@@ -41,8 +59,7 @@ export const createNotification = async (data: {
       priority: data.priority || "NORMAL",
       channels: data.channels || ["IN_APP"],
       data: data.data,
-      expiresAt:
-        data.expiresAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      expiresAt: finalExpiresAt,
     });
 
     if (data.channels?.includes("IN_APP")) {

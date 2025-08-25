@@ -123,6 +123,29 @@ export const createOrder = asyncHandler(
       console.error("Failed to create order notification:", error);
     }
 
+    for (const item of orderItems) {
+      try {
+        await createNotification({
+          userId: item.vendorId.toString(),
+          type: "ORDER_CREATED",
+          title: "New Order Received",
+          message: `New order #${order.orderNumber} for "${item.name}" has been placed`,
+          category: "ORDER",
+          priority: "HIGH",
+          channels: ["IN_APP", "EMAIL"],
+          data: {
+            orderId: order._id,
+            orderNumber: order.orderNumber,
+            productName: item.name,
+            quantity: item.quantity,
+            price: item.price,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to create vendor order notification:", error);
+      }
+    }
+
     res.status(201).json({
       success: true,
       message: "Order created successfully",
@@ -328,6 +351,26 @@ export const updateOrderStatus = asyncHandler(
     await order.save();
 
     try {
+      await createNotification({
+        userId: order.userId.toString(),
+        type: status === "DELIVERED" ? "ORDER_DELIVERED" : "ORDER_CONFIRMED",
+        title: status === "DELIVERED" ? "Order Delivered" : "Order Confirmed",
+        message: `Your order #${order.orderNumber} has been ${status.toLowerCase()}.`,
+        category: "ORDER",
+        priority: "NORMAL",
+        channels: ["IN_APP", "EMAIL"],
+        data: {
+          orderId: order._id,
+          orderNumber: order.orderNumber,
+          status: order.status,
+          trackingNumber: order.trackingNumber,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to create order status notification:", error);
+    }
+
+    try {
       const io = SocketService.getIO();
       io.to(order.userId.toString()).emit("order:status_updated", {
         orderId: order._id,
@@ -382,6 +425,25 @@ export const cancelOrder = asyncHandler(
         order.refundAmount = order.total;
         await order.save();
       }
+    }
+
+    try {
+      await createNotification({
+        userId: order.userId.toString(),
+        type: "ORDER_CANCELLED",
+        title: "Order Cancelled",
+        message: `Your order #${order.orderNumber} has been cancelled. Reason: ${reason}`,
+        category: "ORDER",
+        priority: "HIGH",
+        channels: ["IN_APP", "EMAIL"],
+        data: {
+          orderId: order._id,
+          orderNumber: order.orderNumber,
+          reason: reason,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to create order cancellation notification:", error);
     }
 
     try {

@@ -7,18 +7,34 @@ export interface INotification extends Document {
     | "ORDER_CONFIRMED"
     | "ORDER_SHIPPED"
     | "ORDER_DELIVERED"
+    | "ORDER_CANCELLED"
+    | "ORDER_REFUNDED"
     | "PAYMENT_SUCCESS"
     | "PAYMENT_FAILED"
+    | "PAYMENT_REFUNDED"
+    | "PAYMENT_PENDING"
     | "PRODUCT_APPROVED"
     | "PRODUCT_REJECTED"
+    | "PRODUCT_UPDATED"
+    | "PRODUCT_DISCONTINUED"
     | "REVIEW_ADDED"
     | "REVIEW_HELPFUL"
+    | "REVIEW_REPORTED"
+    | "REVIEW_RESPONSE"
     | "VENDOR_APPROVED"
+    | "VENDOR_REJECTED"
+    | "VENDOR_SUSPENDED"
     | "SYSTEM_ANNOUNCEMENT"
     | "PROMOTION"
     | "WELCOME"
     | "PROFILE_UPDATED"
-    | "PASSWORD_CHANGED";
+    | "PASSWORD_CHANGED"
+    | "ACCOUNT_VERIFIED"
+    | "SECURITY_ALERT"
+    | "PRICE_DROP"
+    | "STOCK_ALERT"
+    | "NEW_FEATURE"
+    | "MAINTENANCE_NOTICE";
   title: string;
   message: string;
   data?: any;
@@ -30,7 +46,9 @@ export interface INotification extends Document {
     | "REVIEW"
     | "ACCOUNT"
     | "SYSTEM"
-    | "PROMOTION";
+    | "PROMOTION"
+    | "SECURITY"
+    | "FEATURE";
   priority: "LOW" | "NORMAL" | "HIGH" | "URGENT";
   channels: ("EMAIL" | "IN_APP" | "PUSH" | "SMS")[];
   emailSent?: boolean;
@@ -56,18 +74,34 @@ const notificationSchema = new Schema<INotification>(
         "ORDER_CONFIRMED",
         "ORDER_SHIPPED",
         "ORDER_DELIVERED",
+        "ORDER_CANCELLED",
+        "ORDER_REFUNDED",
         "PAYMENT_SUCCESS",
         "PAYMENT_FAILED",
+        "PAYMENT_REFUNDED",
+        "PAYMENT_PENDING",
         "PRODUCT_APPROVED",
         "PRODUCT_REJECTED",
+        "PRODUCT_UPDATED",
+        "PRODUCT_DISCONTINUED",
         "REVIEW_ADDED",
         "REVIEW_HELPFUL",
+        "REVIEW_REPORTED",
+        "REVIEW_RESPONSE",
         "VENDOR_APPROVED",
+        "VENDOR_REJECTED",
+        "VENDOR_SUSPENDED",
         "SYSTEM_ANNOUNCEMENT",
         "PROMOTION",
         "WELCOME",
         "PROFILE_UPDATED",
         "PASSWORD_CHANGED",
+        "ACCOUNT_VERIFIED",
+        "SECURITY_ALERT",
+        "PRICE_DROP",
+        "STOCK_ALERT",
+        "NEW_FEATURE",
+        "MAINTENANCE_NOTICE",
       ],
       required: true,
     },
@@ -96,6 +130,8 @@ const notificationSchema = new Schema<INotification>(
         "ACCOUNT",
         "SYSTEM",
         "PROMOTION",
+        "SECURITY",
+        "FEATURE",
       ],
       required: true,
     },
@@ -137,6 +173,9 @@ notificationSchema.index({ isRead: 1 });
 notificationSchema.index({ priority: 1 });
 notificationSchema.index({ createdAt: -1 });
 notificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+notificationSchema.index({ userId: 1, isRead: 1 });
+notificationSchema.index({ userId: 1, category: 1 });
+notificationSchema.index({ userId: 1, priority: 1 });
 
 export const Notification = mongoose.model<INotification>(
   "Notification",

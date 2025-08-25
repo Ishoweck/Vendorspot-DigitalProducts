@@ -171,6 +171,26 @@ const handleFailedPayment = async (data: any) => {
     await payment.save();
 
     try {
+      await createNotification({
+        userId: payment.userId.toString(),
+        type: "PAYMENT_FAILED",
+        title: "Payment Failed",
+        message: `Your payment of ₦${payment.amount.toLocaleString()} failed. Reason: ${data.gateway_response}`,
+        category: "PAYMENT",
+        priority: "HIGH",
+        channels: ["IN_APP", "EMAIL"],
+        data: {
+          orderId: payment.orderId,
+          reference: data.reference,
+          amount: payment.amount,
+          failureReason: data.gateway_response,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to create payment failure notification:", error);
+    }
+
+    try {
       const io = SocketService.getIO();
       io.to(payment.userId.toString()).emit("payment:failed", {
         orderId: payment.orderId,

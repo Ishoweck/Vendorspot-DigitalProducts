@@ -700,8 +700,20 @@ export const useCategories = () => {
 // NOTIFICATIONS HOOKS
 // =====================================
 
-export const useNotifications = () => {
-  return useQuery(["notifications"], notificationsAPI.getAll);
+export const useNotifications = (params?: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  isRead?: boolean;
+  priority?: string;
+}) => {
+  return useQuery(
+    ["notifications", params],
+    () => notificationsAPI.getAll(params),
+    {
+      keepPreviousData: true,
+    }
+  );
 };
 
 export const useMarkNotificationAsRead = () => {
@@ -712,6 +724,106 @@ export const useMarkNotificationAsRead = () => {
       queryClient.invalidateQueries(["notifications"]);
     },
   });
+};
+
+export const useMarkAllNotificationsAsRead = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(notificationsAPI.markAllAsRead, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notifications"]);
+      toast.success("All notifications marked as read");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to mark all notifications as read"
+      );
+    },
+  });
+};
+
+export const useDeleteNotification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation((id: string) => notificationsAPI.delete(id), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notifications"]);
+      toast.success("Notification deleted successfully");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Failed to delete notification"
+      );
+    },
+  });
+};
+
+export const useClearAllNotifications = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(notificationsAPI.clearAll, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["notifications"]);
+      toast.success("All notifications cleared successfully");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Failed to clear notifications"
+      );
+    },
+  });
+};
+
+export const useNotificationSettings = () => {
+  return useQuery(["notification-settings"], notificationsAPI.getSettings);
+};
+
+export const useUpdateNotificationSettings = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (settings: any) => notificationsAPI.updateSettings(settings),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["notification-settings"]);
+        toast.success("Notification settings updated successfully");
+      },
+      onError: (error: any) => {
+        toast.error(
+          error.response?.data?.message ||
+            "Failed to update notification settings"
+        );
+      },
+    }
+  );
+};
+
+export const useSendBulkNotification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (data: {
+      userIds: string[];
+      type: string;
+      title: string;
+      message: string;
+      category: string;
+      priority?: string;
+      channels?: string[];
+    }) => notificationsAPI.sendBulk(data),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["notifications"]);
+        toast.success("Bulk notifications sent successfully");
+      },
+      onError: (error: any) => {
+        toast.error(
+          error.response?.data?.message || "Failed to send bulk notifications"
+        );
+      },
+    }
+  );
 };
 
 // =====================================

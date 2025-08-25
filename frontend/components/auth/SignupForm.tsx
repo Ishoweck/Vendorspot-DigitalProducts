@@ -23,10 +23,91 @@ export default function SignupForm() {
     agreeToTerms: false,
   });
 
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    password: "",
+    businessName: "",
+  });
+
   const registerMutation = useRegister();
+
+  const validateName = (name: string): string => {
+    if (!/^[a-zA-Z\s-]+$/.test(name)) {
+      return "Name should only contain letters, spaces, and hyphens";
+    }
+    if (name.length < 2) {
+      return "Name should be at least 2 characters long";
+    }
+    return "";
+  };
+
+  const validateEmail = (email: string): string => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Please enter a valid email address";
+    }
+    return "";
+  };
+
+  const validatePassword = (password: string): string => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long";
+    }
+    if (!/[A-Z]/.test(password)) {
+      return "Password must contain at least one uppercase letter";
+    }
+    if (!/[a-z]/.test(password)) {
+      return "Password must contain at least one lowercase letter";
+    }
+    if (!/[0-9]/.test(password)) {
+      return "Password must contain at least one number";
+    }
+    if (!/[!@#$%^&*]/.test(password)) {
+      return "Password must contain at least one special character (!@#$%^&*)";
+    }
+    return "";
+  };
+
+  const validatePhone = (phone: string): string => {
+    if (phone && !/^\+?[1-9]\d{1,14}$/.test(phone)) {
+      return "Please enter a valid phone number";
+    }
+    return "";
+  };
+
+  const validateBusinessName = (name: string): string => {
+    if (name.length < 3) {
+      return "Business name should be at least 3 characters long";
+    }
+    if (!/^[a-zA-Z0-9\s-&]+$/.test(name)) {
+      return "Business name can only contain letters, numbers, spaces, hyphens, and &";
+    }
+    return "";
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const newErrors = {
+      firstName: validateName(formData.firstName),
+      lastName: validateName(formData.lastName),
+      email: validateEmail(formData.email),
+      password: validatePassword(formData.password),
+      phone: validatePhone(formData.phone),
+      businessName: formData.isVendor
+        ? validateBusinessName(formData.businessName)
+        : "",
+    };
+
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).some((error) => error !== "")) {
+      toast.error("Please fix the validation errors before submitting");
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords don't match");
@@ -55,6 +136,34 @@ export default function SignupForm() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+
+    if (type !== "checkbox") {
+      switch (name) {
+        case "firstName":
+        case "lastName":
+          const nameError = validateName(value);
+          setErrors((prev) => ({ ...prev, [name]: nameError }));
+          break;
+        case "email":
+          const emailError = validateEmail(value);
+          setErrors((prev) => ({ ...prev, [name]: emailError }));
+          break;
+        case "password":
+          const passwordError = validatePassword(value);
+          setErrors((prev) => ({ ...prev, [name]: passwordError }));
+          break;
+        case "phone":
+          const phoneError = validatePhone(value);
+          setErrors((prev) => ({ ...prev, [name]: phoneError }));
+          break;
+        case "businessName":
+          const businessError = validateBusinessName(value);
+          setErrors((prev) => ({ ...prev, [name]: businessError }));
+          break;
+      }
+    }
   };
 
   useEffect(() => {
@@ -93,9 +202,16 @@ export default function SignupForm() {
                   required
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent ${
+                    errors.firstName ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder="First name"
                 />
+                {errors.firstName && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.firstName}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -113,9 +229,14 @@ export default function SignupForm() {
                 required
                 value={formData.lastName}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent ${
+                  errors.lastName ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="Last name"
               />
+              {errors.lastName && (
+                <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>
+              )}
             </div>
           </div>
 
@@ -135,9 +256,14 @@ export default function SignupForm() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="Enter your email"
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+              )}
             </div>
           </div>
 
@@ -154,9 +280,14 @@ export default function SignupForm() {
               type="tel"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent ${
+                errors.phone ? "border-red-500" : "border-gray-300"
+              }`}
               placeholder="Enter your phone number"
             />
+            {errors.phone && (
+              <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+            )}
           </div>
 
           <div>
@@ -175,7 +306,9 @@ export default function SignupForm() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+                className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="Create password"
               />
               <button
@@ -190,6 +323,9 @@ export default function SignupForm() {
                 )}
               </button>
             </div>
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+            )}
           </div>
 
           <div>
@@ -257,9 +393,16 @@ export default function SignupForm() {
                 required={formData.isVendor}
                 value={formData.businessName}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent"
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D7195B] focus:border-transparent ${
+                  errors.businessName ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="Enter your business name"
               />
+              {errors.businessName && (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.businessName}
+                </p>
+              )}
             </div>
           )}
 

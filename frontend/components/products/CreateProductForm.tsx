@@ -8,7 +8,7 @@ import BasicInfoStep from "./steps/BasicInfoStep";
 import FilesStep from "./steps/FilesStep";
 import ReviewStep from "./steps/ReviewStep";
 import { useProductFormStore } from "@/stores/productFormStore";
-import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 
 const steps = [
   { id: 1, name: "Basic Info", component: BasicInfoStep },

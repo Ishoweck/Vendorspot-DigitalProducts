@@ -7,6 +7,7 @@ import { User } from "@/models/User";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
 import config from "@/config/config";
+import { createNotification } from "./NotificationController";
 
 const generatePaymentReference = (): string => {
   const timestamp = Date.now().toString();
@@ -325,6 +326,26 @@ export const refundPayment = asyncHandler(
         });
       } catch (error) {
         console.log("Socket emit error:", error);
+      }
+
+      try {
+        await createNotification({
+          userId: payment.userId.toString(),
+          type: "PAYMENT_REFUNDED",
+          title: "Payment Refunded",
+          message: `Your payment of ₦${refundAmount.toLocaleString()} has been refunded. Reason: ${reason}`,
+          category: "PAYMENT",
+          priority: "HIGH",
+          channels: ["IN_APP", "EMAIL"],
+          data: {
+            orderId: payment.orderId,
+            reference: payment.reference,
+            amount: refundAmount,
+            reason: reason,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to create payment refund notification:", error);
       }
 
       res.status(200).json({

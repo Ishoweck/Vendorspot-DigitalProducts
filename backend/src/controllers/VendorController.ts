@@ -6,6 +6,7 @@ import { Order } from "@/models/Order";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
+import { createNotification } from "./NotificationController";
 
 export const createVendorProfile = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -413,6 +414,34 @@ export const verifyVendor = asyncHandler(
       await Product.updateMany(
         { vendorId: vendor._id },
         { isApproved: true, approvalStatus: "APPROVED" }
+      );
+    }
+
+    try {
+      await createNotification({
+        userId: vendor.userId.toString(),
+        type: status === "APPROVED" ? "VENDOR_APPROVED" : "VENDOR_REJECTED",
+        title:
+          status === "APPROVED"
+            ? "Vendor Account Approved"
+            : "Vendor Account Rejected",
+        message:
+          status === "APPROVED"
+            ? "Congratulations! Your vendor account has been approved. You can now start selling your digital products."
+            : `Your vendor account application has been rejected. Reason: ${rejectionReason || "Please contact support for details."}`,
+        category: "ACCOUNT",
+        priority: "HIGH",
+        channels: ["IN_APP", "EMAIL"],
+        data: {
+          vendorId: vendor._id,
+          status: status,
+          reason: rejectionReason,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Failed to create vendor verification notification:",
+        error
       );
     }
 
