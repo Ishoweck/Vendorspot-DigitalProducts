@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import QueryProvider from "@/components/providers/QueryProvider";
+import ScrollToTop from "@/components/ui/ScrollToTop";
 import "./globals.css";
 
 const inter = Inter({
@@ -105,6 +106,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <QueryProvider>
           {children}
+          <ScrollToTop />
           <Toaster
             position="top-right"
             toastOptions={{
@@ -112,6 +114,20 @@ export default function RootLayout({
               style: {
                 background: "#363636",
                 color: "#fff",
+              },
+              success: {
+                duration: 3000,
+                iconTheme: {
+                  primary: "#10B981",
+                  secondary: "#fff",
+                },
+              },
+              error: {
+                duration: 5000,
+                iconTheme: {
+                  primary: "#EF4444",
+                  secondary: "#fff",
+                },
               },
             }}
           />

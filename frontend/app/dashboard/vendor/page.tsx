@@ -1,6 +1,10 @@
 "use client";
 
-import { useUserProfile } from "@/hooks/useAPI";
+import {
+  useUserProfile,
+  useVendorDashboard,
+  useVendorProfile,
+} from "@/hooks/useAPI";
 import {
   Mail,
   TrendingUp,
@@ -17,7 +21,11 @@ import { useSocket } from "@/hooks/useSocket";
 
 function VendorDashboardContent() {
   const { data: userProfile } = useUserProfile();
+  const { data: dashboardData } = useVendorDashboard();
+  const { data: vendorProfile } = useVendorProfile();
   const user = userProfile?.data?.data;
+  const vendor = vendorProfile?.data?.data;
+  const stats = dashboardData?.data?.data?.stats;
   useSocket();
 
   return (
@@ -57,7 +65,7 @@ function VendorDashboardContent() {
                     <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <p className="text-xl md:text-3xl font-bold text-white">
-                    ₦125,450
+                    ₦{stats?.totalRevenue?.toLocaleString() || "0"}
                   </p>
                 </div>
 
@@ -68,7 +76,9 @@ function VendorDashboardContent() {
                     </h3>
                     <ShoppingCart className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
-                  <p className="text-xl md:text-3xl font-bold text-white">45</p>
+                  <p className="text-xl md:text-3xl font-bold text-white">
+                    {stats?.totalOrders || 0}
+                  </p>
                 </div>
 
                 <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-3 md:p-6 border border-gray-200">
@@ -78,7 +88,9 @@ function VendorDashboardContent() {
                     </h3>
                     <Package className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
-                  <p className="text-xl md:text-3xl font-bold text-white">15</p>
+                  <p className="text-xl md:text-3xl font-bold text-white">
+                    {stats?.totalProducts || 0}
+                  </p>
                 </div>
 
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-3 md:p-6 border border-gray-200">
@@ -89,7 +101,7 @@ function VendorDashboardContent() {
                     <Star className="w-4 h-4 md:w-5 md:h-5 text-white" />
                   </div>
                   <p className="text-xl md:text-3xl font-bold text-white">
-                    4.8
+                    {stats?.rating?.toFixed(1) || "0.0"}
                   </p>
                 </div>
               </div>
@@ -126,7 +138,7 @@ function VendorDashboardContent() {
                   <div className="space-y-2">
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Business Name:</span>{" "}
-                      {user?.businessName || "Not set"}
+                      {vendor?.businessName || "Not set"}
                     </p>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Email:</span> {user?.email}

@@ -17,6 +17,7 @@ import {
   Settings,
   LogOut,
   Package,
+  Wallet,
 } from "lucide-react";
 import { useUserProfile, useLogout, useCategories } from "@/hooks/useAPI";
 import MobileSidebar from "./MobileSidebar";
@@ -269,12 +270,12 @@ export default function Header() {
                             <span>Products</span>
                           </Link>
                           <Link
-                            href="/dashboard/vendor/orders"
+                            href="/dashboard/vendor/wallet"
                             className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                             onClick={() => setIsUserDropdownOpen(false)}
                           >
-                            <ShoppingBag className="w-4 h-4" />
-                            <span>Orders</span>
+                            <Wallet className="w-4 h-4" />
+                            <span>Wallet</span>
                           </Link>
                           <Link
                             href="/dashboard/vendor/profile"

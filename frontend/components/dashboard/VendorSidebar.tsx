@@ -1,13 +1,15 @@
 "use client";
 
-import { useUserProfile } from "@/hooks/useAPI";
+import { useUserProfile, useVendorProfile } from "@/hooks/useAPI";
 import { Package, Bell, MapPin, Wallet, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export default function VendorSidebar() {
   const { data: userProfile } = useUserProfile();
+  const { data: vendorProfile } = useVendorProfile();
   const user = userProfile?.data?.data;
+  const vendor = vendorProfile?.data?.data;
   const pathname = usePathname();
 
   const getInitials = (firstName?: string, lastName?: string) => {
@@ -54,6 +56,26 @@ export default function VendorSidebar() {
         </h3>
         <p className="text-sm text-gray-600">{user?.email}</p>
         <p className="text-xs text-[#D7195B] font-medium mt-1">Vendor</p>
+        <div className="mt-2">
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${
+              vendor?.verificationStatus === "APPROVED"
+                ? "bg-green-100 text-green-800 hover:bg-green-200"
+                : vendor?.verificationStatus === "PENDING"
+                  ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                  : "bg-red-100 text-red-800 hover:bg-red-200"
+            }`}
+            onClick={() =>
+              (window.location.href = "/dashboard/vendor/profile#verification")
+            }
+          >
+            {vendor?.verificationStatus === "APPROVED"
+              ? "✓ Verified"
+              : vendor?.verificationStatus === "PENDING"
+                ? "⏳ Pending"
+                : "❌ Rejected"}
+          </span>
+        </div>
       </div>
 
       <nav className="space-y-2">
@@ -66,7 +88,9 @@ export default function VendorSidebar() {
               key={item.href}
               href={item.href}
               className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
-                isActive ? "text-[#D7195B] font-semibold" : "hover:bg-gray-100 text-gray-900"
+                isActive
+                  ? "text-[#D7195B] font-semibold"
+                  : "hover:bg-gray-100 text-gray-900"
               }`}
             >
               <Icon

@@ -3,6 +3,7 @@ import { Vendor } from "@/models/Vendor";
 import { User } from "@/models/User";
 import { Product } from "@/models/Product";
 import { Order } from "@/models/Order";
+import { Review } from "@/models/Review";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
@@ -225,6 +226,43 @@ export const getVendorDashboard = asyncHandler(
       },
     ]);
 
+    const vendorRating = await Review.aggregate([
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      {
+        $match: {
+          "product.vendorId": vendor._id,
+          status: "APPROVED",
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          average: { $avg: "$rating" },
+          total: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const calculatedRating = vendorRating[0]?.average
+      ? Math.round(vendorRating[0].average * 10) / 10
+      : 0;
+    const totalReviews = vendorRating[0]?.total || 0;
+
+    await Vendor.findByIdAndUpdate(vendor._id, {
+      $set: {
+        rating: calculatedRating,
+        totalProducts: totalProducts,
+        totalSales: totalRevenue[0]?.total || 0,
+      },
+    });
+
     const recentOrders = await Order.find({
       "items.vendorId": vendor._id,
     })
@@ -250,7 +288,8 @@ export const getVendorDashboard = asyncHandler(
           completedOrders,
           pendingOrders,
           totalRevenue: totalRevenue[0]?.total || 0,
-          rating: vendor.rating,
+          rating: calculatedRating,
+          totalReviews,
         },
         recentOrders,
         topProducts,

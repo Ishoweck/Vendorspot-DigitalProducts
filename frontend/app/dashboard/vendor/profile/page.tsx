@@ -1,30 +1,34 @@
 "use client";
 
-import { User, Mail, Building, Calendar, Edit3, Save, X, Camera } from "lucide-react";
+import {
+  User,
+  Mail,
+  Building,
+  Calendar,
+  Edit3,
+  Save,
+  X,
+  Camera,
+  Copy,
+  CheckCircle,
+  Clock,
+  XCircle,
+} from "lucide-react";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import { useState, useRef } from "react";
-
-const mockVendorProfile = {
-  id: 1,
-  businessName: "TechVendor",
-  description: "Premium Digital Products",
-  email: "vendor@techvendor.com",
-  phone: "+234 123 456 7890",
-  website: "https://techvendor.com",
-  address: "123 Tech Street, Lagos, Nigeria",
-  joinedDate: "2024-01-01T00:00:00Z",
-  isVerified: true,
-  rating: 4.8,
-  totalSales: 125450,
-  totalProducts: 15,
-  profilePicture: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-};
+import { useUserProfile, useVendorProfile } from "@/hooks/useAPI";
+import { toast } from "react-hot-toast";
 
 export default function VendorProfilePage() {
-  const [profile, setProfile] = useState(mockVendorProfile);
+  const { data: userProfile } = useUserProfile();
+  const { data: vendorProfile } = useVendorProfile();
+  const user = userProfile?.data?.data;
+  const vendor = vendorProfile?.data?.data;
+  const [profile, setProfile] = useState(user || {});
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleEdit = (field: string, value: string) => {
@@ -33,7 +37,7 @@ export default function VendorProfilePage() {
   };
 
   const handleSave = (field: string) => {
-    setProfile((prev) => ({
+    setProfile((prev: any) => ({
       ...prev,
       [field]: editValue,
     }));
@@ -46,16 +50,73 @@ export default function VendorProfilePage() {
     setEditValue("");
   };
 
+  const handleCopyWebsite = () => {
+    const website =
+      vendor?.website ||
+      `${window.location.origin}/products?vendor=${vendor?.businessName}`;
+    navigator.clipboard.writeText(website);
+    setCopied(true);
+    toast.success("Website copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const getVerificationButton = () => {
+    const status = vendor?.verificationStatus || "PENDING";
+    const baseClasses =
+      "flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors";
+
+    switch (status) {
+      case "APPROVED":
+        return (
+          <button
+            className={`${baseClasses} bg-green-100 text-green-800 hover:bg-green-200`}
+          >
+            <CheckCircle className="w-4 h-4" />
+            <span>Verified</span>
+          </button>
+        );
+      case "PENDING":
+        return (
+          <button
+            className={`${baseClasses} bg-yellow-100 text-yellow-800 hover:bg-yellow-200`}
+          >
+            <Clock className="w-4 h-4" />
+            <span>Pending Verification</span>
+          </button>
+        );
+      case "REJECTED":
+        return (
+          <button
+            className={`${baseClasses} bg-red-100 text-red-800 hover:bg-red-200`}
+          >
+            <XCircle className="w-4 h-4" />
+            <span>Verification Rejected</span>
+          </button>
+        );
+      default:
+        return (
+          <button
+            className={`${baseClasses} bg-gray-100 text-gray-800 hover:bg-gray-200`}
+          >
+            <Clock className="w-4 h-4" />
+            <span>Pending Verification</span>
+          </button>
+        );
+    }
+  };
+
   const handleProfilePictureClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleProfilePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfile((prev) => ({
+        setProfile((prev: any) => ({
           ...prev,
           profilePicture: e.target?.result as string,
         }));
@@ -126,7 +187,12 @@ export default function VendorProfilePage() {
           <div className="flex gap-4 md:gap-8">
             <VendorSidebar />
             <main className="flex-1 bg-white rounded-lg shadow p-3 md:p-6">
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">Profile</h1>
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+                  Profile
+                </h1>
+                {getVerificationButton()}
+              </div>
 
               <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
@@ -158,11 +224,16 @@ export default function VendorProfilePage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 text-sm md:text-base">
-                      {profile.businessName}
+                      {vendor?.businessName || "Not set"}
                     </h3>
-                    <p className="text-gray-600 text-sm md:text-base">{profile.description}</p>
+                    <p className="text-gray-600 text-sm md:text-base">
+                      {vendor?.businessDescription || "No description"}
+                    </p>
                     <p className="text-sm text-gray-500">
-                      Joined {new Date(profile.joinedDate).toLocaleDateString()}
+                      Joined{" "}
+                      {new Date(
+                        user?.createdAt || Date.now()
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -171,35 +242,61 @@ export default function VendorProfilePage() {
                   {renderField(
                     "Business Name",
                     "businessName",
-                    profile.businessName,
+                    vendor?.businessName || "Not set",
                     false,
+                    <Building className="w-4 h-4 text-gray-600" />
+                  )}
+                  {renderField(
+                    "Business Description",
+                    "businessDescription",
+                    vendor?.businessDescription || "No description",
+                    true,
                     <Building className="w-4 h-4 text-gray-600" />
                   )}
                   {renderField(
                     "Email",
                     "email",
-                    profile.email,
+                    user?.email || "Not set",
                     false,
                     <Mail className="w-4 h-4 text-gray-600" />
                   )}
                   {renderField(
                     "Phone",
                     "phone",
-                    profile.phone,
+                    vendor?.businessPhone || "Not set",
                     true,
                     <Mail className="w-4 h-4 text-gray-600" />
                   )}
-                  {renderField(
-                    "Website",
-                    "website",
-                    profile.website,
-                    true,
-                    <Building className="w-4 h-4 text-gray-600" />
-                  )}
+                  <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Building className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">
+                          Website
+                        </p>
+                        <p className="text-gray-900 text-sm md:text-base">
+                          {vendor?.website ||
+                            `${window.location.origin}/products?vendor=${vendor?.businessName}`}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleCopyWebsite}
+                      className="flex items-center space-x-1 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {copied ? (
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
                   {renderField(
                     "Address",
                     "address",
-                    profile.address,
+                    vendor?.businessAddress || "Not set",
                     true,
                     <Building className="w-4 h-4 text-gray-600" />
                   )}
@@ -207,7 +304,9 @@ export default function VendorProfilePage() {
               </div>
 
               <div className="mt-4 md:mt-6 bg-[#D7195B]/10 border border-[#D7195B]/20 rounded-lg p-4">
-                <h4 className="font-medium text-[#D7195B] mb-2 text-sm md:text-base">Profile Tips</h4>
+                <h4 className="font-medium text-[#D7195B] mb-2 text-sm md:text-base">
+                  Profile Tips
+                </h4>
                 <ul className="text-sm text-[#D7195B]/80 space-y-1">
                   <li>• Keep your business information up to date</li>
                   <li>• Add a professional profile picture</li>

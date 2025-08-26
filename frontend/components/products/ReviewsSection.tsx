@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Star, MessageCircle, ThumbsUp, Flag } from "lucide-react";
+import { Star, MessageCircle, ThumbsUp, Flag, Reply, Send } from "lucide-react";
 import {
   useProductReviews,
   useMarkReviewHelpful,
   useReportReview,
+  useRespondToReview,
+  useUserProfile,
 } from "@/hooks/useAPI";
 import { formatDistanceToNow } from "date-fns";
 
@@ -19,9 +21,14 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
     isOpen: boolean;
     reviewId: string;
   }>({ isOpen: false, reviewId: "" });
+  const [respondingTo, setRespondingTo] = useState<string | null>(null);
+  const [responseText, setResponseText] = useState("");
   const { data: reviewsData, isLoading } = useProductReviews(productId);
+  const { data: userProfile } = useUserProfile();
+  const user = userProfile?.data?.data;
   const markHelpful = useMarkReviewHelpful(productId);
   const reportReview = useReportReview(productId);
+  const respondToReview = useRespondToReview(productId);
 
   const reviews = reviewsData?.data?.data?.reviews || [];
   const stats = reviewsData?.data?.data?.stats;
@@ -33,6 +40,18 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
 
   const handleReportClick = (reviewId: string) => {
     setReportModal({ isOpen: true, reviewId });
+  };
+
+  const handleResponseSubmit = async (reviewId: string) => {
+    respondToReview.mutate(
+      { id: reviewId, message: responseText },
+      {
+        onSuccess: () => {
+          setResponseText("");
+          setRespondingTo(null);
+        },
+      }
+    );
   };
 
   const renderStars = (rating: number) => {
@@ -237,11 +256,26 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
                     />
                     <span>{review.helpfulCount || 0} helpful</span>
                   </button>
+                  {user?.role === "VENDOR" && (
+                    <button
+                      onClick={() =>
+                        setRespondingTo(
+                          respondingTo === review._id ? null : review._id
+                        )
+                      }
+                      className="flex items-center space-x-1 hover:text-gray-700 transition-colors"
+                    >
+                      <Reply className="w-4 h-4" />
+                      <span>Reply</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => handleReportClick(review._id)}
                     disabled={!!review.isReported}
-                    className={`flex items-center space-x-1 transition-colors ${
-                      review.isReported ? "text-red-600 cursor-not-allowed" : "hover:text-gray-700"
+                    className={`flex items-center space-x-1 hover:text-gray-700 transition-colors ${
+                      review.isReported
+                        ? "text-red-600 cursor-not-allowed"
+                        : "hover:text-gray-700"
                     }`}
                   >
                     <Flag
@@ -250,6 +284,37 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
                     <span>Report</span>
                   </button>
                 </div>
+
+                {respondingTo === review._id && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                    <textarea
+                      value={responseText}
+                      onChange={(e) => setResponseText(e.target.value)}
+                      placeholder="Write your response..."
+                      className="w-full p-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-[#D7195B]"
+                      rows={3}
+                    />
+                    <div className="flex justify-end space-x-2 mt-2">
+                      <button
+                        onClick={() => {
+                          setRespondingTo(null);
+                          setResponseText("");
+                        }}
+                        className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleResponseSubmit(review._id)}
+                        disabled={!responseText.trim()}
+                        className="px-3 py-1 text-sm bg-[#D7195B] text-white rounded-md hover:bg-[#B01548] disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                      >
+                        <Send className="w-3 h-3" />
+                        <span>Send</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

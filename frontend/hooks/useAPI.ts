@@ -49,7 +49,9 @@ export const useLogin = () => {
         window.location.href = "/dashboard";
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.message || "Login failed");
+        toast.error(error.response?.data?.message || "Login failed", {
+          duration: 6000,
+        });
       },
     }
   );
@@ -73,7 +75,9 @@ export const useRegister = () => {
       window.location.href = "/verify-email";
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Registration failed");
+      toast.error(error.response?.data?.message || "Registration failed", {
+        duration: 6000,
+      });
     },
   });
 };
@@ -101,7 +105,9 @@ export const useForgotPassword = () => {
       toast.success("Password reset link sent to your email");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to send reset link");
+      toast.error(error.response?.data?.message || "Failed to send reset link", {
+        duration: 6000,
+      });
     },
   });
 };
@@ -112,7 +118,9 @@ export const useResetPassword = () => {
       toast.success("Password reset successful");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to reset password");
+      toast.error(error.response?.data?.message || "Failed to reset password", {
+        duration: 6000,
+      });
     },
   });
 };
@@ -126,7 +134,9 @@ export const useVerifyEmailOTP = () => {
       toast.success("Email verified successfully");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to verify email");
+      toast.error(error.response?.data?.message || "Failed to verify email", {
+        duration: 6000,
+      });
     },
   });
 };
@@ -138,7 +148,10 @@ export const useResendVerificationOTP = () => {
     },
     onError: (error: any) => {
       toast.error(
-        error.response?.data?.message || "Failed to send verification code"
+        error.response?.data?.message || "Failed to send verification code",
+        {
+          duration: 6000,
+        }
       );
     },
   });
@@ -672,6 +685,14 @@ export const useVendor = (id: string) => {
   });
 };
 
+export const useVendorDashboard = () => {
+  return useQuery(["vendor-dashboard"], vendorsAPI.getDashboard);
+};
+
+export const useVendorProfile = () => {
+  return useQuery(["vendor-profile"], vendorsAPI.getProfile);
+};
+
 export const useRegisterVendor = () => {
   const queryClient = useQueryClient();
 
@@ -917,6 +938,25 @@ export const useReportReview = (productId?: string) => {
       },
       onError: (error: any) => {
         toast.error(error.response?.data?.message || "Failed to report review");
+      },
+    }
+  );
+};
+
+export const useRespondToReview = (productId?: string) => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ id, message }: { id: string; message: string }) =>
+      reviewsAPI.respondToReview(id, { message }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["reviews", productId]);
+        toast.success("Response submitted successfully");
+      },
+      onError: (error: any) => {
+        toast.error(
+          error.response?.data?.message || "Failed to submit response"
+        );
       },
     }
   );
