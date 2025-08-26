@@ -290,13 +290,22 @@ export const respondToReview = asyncHandler(
       return next(createError("Response message is required", 400));
     }
 
-    const review = await Review.findById(req.params.id).populate("vendorId");
+    const review = await Review.findById(req.params.id).populate({
+      path: "productId",
+      select: "vendorId",
+    });
     if (!review) {
       return next(createError("Review not found", 404));
     }
 
     const vendor = (await Vendor.findOne({ userId: user._id })) as any;
-    if (!vendor || vendor._id.toString() !== review.vendorId.toString()) {
+    if (!vendor) {
+      return next(createError("Only vendors can respond to reviews", 403));
+    }
+
+    if (
+      vendor._id.toString() !== (review.productId as any).vendorId.toString()
+    ) {
       return next(createError("Unauthorized to respond to this review", 403));
     }
 
@@ -324,7 +333,7 @@ export const respondToReview = asyncHandler(
         userId: String(review.userId),
         type: "REVIEW_RESPONSE",
         title: "Vendor Responded to Your Review",
-        message: `${vendor.businessName} responded to your review: "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"`,
+        message: `${vendor.businessName} responded to your review: "${message.substring(0, 100)}${message.length > 100 ? "..." : ""}"`,
         category: "REVIEW",
         priority: "NORMAL",
         channels: ["IN_APP", "EMAIL"],

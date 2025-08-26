@@ -105,9 +105,12 @@ export const useForgotPassword = () => {
       toast.success("Password reset link sent to your email");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to send reset link", {
-        duration: 6000,
-      });
+      toast.error(
+        error.response?.data?.message || "Failed to send reset link",
+        {
+          duration: 6000,
+        }
+      );
     },
   });
 };
@@ -369,6 +372,22 @@ export const useUpdateProfile = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to update profile");
+    },
+  });
+};
+
+export const useUpdateVendorProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation(vendorsAPI.updateProfile, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["vendor-profile"]);
+      toast.success("Vendor profile updated successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Failed to update vendor profile"
+      );
     },
   });
 };

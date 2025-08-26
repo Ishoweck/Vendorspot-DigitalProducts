@@ -158,6 +158,18 @@ export const updateVendorProfile = asyncHandler(
         }
         vendor.banner = bannerUpload.url;
       }
+
+      if (files.documents) {
+        const verificationDocuments: string[] = [];
+        for (const doc of files.documents) {
+          const docUpload = await cloudinaryService.uploadFile(
+            doc,
+            "vendors/documents"
+          );
+          verificationDocuments.push(docUpload.url);
+        }
+        vendor.verificationDocuments = verificationDocuments;
+      }
     }
 
     if (businessName) vendor.businessName = businessName;

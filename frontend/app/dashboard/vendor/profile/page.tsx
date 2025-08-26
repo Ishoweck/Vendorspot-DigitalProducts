@@ -13,23 +13,38 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  Upload,
+  Phone,
+  Globe,
+  MapPin,
 } from "lucide-react";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import AuthWrapper from "@/components/auth/AuthWrapper";
 import { useState, useRef } from "react";
-import { useUserProfile, useVendorProfile } from "@/hooks/useAPI";
+import {
+  useUserProfile,
+  useVendorProfile,
+  useUpdateProfile,
+  useUpdateVendorProfile,
+} from "@/hooks/useAPI";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 function VendorProfileContent() {
+  const router = useRouter();
   const { data: userProfile } = useUserProfile();
   const { data: vendorProfile } = useVendorProfile();
+  const updateUserProfile = useUpdateProfile();
+  const updateVendorProfile = useUpdateVendorProfile();
+
   const user = userProfile?.data?.data;
   const vendor = vendorProfile?.data?.data;
   const [profile, setProfile] = useState(user || {});
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [copied, setCopied] = useState(false);
+  const [isUploadingPFP, setIsUploadingPFP] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleEdit = (field: string, value: string) => {
@@ -37,13 +52,29 @@ function VendorProfileContent() {
     setEditValue(value);
   };
 
-  const handleSave = (field: string) => {
-    setProfile((prev: any) => ({
-      ...prev,
-      [field]: editValue,
-    }));
-    setEditingField(null);
-    setEditValue("");
+  const handleSave = async (field: string) => {
+    try {
+      if (field === "phone") {
+        // Update user profile for phone number
+        await updateUserProfile.mutateAsync({ phone: editValue });
+        toast.success("Phone number updated successfully!");
+      } else {
+        // Update vendor profile for other fields
+        const updateData: any = {};
+        updateData[field] = editValue;
+        await updateVendorProfile.mutateAsync(updateData);
+        toast.success("Profile updated successfully!");
+      }
+
+      setProfile((prev: any) => ({
+        ...prev,
+        [field]: editValue,
+      }));
+      setEditingField(null);
+      setEditValue("");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update profile");
+    }
   };
 
   const handleCancel = () => {
@@ -61,10 +92,51 @@ function VendorProfileContent() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleProfilePictureClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleProfilePictureChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsUploadingPFP(true);
+      try {
+        const formData = new FormData();
+        formData.append("avatar", file);
+
+        // Use the uploadAvatar API instead of updateProfile
+        const { usersAPI } = await import("@/lib/api/users");
+        const response = await usersAPI.uploadAvatar(file);
+
+        // Update local state
+        setProfile((prev: any) => ({
+          ...prev,
+          avatar: response.data.data.avatar,
+        }));
+
+        toast.success("Profile picture updated successfully!");
+      } catch (error: any) {
+        toast.error(
+          error.response?.data?.message || "Failed to update profile picture"
+        );
+      } finally {
+        setIsUploadingPFP(false);
+      }
+    }
+  };
+
   const getVerificationButton = () => {
     const status = vendor?.verificationStatus || "PENDING";
     const baseClasses =
       "flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors";
+
+    const handleVerificationClick = () => {
+      if (status === "REJECTED" || status === "PENDING") {
+        router.push("/dashboard/vendor/verification");
+      }
+    };
 
     switch (status) {
       case "APPROVED":
@@ -79,7 +151,8 @@ function VendorProfileContent() {
       case "PENDING":
         return (
           <button
-            className={`${baseClasses} bg-yellow-100 text-yellow-800 hover:bg-yellow-200`}
+            onClick={handleVerificationClick}
+            className={`${baseClasses} bg-yellow-100 text-yellow-800 hover:bg-yellow-200 cursor-pointer`}
           >
             <Clock className="w-4 h-4" />
             <span>Pending Verification</span>
@@ -88,7 +161,8 @@ function VendorProfileContent() {
       case "REJECTED":
         return (
           <button
-            className={`${baseClasses} bg-red-100 text-red-800 hover:bg-red-200`}
+            onClick={handleVerificationClick}
+            className={`${baseClasses} bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer`}
           >
             <XCircle className="w-4 h-4" />
             <span>Verification Rejected</span>
@@ -97,32 +171,13 @@ function VendorProfileContent() {
       default:
         return (
           <button
-            className={`${baseClasses} bg-gray-100 text-gray-800 hover:bg-gray-200`}
+            onClick={handleVerificationClick}
+            className={`${baseClasses} bg-gray-100 text-gray-800 hover:bg-gray-200 cursor-pointer`}
           >
             <Clock className="w-4 h-4" />
             <span>Pending Verification</span>
           </button>
         );
-    }
-  };
-
-  const handleProfilePictureClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleProfilePictureChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfile((prev: any) => ({
-          ...prev,
-          profilePicture: e.target?.result as string,
-        }));
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -154,6 +209,9 @@ function VendorProfileContent() {
                 <button
                   onClick={() => handleSave(field)}
                   className="text-green-600 hover:text-green-700"
+                  disabled={
+                    updateUserProfile.isLoading || updateVendorProfile.isLoading
+                  }
                 >
                   <Save className="w-4 h-4" />
                 </button>
@@ -199,9 +257,9 @@ function VendorProfileContent() {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
                   <div className="relative">
                     <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#D7195B] rounded-full flex items-center justify-center overflow-hidden">
-                      {profile.profilePicture ? (
+                      {profile.avatar ? (
                         <img
-                          src={profile.profilePicture}
+                          src={profile.avatar}
                           alt="Profile"
                           className="w-full h-full object-cover"
                         />
@@ -211,9 +269,14 @@ function VendorProfileContent() {
                     </div>
                     <button
                       onClick={handleProfilePictureClick}
-                      className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#D7195B] rounded-full flex items-center justify-center hover:bg-[#B01548] transition-colors"
+                      disabled={isUploadingPFP}
+                      className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#D7195B] rounded-full flex items-center justify-center hover:bg-[#B01548] transition-colors disabled:opacity-50"
                     >
-                      <Camera className="w-3 h-3 text-white" />
+                      {isUploadingPFP ? (
+                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Camera className="w-3 h-3 text-white" />
+                      )}
                     </button>
                     <input
                       ref={fileInputRef}
@@ -264,14 +327,14 @@ function VendorProfileContent() {
                   {renderField(
                     "Phone",
                     "phone",
-                    vendor?.businessPhone || "Not set",
+                    user?.phone || "Not set",
                     true,
-                    <Mail className="w-4 h-4 text-gray-600" />
+                    <Phone className="w-4 h-4 text-gray-600" />
                   )}
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                        <Building className="w-4 h-4 text-gray-600" />
+                        <Globe className="w-4 h-4 text-gray-600" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-700">
@@ -296,10 +359,10 @@ function VendorProfileContent() {
                   </div>
                   {renderField(
                     "Address",
-                    "address",
+                    "businessAddress",
                     vendor?.businessAddress || "Not set",
                     true,
-                    <Building className="w-4 h-4 text-gray-600" />
+                    <MapPin className="w-4 h-4 text-gray-600" />
                   )}
                 </div>
               </div>

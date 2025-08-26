@@ -12,12 +12,15 @@ import {
   Star,
   DollarSign,
   ShoppingCart,
+  Calendar,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import AuthWrapper from "@/components/auth/AuthWrapper";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import { useSocket } from "@/hooks/useSocket";
+import { formatDistanceToNow } from "date-fns";
 
 function VendorDashboardContent() {
   const { data: userProfile } = useUserProfile();
@@ -26,7 +29,47 @@ function VendorDashboardContent() {
   const user = userProfile?.data?.data;
   const vendor = vendorProfile?.data?.data;
   const stats = dashboardData?.data?.data?.stats;
+  const recentOrders = dashboardData?.data?.data?.recentOrders || [];
   useSocket();
+
+  // Generate sample sales data for chart (in real app, this would come from API)
+  const generateSalesData = () => {
+    const data = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      data.push({
+        date: date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        sales: Math.floor(Math.random() * 50000) + 10000, // Random sales between 10k-60k
+      });
+    }
+    return data;
+  };
+
+  const salesData = generateSalesData();
+
+  const getOrderStatusColor = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return "text-yellow-600 bg-yellow-100";
+      case "CONFIRMED":
+        return "text-blue-600 bg-blue-100";
+      case "PROCESSING":
+        return "text-purple-600 bg-purple-100";
+      case "SHIPPED":
+        return "text-indigo-600 bg-indigo-100";
+      case "DELIVERED":
+        return "text-green-600 bg-green-100";
+      case "CANCELLED":
+        return "text-red-600 bg-red-100";
+      default:
+        return "text-gray-600 bg-gray-100";
+    }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -109,12 +152,34 @@ function VendorDashboardContent() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
                 <div className="bg-gray-50 rounded-lg p-4 md:p-6 border border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-4">
-                    Sales Chart
+                    Sales Chart (Last 7 Days)
                   </h3>
-                  <div className="h-32 md:h-48 flex items-center justify-center text-gray-500">
-                    <p className="text-sm md:text-base">
-                      Sales chart will appear here
-                    </p>
+                  <div className="h-32 md:h-48">
+                    <div className="flex items-end justify-between h-full space-x-1">
+                      {salesData.map((item, index) => {
+                        const maxSales = Math.max(
+                          ...salesData.map((d) => d.sales)
+                        );
+                        const height = (item.sales / maxSales) * 100;
+                        return (
+                          <div
+                            key={index}
+                            className="flex flex-col items-center flex-1"
+                          >
+                            <div className="text-xs text-gray-500 mb-1">
+                              ₦{(item.sales / 1000).toFixed(0)}k
+                            </div>
+                            <div
+                              className="w-full bg-[#D7195B] rounded-t transition-all duration-300 hover:bg-[#B01548]"
+                              style={{ height: `${height}%` }}
+                            />
+                            <div className="text-xs text-gray-500 mt-1">
+                              {item.date}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
@@ -123,9 +188,46 @@ function VendorDashboardContent() {
                     Recent Orders
                   </h3>
                   <div className="space-y-3">
-                    <p className="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">
-                      No orders yet
-                    </p>
+                    {recentOrders.length === 0 ? (
+                      <p className="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">
+                        No orders yet
+                      </p>
+                    ) : (
+                      recentOrders.slice(0, 5).map((order: any) => (
+                        <div
+                          key={order._id}
+                          className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-[#D7195B] rounded-full flex items-center justify-center">
+                              <User className="w-4 h-4 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {order.userId?.firstName}{" "}
+                                {order.userId?.lastName}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {formatDistanceToNow(
+                                  new Date(order.createdAt),
+                                  { addSuffix: true }
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-gray-900">
+                              ₦{order.totalAmount?.toLocaleString() || "0"}
+                            </p>
+                            <span
+                              className={`inline-block px-2 py-1 text-xs rounded-full ${getOrderStatusColor(order.status)}`}
+                            >
+                              {order.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>

@@ -6,6 +6,7 @@ import { Product } from "@/models/Product";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { createNotification } from "./NotificationController";
+import { Vendor } from "@/models/Vendor";
 
 export const getProfile = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -19,10 +20,21 @@ export const getProfile = asyncHandler(
       return next(createError("User not found", 404));
     }
 
+    let vendorId: any = undefined;
+    if (userProfile.role === "VENDOR") {
+      const vendor = await Vendor.findOne({ userId: user._id }).select("_id");
+      vendorId = vendor?._id;
+    }
+
+    const profileObj: any = (userProfile as any).toObject
+      ? (userProfile as any).toObject()
+      : userProfile;
+    if (vendorId) profileObj.vendorId = vendorId;
+
     res.status(200).json({
       success: true,
       message: "User retrieved successfully",
-      data: userProfile,
+      data: profileObj,
     });
   }
 );

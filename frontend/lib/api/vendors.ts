@@ -14,4 +14,9 @@ export const vendorsAPI = {
 
   updateProfile: (vendorData: any) =>
     api.put<any>("/vendors/profile", vendorData),
+
+  updateVerification: (vendorData: FormData) =>
+    api.put<any>("/vendors/profile", vendorData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
 };

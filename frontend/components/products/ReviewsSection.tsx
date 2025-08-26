@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Star, MessageCircle, ThumbsUp, Flag, Reply, Send } from "lucide-react";
+import { Star, MessageCircle, ThumbsUp, Flag, Reply, Send, Loader2 } from "lucide-react";
 import {
   useProductReviews,
   useMarkReviewHelpful,
   useReportReview,
   useRespondToReview,
   useUserProfile,
+  useProduct,
 } from "@/hooks/useAPI";
 import { formatDistanceToNow } from "date-fns";
 
@@ -25,10 +26,20 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
   const [responseText, setResponseText] = useState("");
   const { data: reviewsData, isLoading } = useProductReviews(productId);
   const { data: userProfile } = useUserProfile();
+  const { data: productData } = useProduct(productId);
   const user = userProfile?.data?.data;
+  const product = productData?.data?.data;
   const markHelpful = useMarkReviewHelpful(productId);
   const reportReview = useReportReview(productId);
   const respondToReview = useRespondToReview(productId);
+
+  const isProductVendor =
+    user?.role === "VENDOR" &&
+    user?.vendorId &&
+    (product?.vendorId?._id || product?.vendorId) &&
+    user.vendorId.toString() === (
+      (product?.vendorId as any)?._id || (product as any)?.vendorId
+    )?.toString();
 
   const reviews = reviewsData?.data?.data?.reviews || [];
   const stats = reviewsData?.data?.data?.stats;
@@ -256,7 +267,7 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
                     />
                     <span>{review.helpfulCount || 0} helpful</span>
                   </button>
-                  {user?.role === "VENDOR" && (
+                  {isProductVendor && !review.response && (
                     <button
                       onClick={() =>
                         setRespondingTo(
@@ -306,11 +317,20 @@ export default function ReviewsSection({ productId }: ReviewsSectionProps) {
                       </button>
                       <button
                         onClick={() => handleResponseSubmit(review._id)}
-                        disabled={!responseText.trim()}
+                        disabled={!responseText.trim() || respondToReview.isLoading}
                         className="px-3 py-1 text-sm bg-[#D7195B] text-white rounded-md hover:bg-[#B01548] disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
                       >
-                        <Send className="w-3 h-3" />
-                        <span>Send</span>
+                        {respondToReview.isLoading ? (
+                          <>
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Sending...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-3 h-3" />
+                            <span>Send</span>
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
