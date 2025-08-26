@@ -146,25 +146,6 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                   </Link>
 
                   <Link
-                    href="/dashboard/vendor/orders"
-                    onClick={onClose}
-                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
-                      pathname === "/dashboard/vendor/orders"
-                        ? "text-[#D7195B]"
-                        : "hover:bg-gray-100 text-black"
-                    }`}
-                  >
-                    <ShoppingBag
-                      className={`w-5 h-5 ${
-                        pathname === "/dashboard/vendor/orders"
-                          ? "text-[#D7195B]"
-                          : "text-gray-600"
-                      }`}
-                    />
-                    <span className="font-medium">Orders</span>
-                  </Link>
-
-                  <Link
                     href="/dashboard/vendor/notifications"
                     onClick={onClose}
                     className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
@@ -181,25 +162,6 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                       }`}
                     />
                     <span className="font-medium">Notifications</span>
-                  </Link>
-
-                  <Link
-                    href="/dashboard/vendor/shipping"
-                    onClick={onClose}
-                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
-                      pathname === "/dashboard/vendor/shipping"
-                        ? "text-[#D7195B]"
-                        : "hover:bg-gray-100 text-black"
-                    }`}
-                  >
-                    <MapPin
-                      className={`w-5 h-5 ${
-                        pathname === "/dashboard/vendor/shipping"
-                          ? "text-[#D7195B]"
-                          : "text-gray-600"
-                      }`}
-                    />
-                    <span className="font-medium">Shipping</span>
                   </Link>
 
                   <Link
@@ -278,25 +240,6 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                       }`}
                     />
                     <span className="font-medium">Saved Items</span>
-                  </Link>
-
-                  <Link
-                    href="/dashboard/user/payment-methods"
-                    onClick={onClose}
-                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
-                      pathname === "/dashboard/user/payment-methods"
-                        ? "text-[#D7195B]"
-                        : "hover:bg-gray-100 text-black"
-                    }`}
-                  >
-                    <CreditCard
-                      className={`w-5 h-5 ${
-                        pathname === "/dashboard/user/payment-methods"
-                          ? "text-[#D7195B]"
-                          : "text-gray-600"
-                      }`}
-                    />
-                    <span className="font-medium">Payment Methods</span>
                   </Link>
 
                   <Link

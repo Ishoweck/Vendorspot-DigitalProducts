@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
+  CheckCheck,
 } from "lucide-react";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
@@ -256,16 +257,16 @@ export default function VendorNotificationsPage() {
                     className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                   >
                     <Filter className="w-4 h-4" />
-                    Filters
+                    <span className="hidden sm:inline">Filters</span>
                   </button>
                   {unreadCount > 0 && (
                     <button
                       onClick={handleMarkAllAsRead}
                       disabled={markAllAsRead.isLoading}
-                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-[#D7195B] rounded-md hover:bg-[#AD003C] disabled:opacity-50"
                     >
-                      <Check className="w-4 h-4" />
-                      Mark All Read
+                      <CheckCheck className="w-4 h-4" />
+                      <span className="hidden sm:inline"> Mark All Read</span>
                     </button>
                   )}
                   {notifications.length > 0 && (
