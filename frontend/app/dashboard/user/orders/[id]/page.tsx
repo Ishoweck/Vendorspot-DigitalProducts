@@ -340,7 +340,7 @@ export default function OrderDetailsPage({
   params: { id: string };
 }) {
   return (
-    <AuthWrapper>
+    <AuthWrapper requireAuth={true}>
       <OrderDetailsPageContent params={params} />
     </AuthWrapper>
   );

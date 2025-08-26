@@ -547,7 +547,7 @@ function NotificationsPageContent() {
 
 export default function NotificationsPage() {
   return (
-    <AuthWrapper>
+    <AuthWrapper requireAuth={true}>
       <NotificationsPageContent />
     </AuthWrapper>
   );

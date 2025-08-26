@@ -10,6 +10,7 @@ import {
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import Pagination from "@/components/ui/Pagination";
+import AuthWrapper from "@/components/auth/AuthWrapper";
 
 const mockWalletData = {
   availableBalance: 125450,
@@ -64,7 +65,7 @@ const mockWalletData = {
   ],
 };
 
-export default function VendorWalletPage() {
+function VendorWalletContent() {
   const [currentTransactionPage, setCurrentTransactionPage] = useState(1);
   const [dateFilter, setDateFilter] = useState("all");
   const transactionsPerPage = 3;
@@ -233,5 +234,13 @@ export default function VendorWalletPage() {
         </div>
       </SectionWrapper>
     </div>
+  );
+}
+
+export default function VendorWalletPage() {
+  return (
+    <AuthWrapper requireAuth={true}>
+      <VendorWalletContent />
+    </AuthWrapper>
   );
 }

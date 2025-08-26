@@ -26,8 +26,9 @@ import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import Pagination from "@/components/ui/Pagination";
 import ConfirmationModal from "@/components/modals/NotificationConfirmationModal";
+import AuthWrapper from "@/components/auth/AuthWrapper";
 
-export default function VendorNotificationsPage() {
+function VendorNotificationsContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
     category: "",
@@ -486,5 +487,13 @@ export default function VendorNotificationsPage() {
         </div>
       </SectionWrapper>
     </div>
+  );
+}
+
+export default function VendorNotificationsPage() {
+  return (
+    <AuthWrapper requireAuth={true}>
+      <VendorNotificationsContent />
+    </AuthWrapper>
   );
 }

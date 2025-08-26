@@ -264,7 +264,7 @@ function SettingsPageContent() {
 
 export default function SettingsPage() {
   return (
-    <AuthWrapper>
+    <AuthWrapper requireAuth={true}>
       <SettingsPageContent />
     </AuthWrapper>
   );

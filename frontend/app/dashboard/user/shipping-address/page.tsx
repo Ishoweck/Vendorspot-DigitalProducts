@@ -376,7 +376,7 @@ function ShippingAddressPageContent() {
 
 export default function ShippingAddressPage() {
   return (
-    <AuthWrapper>
+    <AuthWrapper requireAuth={true}>
       <ShippingAddressPageContent />
     </AuthWrapper>
   );

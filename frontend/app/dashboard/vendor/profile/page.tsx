@@ -16,11 +16,12 @@ import {
 } from "lucide-react";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
+import AuthWrapper from "@/components/auth/AuthWrapper";
 import { useState, useRef } from "react";
 import { useUserProfile, useVendorProfile } from "@/hooks/useAPI";
 import { toast } from "react-hot-toast";
 
-export default function VendorProfilePage() {
+function VendorProfileContent() {
   const { data: userProfile } = useUserProfile();
   const { data: vendorProfile } = useVendorProfile();
   const user = userProfile?.data?.data;
@@ -319,5 +320,13 @@ export default function VendorProfilePage() {
         </div>
       </SectionWrapper>
     </div>
+  );
+}
+
+export default function VendorProfilePage() {
+  return (
+    <AuthWrapper requireAuth={true}>
+      <VendorProfileContent />
+    </AuthWrapper>
   );
 }

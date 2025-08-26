@@ -162,7 +162,7 @@ function SavedItemsPageContent() {
 
 export default function SavedItemsPage() {
   return (
-    <AuthWrapper>
+    <AuthWrapper requireAuth={true}>
       <SavedItemsPageContent />
     </AuthWrapper>
   );

@@ -352,7 +352,7 @@ function OrdersPageContent() {
 
 export default function OrdersPage() {
   return (
-    <AuthWrapper>
+    <AuthWrapper requireAuth={true}>
       <OrdersPageContent />
     </AuthWrapper>
   );
