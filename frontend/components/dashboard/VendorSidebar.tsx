@@ -1,7 +1,7 @@
 "use client";
 
 import { useUserProfile, useVendorProfile } from "@/hooks/useAPI";
-import { Package, Bell, MapPin, Wallet, User } from "lucide-react";
+import { Package, Bell, Wallet, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -73,7 +73,11 @@ export default function VendorSidebar() {
               ? "✓ Verified"
               : vendor?.verificationStatus === "PENDING"
                 ? "⏳ Pending"
-                : "❌ Rejected"}
+                : vendor?.verificationStatus === "NOT_VERIFIED"
+                  ? "⚪ Not Verified"
+                  : vendor?.verificationStatus === "REJECTED"
+                    ? "❌ Rejected"
+                    : ""}
           </span>
         </div>
       </div>

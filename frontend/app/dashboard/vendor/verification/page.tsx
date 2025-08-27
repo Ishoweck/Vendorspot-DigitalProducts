@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Upload,
   CheckCircle,
-  Building,
   CreditCard,
   FileText,
   X,
@@ -21,13 +20,17 @@ import { useRouter } from "next/navigation";
 function VerificationFormContent() {
   const router = useRouter();
   const { data: vendorProfile } = useVendorProfile();
-  const updateVendorProfile = useUpdateVendorProfile();
+  const updateVendorProfile = useUpdateVendorProfile({ showToast: false });
   const vendor = vendorProfile?.data?.data;
+
   if (
     vendor?.verificationStatus === "PENDING" ||
     vendor?.verificationStatus === "APPROVED"
   ) {
-    if (typeof window !== "undefined") router.push("/dashboard/vendor");
+    if (typeof window !== "undefined") {
+      router.push("/dashboard/vendor");
+      return null;
+    }
   }
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -40,12 +43,59 @@ function VerificationFormContent() {
   });
   const [documents, setDocuments] = useState<File[]>([]);
   const [documentNames, setDocumentNames] = useState<string[]>([]);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const validateField = (field: string, value: string) => {
+    const newErrors = { ...errors };
+
+    switch (field) {
+      case "taxId":
+        if (!value.trim()) {
+          newErrors.taxId = "Tax ID is required";
+        } else if (value.length < 5) {
+          newErrors.taxId = "Tax ID must be at least 5 characters";
+        } else {
+          delete newErrors.taxId;
+        }
+        break;
+      case "bankName":
+        if (!value.trim()) {
+          newErrors.bankName = "Bank name is required";
+        } else {
+          delete newErrors.bankName;
+        }
+        break;
+      case "bankAccountNumber":
+        if (!value.trim()) {
+          newErrors.bankAccountNumber = "Account number is required";
+        } else if (!/^\d{10}$/.test(value)) {
+          newErrors.bankAccountNumber =
+            "Account number must be exactly 10 digits";
+        } else {
+          delete newErrors.bankAccountNumber;
+        }
+        break;
+      case "bankAccountName":
+        if (!value.trim()) {
+          newErrors.bankAccountName = "Account name is required";
+        } else if (value.length < 2) {
+          newErrors.bankAccountName =
+            "Account name must be at least 2 characters";
+        } else {
+          delete newErrors.bankAccountName;
+        }
+        break;
+    }
+
+    setErrors(newErrors);
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
+    validateField(field, value);
   };
 
   const handleDocumentUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,13 +112,18 @@ function VerificationFormContent() {
   const validateStep = (step: number) => {
     switch (step) {
       case 1:
-        return formData.taxId.trim() !== "" && documents.length > 0;
+        return (
+          formData.taxId.trim() !== "" && documents.length > 0 && !errors.taxId
+        );
       case 2:
         return (
           formData.bankName.trim() !== "" &&
           formData.bankAccountNumber.trim() !== "" &&
           formData.bankAccountName.trim() !== "" &&
-          formData.bankAccountNumber.length >= 10
+          /^\d{10}$/.test(formData.bankAccountNumber) &&
+          !errors.bankName &&
+          !errors.bankAccountNumber &&
+          !errors.bankAccountName
         );
       default:
         return true;
@@ -139,9 +194,14 @@ function VerificationFormContent() {
           type="text"
           value={formData.taxId}
           onChange={(e) => handleInputChange("taxId", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D7195B]"
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#D7195B] ${
+            errors.taxId ? "border-red-500" : "border-gray-300"
+          }`}
           placeholder="Enter your tax identification number"
         />
+        {errors.taxId && (
+          <p className="text-red-500 text-sm mt-1">{errors.taxId}</p>
+        )}
       </div>
 
       <div>
@@ -151,7 +211,7 @@ function VerificationFormContent() {
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
           <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
           <p className="text-sm text-gray-600 mb-2">
-            Upload government-issued ID or business documents
+            Upload government-issued ID or business documents (PDF, JPG, PNG)
           </p>
           <input
             type="file"
@@ -168,6 +228,11 @@ function VerificationFormContent() {
             Choose Files
           </label>
         </div>
+        {documents.length === 0 && (
+          <p className="text-red-500 text-sm mt-1">
+            At least one document is required
+          </p>
+        )}
       </div>
 
       {documentNames.length > 0 && (
@@ -215,9 +280,14 @@ function VerificationFormContent() {
           type="text"
           value={formData.bankName}
           onChange={(e) => handleInputChange("bankName", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D7195B]"
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#D7195B] ${
+            errors.bankName ? "border-red-500" : "border-gray-300"
+          }`}
           placeholder="Enter your bank name"
         />
+        {errors.bankName && (
+          <p className="text-red-500 text-sm mt-1">{errors.bankName}</p>
+        )}
       </div>
 
       <div>
@@ -228,13 +298,23 @@ function VerificationFormContent() {
           type="text"
           value={formData.bankAccountNumber}
           onChange={(e) =>
-            handleInputChange("bankAccountNumber", e.target.value)
+            handleInputChange(
+              "bankAccountNumber",
+              e.target.value.replace(/\D/g, "")
+            )
           }
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D7195B]"
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#D7195B] ${
+            errors.bankAccountNumber ? "border-red-500" : "border-gray-300"
+          }`}
           placeholder="Enter your account number"
           maxLength={10}
         />
         <p className="text-xs text-gray-500 mt-1">Must be 10 digits</p>
+        {errors.bankAccountNumber && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.bankAccountNumber}
+          </p>
+        )}
       </div>
 
       <div>
@@ -245,9 +325,14 @@ function VerificationFormContent() {
           type="text"
           value={formData.bankAccountName}
           onChange={(e) => handleInputChange("bankAccountName", e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D7195B]"
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#D7195B] ${
+            errors.bankAccountName ? "border-red-500" : "border-gray-300"
+          }`}
           placeholder="Enter account holder name"
         />
+        {errors.bankAccountName && (
+          <p className="text-red-500 text-sm mt-1">{errors.bankAccountName}</p>
+        )}
       </div>
     </div>
   );
@@ -346,7 +431,6 @@ function VerificationFormContent() {
                 Vendor Verification
               </h1>
 
-              {/* Progress Steps */}
               <div className="flex items-center justify-between mb-8">
                 {steps.map((step, index) => {
                   const Icon = step.icon;
@@ -389,10 +473,8 @@ function VerificationFormContent() {
                 })}
               </div>
 
-              {/* Step Content */}
               <div className="mb-6">{renderStepContent()}</div>
 
-              {/* Navigation Buttons */}
               <div className="flex justify-between">
                 <button
                   onClick={handleBack}

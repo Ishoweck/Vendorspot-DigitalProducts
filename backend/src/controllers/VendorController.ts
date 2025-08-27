@@ -83,6 +83,7 @@ export const createVendorProfile = asyncHandler(
       bankAccountNumber,
       bankAccountName,
       verificationDocuments,
+      verificationStatus: "NOT_VERIFIED",
     });
 
     await User.findByIdAndUpdate(user._id, { role: "VENDOR" });
@@ -127,12 +128,16 @@ export const updateVendorProfile = asyncHandler(
       bankName,
       bankAccountNumber,
       bankAccountName,
+      taxId,
     } = req.body;
 
     const vendor = await Vendor.findOne({ userId: user._id });
     if (!vendor) {
       return next(createError("Vendor profile not found", 404));
     }
+
+    const isVerificationSubmission =
+      taxId && bankName && bankAccountNumber && bankAccountName;
 
     if (req.files) {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -183,6 +188,26 @@ export const updateVendorProfile = asyncHandler(
     if (bankName) vendor.bankName = bankName;
     if (bankAccountNumber) vendor.bankAccountNumber = bankAccountNumber;
     if (bankAccountName) vendor.bankAccountName = bankAccountName;
+    if (taxId) vendor.taxId = taxId;
+
+    if (isVerificationSubmission) {
+      vendor.verificationStatus = "PENDING";
+
+      try {
+        await createNotification({
+          userId: vendor.userId.toString(),
+          type: "VERIFICATION_SUBMITTED",
+          title: "Verification Documents Submitted",
+          message:
+            "Your verification documents have been submitted successfully. Our team will review them and notify you of the outcome.",
+          category: "ACCOUNT",
+          priority: "NORMAL",
+          channels: ["IN_APP"],
+        });
+      } catch (error) {
+        console.error("Failed to create verification notification:", error);
+      }
+    }
 
     await vendor.save();
 

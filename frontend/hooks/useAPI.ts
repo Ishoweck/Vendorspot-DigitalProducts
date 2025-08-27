@@ -376,8 +376,9 @@ export const useUpdateProfile = () => {
   });
 };
 
-export const useUpdateVendorProfile = () => {
+export const useUpdateVendorProfile = (config?: { showToast?: boolean }) => {
   const queryClient = useQueryClient();
+  const showToast = config?.showToast !== false;
 
   return useMutation(
     (payload: any) => {
@@ -389,12 +390,16 @@ export const useUpdateVendorProfile = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(["vendor-profile"]);
-        toast.success("Vendor profile updated successfully!");
+        if (showToast) {
+          toast.success("Vendor profile updated successfully!");
+        }
       },
       onError: (error: any) => {
-        toast.error(
-          error.response?.data?.message || "Failed to update vendor profile"
-        );
+        if (showToast) {
+          toast.error(
+            error.response?.data?.message || "Failed to update vendor profile"
+          );
+        }
       },
     }
   );

@@ -129,12 +129,12 @@ function VendorProfileContent() {
   };
 
   const getVerificationButton = () => {
-    const status = vendor?.verificationStatus || "PENDING";
+    const status = vendor?.verificationStatus || "NOT_VERIFIED";
     const baseClasses =
       "flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors";
 
     const handleVerificationClick = () => {
-      if (status === "REJECTED") {
+      if (status === "NOT_VERIFIED" || status === "REJECTED") {
         router.push("/dashboard/vendor/verification");
       }
     };
@@ -143,7 +143,8 @@ function VendorProfileContent() {
       case "APPROVED":
         return (
           <button
-            className={`${baseClasses} bg-green-100 text-green-800 hover:bg-green-200`}
+            disabled
+            className={`${baseClasses} bg-green-100 text-green-800 hover:bg-green-200 cursor-not-allowed`}
           >
             <CheckCircle className="w-4 h-4" />
             <span>Verified</span>
@@ -166,17 +167,18 @@ function VendorProfileContent() {
             className={`${baseClasses} bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer`}
           >
             <XCircle className="w-4 h-4" />
-            <span>Verification Rejected</span>
+            <span>Resubmit Verification</span>
           </button>
         );
+      case "NOT_VERIFIED":
       default:
         return (
           <button
             onClick={handleVerificationClick}
-            className={`${baseClasses} bg-gray-100 text-gray-800 hover:bg-gray-200 cursor-pointer`}
+            className={`${baseClasses} bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer`}
           >
-            <Clock className="w-4 h-4" />
-            <span>Pending Verification</span>
+            <Upload className="w-4 h-4" />
+            <span>Start Verification</span>
           </button>
         );
     }

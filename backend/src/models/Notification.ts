@@ -21,6 +21,7 @@ export interface INotification extends Document {
     | "REVIEW_HELPFUL"
     | "REVIEW_REPORTED"
     | "REVIEW_RESPONSE"
+    | "VERIFICATION_SUBMITTED"
     | "VENDOR_APPROVED"
     | "VENDOR_REJECTED"
     | "VENDOR_SUSPENDED"
@@ -88,6 +89,7 @@ const notificationSchema = new Schema<INotification>(
         "REVIEW_HELPFUL",
         "REVIEW_REPORTED",
         "REVIEW_RESPONSE",
+        "VERIFICATION_SUBMITTED",
         "VENDOR_APPROVED",
         "VENDOR_REJECTED",
         "VENDOR_SUSPENDED",
