@@ -6,10 +6,10 @@ import {
   ArrowRight,
   Upload,
   CheckCircle,
-  AlertCircle,
   Building,
   CreditCard,
   FileText,
+  X,
 } from "lucide-react";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
@@ -23,6 +23,12 @@ function VerificationFormContent() {
   const { data: vendorProfile } = useVendorProfile();
   const updateVendorProfile = useUpdateVendorProfile();
   const vendor = vendorProfile?.data?.data;
+  if (
+    vendor?.verificationStatus === "PENDING" ||
+    vendor?.verificationStatus === "APPROVED"
+  ) {
+    if (typeof window !== "undefined") router.push("/dashboard/vendor");
+  }
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,8 +101,8 @@ function VerificationFormContent() {
       formDataToSend.append("bankAccountNumber", formData.bankAccountNumber);
       formDataToSend.append("bankAccountName", formData.bankAccountName);
 
-      documents.forEach((doc, index) => {
-        formDataToSend.append("documents", doc);
+      documents.forEach((doc) => {
+        formDataToSend.append("documents", doc, doc.name);
       });
 
       await updateVendorProfile.mutateAsync(formDataToSend as any);
@@ -180,7 +186,7 @@ function VerificationFormContent() {
                   onClick={() => removeDocument(index)}
                   className="text-red-500 hover:text-red-700"
                 >
-                  <AlertCircle className="w-4 h-4" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             ))}

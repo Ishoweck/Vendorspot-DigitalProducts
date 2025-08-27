@@ -10,6 +10,9 @@ export const vendorsAPI = {
 
   getDashboard: () => api.get<any>("/vendors/dashboard"),
 
+  getSales: (period: "week" | "month" | "year" = "month") =>
+    api.get<any>("/vendors/sales", { params: { period } }),
+
   getProfile: () => api.get<any>("/vendors/profile"),
 
   updateProfile: (vendorData: any) =>

@@ -61,8 +61,13 @@ export const updateProfile = asyncHandler(
     }
 
     if (phone) {
+      const phoneStr = String(phone).trim();
+      const e164 = /^\+?[1-9]\d{9,14}$/;
+      if (!e164.test(phoneStr)) {
+        return next(createError("Enter a valid phone number", 400));
+      }
       const existingUser = await User.findOne({
-        phone,
+        phone: phoneStr,
         _id: { $ne: user._id },
       });
       if (existingUser) {
@@ -73,7 +78,7 @@ export const updateProfile = asyncHandler(
           )
         );
       }
-      userProfile.phone = phone;
+      userProfile.phone = phoneStr;
     }
 
     if (firstName) userProfile.firstName = firstName;
@@ -134,9 +139,10 @@ export const uploadAvatar = asyncHandler(
       );
 
       if (userProfile.avatar) {
-        cloudinaryService.deleteFile(userProfile.avatar).catch((error) => {
-          console.error("Failed to delete old avatar:", error);
-        });
+        const publicId = cloudinaryService.extractPublicId(userProfile.avatar);
+        if (publicId) {
+          await cloudinaryService.deleteFile(publicId);
+        }
       }
 
       userProfile.avatar = uploadResult.url;

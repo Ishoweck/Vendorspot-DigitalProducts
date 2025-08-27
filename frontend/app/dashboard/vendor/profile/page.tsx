@@ -55,15 +55,18 @@ function VendorProfileContent() {
   const handleSave = async (field: string) => {
     try {
       if (field === "phone") {
-        // Update user profile for phone number
-        await updateUserProfile.mutateAsync({ phone: editValue });
+        const phone = editValue.trim();
+        const isValid = /^\+?[1-9]\d{9,14}$/.test(phone);
+        if (!isValid) {
+          toast.error("Enter a valid phone number");
+          return;
+        }
+        await updateUserProfile.mutateAsync({ phone });
         toast.success("Phone number updated successfully!");
       } else {
-        // Update vendor profile for other fields
         const updateData: any = {};
         updateData[field] = editValue;
         await updateVendorProfile.mutateAsync(updateData);
-        toast.success("Profile updated successfully!");
       }
 
       setProfile((prev: any) => ({
@@ -73,7 +76,7 @@ function VendorProfileContent() {
       setEditingField(null);
       setEditValue("");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to update profile");
+      console.error("Update failed:", error);
     }
   };
 
@@ -106,11 +109,9 @@ function VendorProfileContent() {
         const formData = new FormData();
         formData.append("avatar", file);
 
-        // Use the uploadAvatar API instead of updateProfile
         const { usersAPI } = await import("@/lib/api/users");
         const response = await usersAPI.uploadAvatar(file);
 
-        // Update local state
         setProfile((prev: any) => ({
           ...prev,
           avatar: response.data.data.avatar,
@@ -133,7 +134,7 @@ function VendorProfileContent() {
       "flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors";
 
     const handleVerificationClick = () => {
-      if (status === "REJECTED" || status === "PENDING") {
+      if (status === "REJECTED") {
         router.push("/dashboard/vendor/verification");
       }
     };
@@ -151,8 +152,8 @@ function VendorProfileContent() {
       case "PENDING":
         return (
           <button
-            onClick={handleVerificationClick}
-            className={`${baseClasses} bg-yellow-100 text-yellow-800 hover:bg-yellow-200 cursor-pointer`}
+            disabled
+            className={`${baseClasses} bg-yellow-100 text-yellow-800 opacity-70 cursor-not-allowed`}
           >
             <Clock className="w-4 h-4" />
             <span>Pending Verification</span>

@@ -21,6 +21,17 @@ import SectionWrapper from "@/components/layout/SectionWrapper";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import { useSocket } from "@/hooks/useSocket";
 import { formatDistanceToNow } from "date-fns";
+import { DashboardStatsSkeleton } from "@/components/ui/SkeletonCard";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
+import { vendorsAPI } from "@/lib/api/vendors";
+import { useEffect, useState } from "react";
 
 function VendorDashboardContent() {
   const { data: userProfile } = useUserProfile();
@@ -32,25 +43,38 @@ function VendorDashboardContent() {
   const recentOrders = dashboardData?.data?.data?.recentOrders || [];
   useSocket();
 
-  // Generate sample sales data for chart (in real app, this would come from API)
-  const generateSalesData = () => {
-    const data = [];
-    const now = new Date();
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-      data.push({
-        date: date.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        }),
-        sales: Math.floor(Math.random() * 50000) + 10000, // Random sales between 10k-60k
-      });
-    }
-    return data;
-  };
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [isLoadingSales, setIsLoadingSales] = useState(true);
 
-  const salesData = generateSalesData();
+  useEffect(() => {
+    let isMounted = true;
+    const load = async () => {
+      try {
+        const res = await vendorsAPI.getSales("month");
+        const rows = (res.data?.data || []).map((row: any) => {
+          const d = row._id;
+          const date = new Date(d.year, (d.month || 1) - 1, d.day || 1);
+          return {
+            date: date.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            }),
+            revenue: row.revenue || 0,
+            orders: row.orders || 0,
+          };
+        });
+        if (isMounted) setSalesData(rows);
+      } catch (_) {
+        if (isMounted) setSalesData([]);
+      } finally {
+        if (isMounted) setIsLoadingSales(false);
+      }
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const getOrderStatusColor = (status: string) => {
     switch (status) {
@@ -99,87 +123,121 @@ function VendorDashboardContent() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
-                <div className="bg-gradient-to-r from-[#D7195B] to-[#B01548] text-white rounded-lg p-3 md:p-6 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-white text-sm md:text-base">
-                      Total Sales
-                    </h3>
-                    <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
+              {!stats ? (
+                <DashboardStatsSkeleton />
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
+                  <div className="bg-gradient-to-r from-[#D7195B] to-[#B01548] text-white rounded-lg p-3 md:p-6 border border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-white text-sm md:text-base">
+                        Total Sales
+                      </h3>
+                      <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                    </div>
+                    <p className="text-xl md:text-3xl font-bold text-white">
+                      ₦{stats?.totalRevenue?.toLocaleString() || "0"}
+                    </p>
                   </div>
-                  <p className="text-xl md:text-3xl font-bold text-white">
-                    ₦{stats?.totalRevenue?.toLocaleString() || "0"}
-                  </p>
-                </div>
 
-                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-3 md:p-6 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-white text-sm md:text-base">
-                      Orders
-                    </h3>
-                    <ShoppingCart className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                  <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-3 md:p-6 border border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-white text-sm md:text-base">
+                        Orders
+                      </h3>
+                      <ShoppingCart className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                    </div>
+                    <p className="text-xl md:text-3xl font-bold text-white">
+                      {stats?.totalOrders || 0}
+                    </p>
                   </div>
-                  <p className="text-xl md:text-3xl font-bold text-white">
-                    {stats?.totalOrders || 0}
-                  </p>
-                </div>
 
-                <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-3 md:p-6 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-white text-sm md:text-base">
-                      Products
-                    </h3>
-                    <Package className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                  <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-3 md:p-6 border border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-white text-sm md:text-base">
+                        Products
+                      </h3>
+                      <Package className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                    </div>
+                    <p className="text-xl md:text-3xl font-bold text-white">
+                      {stats?.totalProducts || 0}
+                    </p>
                   </div>
-                  <p className="text-xl md:text-3xl font-bold text-white">
-                    {stats?.totalProducts || 0}
-                  </p>
-                </div>
 
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-3 md:p-6 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-white text-sm md:text-base">
-                      Rating
-                    </h3>
-                    <Star className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-3 md:p-6 border border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-white text-sm md:text-base">
+                        Rating
+                      </h3>
+                      <Star className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                    </div>
+                    <p className="text-xl md:text-3xl font-bold text-white">
+                      {stats?.rating?.toFixed(1) || "0.0"}
+                    </p>
                   </div>
-                  <p className="text-xl md:text-3xl font-bold text-white">
-                    {stats?.rating?.toFixed(1) || "0.0"}
-                  </p>
                 </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
                 <div className="bg-gray-50 rounded-lg p-4 md:p-6 border border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-4">
-                    Sales Chart (Last 7 Days)
+                    Sales (This Month)
                   </h3>
                   <div className="h-32 md:h-48">
-                    <div className="flex items-end justify-between h-full space-x-1">
-                      {salesData.map((item, index) => {
-                        const maxSales = Math.max(
-                          ...salesData.map((d) => d.sales)
-                        );
-                        const height = (item.sales / maxSales) * 100;
-                        return (
-                          <div
-                            key={index}
-                            className="flex flex-col items-center flex-1"
-                          >
-                            <div className="text-xs text-gray-500 mb-1">
-                              ₦{(item.sales / 1000).toFixed(0)}k
-                            </div>
-                            <div
-                              className="w-full bg-[#D7195B] rounded-t transition-all duration-300 hover:bg-[#B01548]"
-                              style={{ height: `${height}%` }}
-                            />
-                            <div className="text-xs text-gray-500 mt-1">
-                              {item.date}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    {isLoadingSales ? (
+                      <div className="h-full flex items-center justify-center text-gray-500 text-sm">
+                        Loading chart...
+                      </div>
+                    ) : salesData.length === 0 ? (
+                      <div className="h-full flex items-center justify-center text-gray-500 text-sm">
+                        No data
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart
+                          data={salesData}
+                          margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+                        >
+                          <defs>
+                            <linearGradient
+                              id="colorRev"
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="5%"
+                                stopColor="#D7195B"
+                                stopOpacity={0.4}
+                              />
+                              <stop
+                                offset="95%"
+                                stopColor="#D7195B"
+                                stopOpacity={0}
+                              />
+                            </linearGradient>
+                          </defs>
+                          <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                          <YAxis
+                            tickFormatter={(v) => `₦${Math.round(v / 1000)}k`}
+                            tick={{ fontSize: 12 }}
+                          />
+                          <Tooltip
+                            formatter={(v: any) => [
+                              `₦${Number(v).toLocaleString()}`,
+                              "Revenue",
+                            ]}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="revenue"
+                            stroke="#D7195B"
+                            fillOpacity={1}
+                            fill="url(#colorRev)"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                 </div>
 

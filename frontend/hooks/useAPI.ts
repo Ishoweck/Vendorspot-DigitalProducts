@@ -379,17 +379,25 @@ export const useUpdateProfile = () => {
 export const useUpdateVendorProfile = () => {
   const queryClient = useQueryClient();
 
-  return useMutation(vendorsAPI.updateProfile, {
-    onSuccess: () => {
-      queryClient.invalidateQueries(["vendor-profile"]);
-      toast.success("Vendor profile updated successfully!");
+  return useMutation(
+    (payload: any) => {
+      if (typeof FormData !== "undefined" && payload instanceof FormData) {
+        return vendorsAPI.updateVerification(payload);
+      }
+      return vendorsAPI.updateProfile(payload);
     },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to update vendor profile"
-      );
-    },
-  });
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["vendor-profile"]);
+        toast.success("Vendor profile updated successfully!");
+      },
+      onError: (error: any) => {
+        toast.error(
+          error.response?.data?.message || "Failed to update vendor profile"
+        );
+      },
+    }
+  );
 };
 
 export const useDeleteAccount = () => {

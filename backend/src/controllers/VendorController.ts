@@ -143,7 +143,8 @@ export const updateVendorProfile = asyncHandler(
           "vendors/logos"
         );
         if (vendor.logo) {
-          cloudinaryService.deleteFile(vendor.logo).catch(console.error);
+          const oldId = cloudinaryService.extractPublicId(vendor.logo);
+          if (oldId) await cloudinaryService.deleteFile(oldId);
         }
         vendor.logo = logoUpload.url;
       }
@@ -154,7 +155,8 @@ export const updateVendorProfile = asyncHandler(
           "vendors/banners"
         );
         if (vendor.banner) {
-          cloudinaryService.deleteFile(vendor.banner).catch(console.error);
+          const oldId = cloudinaryService.extractPublicId(vendor.banner);
+          if (oldId) await cloudinaryService.deleteFile(oldId);
         }
         vendor.banner = bannerUpload.url;
       }

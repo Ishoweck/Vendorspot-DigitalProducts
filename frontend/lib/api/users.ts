@@ -8,7 +8,11 @@ export const usersAPI = {
   uploadAvatar: (file: File) => {
     const formData = new FormData();
     formData.append("avatar", file);
-    return api.post<{ avatar: string }>("/users/avatar", formData, {
+    return api.post<{
+      success: boolean;
+      message: string;
+      data: { avatar: string };
+    }>("/users/avatar", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
