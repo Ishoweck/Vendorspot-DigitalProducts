@@ -79,19 +79,21 @@ function VendorDashboardContent() {
   const getOrderStatusColor = (status: string) => {
     switch (status) {
       case "PENDING":
-        return "text-yellow-600 bg-yellow-100";
+        return "text-yellow-700 bg-yellow-50 border border-yellow-200";
       case "CONFIRMED":
-        return "text-blue-600 bg-blue-100";
+        return "text-blue-700 bg-blue-50 border border-blue-200";
       case "PROCESSING":
-        return "text-purple-600 bg-purple-100";
+        return "text-purple-700 bg-purple-50 border border-purple-200";
       case "SHIPPED":
-        return "text-indigo-600 bg-indigo-100";
+        return "text-indigo-700 bg-indigo-50 border border-indigo-200";
       case "DELIVERED":
-        return "text-green-600 bg-green-100";
+        return "text-green-700 bg-green-50 border border-green-200";
       case "CANCELLED":
-        return "text-red-600 bg-red-100";
+        return "text-red-700 bg-red-50 border border-red-200";
+      case "REFUNDED":
+        return "text-gray-700 bg-gray-50 border border-gray-200";
       default:
-        return "text-gray-600 bg-gray-100";
+        return "text-gray-700 bg-gray-50 border border-gray-200";
     }
   };
 
@@ -242,46 +244,107 @@ function VendorDashboardContent() {
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-4 md:p-6 border border-gray-200">
-                  <h3 className="font-semibold text-gray-900 mb-4">
-                    Recent Orders
-                  </h3>
-                  <div className="space-y-3">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-gray-900">
+                      Recent Orders
+                    </h3>
+                    <Link
+                      href="/dashboard/vendor/orders"
+                      className="text-sm text-[#D7195B] hover:text-[#B01548] transition-colors"
+                    >
+                      View All
+                    </Link>
+                  </div>
+                  <div
+                    className="h-32 md:h-48 overflow-y-auto space-y-3 pr-2"
+                    style={{
+                      scrollbarWidth: "thin",
+                      scrollBehavior: "smooth",
+                      scrollbarColor: "#D7195B transparent",
+                    }}
+                  >
                     {recentOrders.length === 0 ? (
-                      <p className="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">
-                        No orders yet
-                      </p>
+                      <div className="text-center py-8">
+                        <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500 text-sm">No orders yet</p>
+                        <p className="text-gray-400 text-xs mt-1">
+                          Orders will appear here once customers make purchases
+                        </p>
+                      </div>
                     ) : (
                       recentOrders.slice(0, 5).map((order: any) => (
                         <div
                           key={order._id}
-                          className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
+                          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-sm transition-shadow"
                         >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-[#D7195B] rounded-full flex items-center justify-center">
-                              <User className="w-4 h-4 text-white" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-medium text-gray-500">
+                                  #{order.orderNumber}
+                                </span>
+                                <span
+                                  className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getOrderStatusColor(order.status)}`}
+                                >
+                                  {order.status}
+                                </span>
+                              </div>
+                              <p className="text-sm font-medium text-gray-900 truncate">
                                 {order.userId?.firstName}{" "}
                                 {order.userId?.lastName}
                               </p>
                               <p className="text-xs text-gray-500">
                                 {formatDistanceToNow(
                                   new Date(order.createdAt),
-                                  { addSuffix: true }
+                                  {
+                                    addSuffix: true,
+                                  }
                                 )}
                               </p>
                             </div>
+                            <div className="text-right ml-4">
+                              <p className="text-sm font-semibold text-gray-900">
+                                ₦{order.total?.toLocaleString() || "0"}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {order.items?.length || 0} item
+                                {order.items?.length !== 1 ? "s" : ""}
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900">
-                              ₦{order.totalAmount?.toLocaleString() || "0"}
-                            </p>
-                            <span
-                              className={`inline-block px-2 py-1 text-xs rounded-full ${getOrderStatusColor(order.status)}`}
-                            >
-                              {order.status}
-                            </span>
+
+                          <div className="space-y-2">
+                            {order.items
+                              ?.slice(0, 2)
+                              .map((item: any, index: number) => (
+                                <div
+                                  key={item._id || index}
+                                  className="flex items-center justify-between text-xs"
+                                >
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-gray-700 font-medium truncate">
+                                      {item.name}
+                                    </p>
+                                    <p className="text-gray-500">
+                                      Qty: {item.quantity} × ₦
+                                      {item.price?.toLocaleString()}
+                                    </p>
+                                  </div>
+                                  <div className="text-right ml-2">
+                                    <p className="text-gray-700 font-medium">
+                                      ₦
+                                      {(
+                                        item.price * item.quantity
+                                      )?.toLocaleString()}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            {order.items?.length > 2 && (
+                              <p className="text-xs text-gray-500 text-center pt-1 border-t border-gray-100">
+                                +{order.items.length - 2} more items
+                              </p>
+                            )}
                           </div>
                         </div>
                       ))

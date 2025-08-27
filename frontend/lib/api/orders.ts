@@ -16,4 +16,11 @@ export const ordersAPI = {
   }) => api.post<any>("/orders", orderData),
 
   cancel: (id: string) => api.put(`/orders/${id}/cancel`),
+
+  getVendorOrders: (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    paymentStatus?: string;
+  }) => api.get<any>("/orders/vendor", { params }),
 };

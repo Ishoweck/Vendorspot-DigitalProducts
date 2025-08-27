@@ -200,6 +200,21 @@ export const useVendorProducts = (params?: {
   );
 };
 
+export const useVendorOrders = (params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+  paymentStatus?: string;
+}) => {
+  return useQuery(
+    ["vendor-orders", params],
+    () => ordersAPI.getVendorOrders(params),
+    {
+      keepPreviousData: true,
+    }
+  );
+};
+
 export const useCreateProduct = () => {
   const queryClient = useQueryClient();
 

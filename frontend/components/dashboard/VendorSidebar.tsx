@@ -1,7 +1,7 @@
 "use client";
 
 import { useUserProfile, useVendorProfile } from "@/hooks/useAPI";
-import { Package, Bell, Wallet, User } from "lucide-react";
+import { Package, Bell, ShoppingBag, Wallet, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -25,6 +25,11 @@ export default function VendorSidebar() {
       href: "/dashboard/vendor/products",
       icon: Package,
       label: "Products",
+    },
+    {
+      href: "/dashboard/vendor/orders",
+      icon: ShoppingBag,
+      label: "Orders",
     },
     {
       href: "/dashboard/vendor/notifications",
