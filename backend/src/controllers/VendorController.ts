@@ -9,6 +9,7 @@ import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
 import { createNotification } from "./NotificationController";
 
+
 export const createVendorProfile = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as any;
@@ -68,6 +69,11 @@ export const createVendorProfile = asyncHandler(
       }
     }
 
+    
+
+
+
+  
     const vendor = await Vendor.create({
       userId: user._id,
       businessName,
@@ -95,6 +101,7 @@ export const createVendorProfile = asyncHandler(
     });
   }
 );
+
 
 export const getVendorProfile = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -418,6 +425,11 @@ export const getAllVendors = asyncHandler(
       query.verificationStatus = req.query.verificationStatus;
     }
 
+
+    if (req.query.isSponsored !== undefined) {
+      query.isSponsored = req.query.isSponsored === "true";
+    }
+
     const vendors = await Vendor.find(query)
       .populate("userId", "firstName lastName")
       .sort({ createdAt: -1 })
@@ -438,6 +450,7 @@ export const getAllVendors = asyncHandler(
     });
   }
 );
+
 
 export const getVendorById = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -538,6 +551,58 @@ export const verifyVendor = asyncHandler(
       success: true,
       message: `Vendor ${status.toLowerCase()} successfully`,
       data: vendor,
+    });
+  }
+);
+
+
+export const getVendorByBusinessName = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const businessName = req.params.businessName;
+
+    const vendor = await Vendor.findOne({
+      businessName: { $regex: `^${businessName}$`, $options: "i" },
+      isActive: true,
+    }).populate("userId", "firstName lastName email");
+
+    if (!vendor) {
+      return next(createError("Vendor not found", 404));
+    }
+
+    const products = await Product.find({
+      vendorId: vendor._id,
+      isActive: true,
+      isApproved: true,
+    }).limit(6);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        vendor: {
+          _id: vendor._id,
+          businessName: vendor.businessName,
+          businessDescription: vendor.businessDescription,
+          businessAddress: vendor.businessAddress,
+          businessPhone: vendor.businessPhone,
+          businessEmail: vendor.businessEmail,
+          website: vendor.website,
+          logo: vendor.logo,
+          // avatar: vendor.avatar,
+          banner: vendor.banner,
+          verificationStatus: vendor.verificationStatus,
+          rating: vendor.rating,
+          totalSales: vendor.totalSales,
+          totalProducts: vendor.totalProducts,
+          // commissionRate: vendor.commissionRate,
+          // isSponsored: vendor.isSponsored,
+          // sponsorshipStartDate: vendor.sponsorshipStartDate,
+          // sponsorshipEndDate: vendor.sponsorshipEndDate,
+          // createdAt: vendor.createdAt,
+          // updatedAt: vendor.updatedAt,
+          user: vendor.userId, 
+        },
+        products,
+      },
     });
   }
 );

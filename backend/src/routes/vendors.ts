@@ -10,6 +10,7 @@ import {
   getAllVendors,
   getVendorById,
   verifyVendor,
+  getVendorByBusinessName,
 } from "@/controllers/VendorController";
 
 const router: Router = Router();
@@ -59,5 +60,7 @@ router.get(
 router.get("/", getAllVendors);
 router.get("/:id", getVendorById);
 router.patch("/:id/verify", authenticate, authorize("ADMIN"), verifyVendor);
+router.get("/getVendorDetails/:businessName", getVendorByBusinessName);
+
 
 export default router;

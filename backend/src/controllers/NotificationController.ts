@@ -17,6 +17,8 @@ export const createNotification = async (data: {
   expiresAt?: Date;
 }) => {
   try {
+    console.log("This is useridd", data.userId);
+    
     const user = await User.findById(data.userId);
     if (!user) return null;
 

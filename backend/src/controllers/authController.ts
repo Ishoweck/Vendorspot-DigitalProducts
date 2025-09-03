@@ -8,6 +8,7 @@ import { emailService } from "@/services/emailService";
 import { logger } from "@/utils/logger";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { createNotification } from "./NotificationController";
+import { Wallet } from "@/models/Wallet";
 
 const generateTokens = (userId: string) => {
   const signOptions: jwt.SignOptions = {
@@ -90,10 +91,21 @@ export const register = asyncHandler(
     let vendor = null;
     if (isVendor && businessName) {
       try {
+
+           const wallet = await Wallet.create({
+          userId: user._id,
+          availableBalance: 0,
+          totalEarnings: 0,
+          transactions: [],
+        });
         vendor = await Vendor.create({
           userId: user._id,
           businessName,
+          walletId: wallet._id, 
+
         });
+
+     
         logger.info(`Vendor record created for user: ${user.email}`, {
           userId: String(user._id),
           vendorId: String(vendor._id),
@@ -148,6 +160,9 @@ export const register = asyncHandler(
 
     user.emailVerificationOTP = verificationOTP;
     user.emailVerificationOTPExpires = verificationOTPExpiry;
+
+    console.log(verifyEmailOTP);
+    
     await user.save();
 
     try {

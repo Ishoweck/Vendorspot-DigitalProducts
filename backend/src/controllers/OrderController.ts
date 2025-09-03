@@ -7,12 +7,17 @@ import { Payment } from "@/models/Payment";
 import { asyncHandler, createError } from "@/middleware/errorHandler";
 import { SocketService } from "@/services/SocketService";
 import { createNotification } from "./NotificationController";
+import { Wallet , WalletTransactionType} from "../models/Wallet";  // Path to your Wallet model
+import { IVendor } from "@/models/Vendor";  // Correct import for IVendor
 
 const generateOrderNumber = (): string => {
   const timestamp = Date.now().toString();
   const random = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `ORD-${random}-${timestamp.slice(-8)}`;
 };
+
+
+
 
 export const createOrder = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -66,8 +71,8 @@ export const createOrder = asyncHandler(
       shippingMethod === "EXPRESS"
         ? 2500
         : shippingMethod === "SAME_DAY"
-          ? 5000
-          : 0;
+        ? 5000
+        : 0;
     const total = subtotal + tax + shippingFee;
 
     const orderNumber = generateOrderNumber();
@@ -104,45 +109,38 @@ export const createOrder = asyncHandler(
       console.log("Socket emit error:", error);
     }
 
-    try {
-      await createNotification({
-        userId: String(user._id),
-        type: "ORDER_CREATED",
-        title: "Order Placed Successfully",
-        message: `Your order #${order.orderNumber} has been placed successfully. Total: ₦${order.total.toLocaleString()}`,
-        category: "ORDER",
-        priority: "NORMAL",
-        channels: ["IN_APP"],
-        data: {
-          orderId: order._id,
-          orderNumber: order.orderNumber,
-          total: order.total,
-        },
-      });
-    } catch (error) {
-      console.error("Failed to create order notification:", error);
-    }
-
+    // Process vendor's earnings and wallet update
     for (const item of orderItems) {
-      try {
-        await createNotification({
-          userId: item.vendorId.toString(),
-          type: "ORDER_CREATED",
-          title: "New Order Received",
-          message: `New order #${order.orderNumber} for "${item.name}" has been placed`,
-          category: "ORDER",
-          priority: "HIGH",
-          channels: ["IN_APP", "EMAIL"],
-          data: {
-            orderId: order._id,
-            orderNumber: order.orderNumber,
-            productName: item.name,
-            quantity: item.quantity,
-            price: item.price,
-          },
-        });
-      } catch (error) {
-        console.error("Failed to create vendor order notification:", error);
+      // Find the vendor by vendorId
+      const vendor = await Vendor.findById(item.vendorId);
+
+      if (vendor && vendor.walletId) {
+        // Now, find the wallet by walletId
+        const wallet = await Wallet.findById(vendor.walletId);
+
+        if (wallet) {
+          const earnings = item.price * item.quantity;
+
+          // Update wallet fields
+          wallet.totalEarnings += earnings;
+          wallet.thisMonth += earnings;
+          wallet.availableBalance += earnings
+
+          // Create a wallet transaction
+          const walletTransaction = {
+            type: "payment_received", // Type of transaction
+            title: `Order #${order.orderNumber} Payment`,
+            description: `Payment for ${item.name}`,
+            amount: earnings,
+            timestamp: new Date(),
+            isPositive: true,
+          };
+
+          wallet.transactions.push(walletTransaction);
+
+          // Save the updated wallet document
+          await wallet.save();  // Save the wallet with updated values
+        }
       }
     }
 
@@ -153,6 +151,8 @@ export const createOrder = asyncHandler(
     });
   }
 );
+
+
 
 export const getUserOrders = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {

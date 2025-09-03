@@ -28,6 +28,8 @@ import reviewRoutes from "@/routes/reviews";
 import notificationRoutes from "@/routes/notifications";
 import webhookRoutes from "@/routes/webhooks";
 import { SocketService } from "@/services/SocketService";
+import walletRoutes from "@/routes/wallet";
+
 
 dotenv.config();
 
@@ -146,6 +148,8 @@ class App {
     this.app.use("/api/payments", paymentRoutes);
     this.app.use("/api/reviews", reviewRoutes);
     this.app.use("/api/webhooks", webhookRoutes);
+    this.app.use("/api/wallet", walletRoutes);
+
   }
 
   private initializeErrorHandling(): void {

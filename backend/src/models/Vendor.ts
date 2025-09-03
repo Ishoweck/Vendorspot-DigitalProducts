@@ -21,6 +21,10 @@ export interface IVendor extends Document {
   totalProducts: number;
   commissionRate: number;
   isActive: boolean;
+  isSponsored: boolean;
+  walletId: mongoose.Types.ObjectId; 
+  sponsorshipStartDate?: Date;
+  sponsorshipEndDate?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -77,6 +81,25 @@ const vendorSchema = new Schema<IVendor>(
       type: Boolean,
       default: true,
     },
+
+    isSponsored: {
+  type: Boolean,
+  default: false, 
+},
+walletId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "Wallet",
+    },
+
+
+sponsorshipStartDate: {
+  type: Date,
+},
+sponsorshipEndDate: {
+  type: Date,
+},
+
   },
   {
     timestamps: true,
@@ -85,5 +108,9 @@ const vendorSchema = new Schema<IVendor>(
 
 vendorSchema.index({ verificationStatus: 1 });
 vendorSchema.index({ isActive: 1 });
+vendorSchema.index({ isSponsored: 1 });
+vendorSchema.index({ sponsorshipEndDate: 1 });
+
+
 
 export const Vendor = mongoose.model<IVendor>("Vendor", vendorSchema);
