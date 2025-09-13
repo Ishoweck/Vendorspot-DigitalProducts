@@ -165,6 +165,8 @@ function VerificationFormContent() {
       toast.success("Verification documents submitted successfully!");
       router.push("/dashboard/vendor/profile");
     } catch (error: any) {
+
+      console.log(error)
       toast.error(
         error.response?.data?.message ||
           "Failed to submit verification documents"

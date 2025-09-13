@@ -22,4 +22,19 @@ export const vendorsAPI = {
     api.put<any>("/vendors/profile", vendorData, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
-};
+
+getAll: (params?: {
+  search?: string;
+  verificationStatus?: string;
+  isSponsored?: boolean; // ✅ Add this line
+  page?: number;
+  limit?: number;
+}) => api.get<any>("/vendors", { params }),
+
+
+getByBusinessName: (businessName: string) =>
+  api.get<any>(`/vendors/getVendorDetails/${businessName}`),
+
+  getWallet: () => api.get<any>("/wallet/getMyWallet"),
+
+}

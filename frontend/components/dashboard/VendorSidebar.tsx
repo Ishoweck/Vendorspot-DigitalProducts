@@ -67,8 +67,8 @@ export default function VendorSidebar() {
               vendor?.verificationStatus === "APPROVED"
                 ? "bg-green-100 text-green-800 hover:bg-green-200"
                 : vendor?.verificationStatus === "PENDING"
-                  ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                  : "bg-red-100 text-red-800 hover:bg-red-200"
+                ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                : "bg-red-100 text-red-800 hover:bg-red-200"
             }`}
             onClick={() =>
               (window.location.href = "/dashboard/vendor/profile#verification")
@@ -77,12 +77,12 @@ export default function VendorSidebar() {
             {vendor?.verificationStatus === "APPROVED"
               ? "✓ Verified"
               : vendor?.verificationStatus === "PENDING"
-                ? "⏳ Pending"
-                : vendor?.verificationStatus === "NOT_VERIFIED"
-                  ? "⚪ Not Verified"
-                  : vendor?.verificationStatus === "REJECTED"
-                    ? "❌ Rejected"
-                    : ""}
+              ? "⏳ Pending"
+              : vendor?.verificationStatus === "NOT_VERIFIED"
+              ? "⚪ Not Verified"
+              : vendor?.verificationStatus === "REJECTED"
+              ? "❌ Rejected"
+              : ""}
           </span>
         </div>
       </div>
@@ -96,16 +96,26 @@ export default function VendorSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
-                isActive
-                  ? "text-[#D7195B] font-semibold"
-                  : "hover:bg-gray-100 text-gray-900"
+              className={`group flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-gray-100 ${
+                isActive ? "font-semibold" : "text-gray-900"
               }`}
             >
               <Icon
-                className={`w-5 h-5 ${isActive ? "text-[#D7195B]" : "text-gray-600"}`}
+                className={`w-5 h-5 transition-colors ${
+                  isActive
+                    ? "text-[#ffdd00]"
+                    : "text-red-900 group-hover:text-gray-900"
+                }`}
               />
-              <span>{item.label}</span>
+              <span
+                className={`transition-colors ${
+                  isActive
+                    ? "text-gray-900"
+                    : "text-gray-900 group-hover:text-gray-800"
+                }`}
+              >
+                {item.label}
+              </span>
             </Link>
           );
         })}

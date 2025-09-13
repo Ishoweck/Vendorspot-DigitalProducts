@@ -3,82 +3,43 @@
 import { useState } from "react";
 import {
   Wallet,
-  TrendingUp,
-  Download,
   Calendar,
 } from "lucide-react";
 import VendorSidebar from "@/components/dashboard/VendorSidebar";
 import SectionWrapper from "@/components/layout/SectionWrapper";
 import Pagination from "@/components/ui/Pagination";
 import AuthWrapper from "@/components/auth/AuthWrapper";
-
-const mockWalletData = {
-  availableBalance: 125450,
-  thisMonth: 45200,
-  totalEarnings: 890750,
-  transactions: [
-    {
-      id: 1,
-      type: "payment_received",
-      title: "Payment Received",
-      description: "Order #VS-2024-001",
-      amount: 29990,
-      timestamp: "2 hours ago",
-      isPositive: true,
-    },
-    {
-      id: 2,
-      type: "payment_received",
-      title: "Payment Received",
-      description: "Order #VS-2024-002",
-      amount: 49990,
-      timestamp: "1 day ago",
-      isPositive: true,
-    },
-    {
-      id: 3,
-      type: "withdrawal",
-      title: "Withdrawal",
-      description: "Bank transfer",
-      amount: 50000,
-      timestamp: "3 days ago",
-      isPositive: false,
-    },
-    {
-      id: 4,
-      type: "payment_received",
-      title: "Payment Received",
-      description: "Order #VS-2024-003",
-      amount: 35000,
-      timestamp: "1 week ago",
-      isPositive: true,
-    },
-    {
-      id: 5,
-      type: "withdrawal",
-      title: "Withdrawal",
-      description: "Bank transfer",
-      amount: 75000,
-      timestamp: "2 weeks ago",
-      isPositive: false,
-    },
-  ],
-};
+import { useVendorWallet } from "@/hooks/useAPI";
 
 function VendorWalletContent() {
+  const { data: wallet, isLoading } = useVendorWallet();
   const [currentTransactionPage, setCurrentTransactionPage] = useState(1);
   const [dateFilter, setDateFilter] = useState("all");
   const transactionsPerPage = 3;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading wallet...</p>
+      </div>
+    );
+  }
+
+  if (!wallet) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Failed to load wallet data.</p>
+      </div>
+    );
+  }
+
   const totalTransactionPages = Math.ceil(
-    mockWalletData.transactions.length / transactionsPerPage
+    wallet.transactions.length / transactionsPerPage
   );
 
   const startIndex = (currentTransactionPage - 1) * transactionsPerPage;
   const endIndex = startIndex + transactionsPerPage;
-  const currentTransactions = mockWalletData.transactions.slice(
-    startIndex,
-    endIndex
-  );
+  const currentTransactions = wallet.transactions.slice(startIndex, endIndex);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -97,7 +58,7 @@ function VendorWalletContent() {
                     Available Balance
                   </h3>
                   <p className="text-2xl md:text-3xl font-bold">
-                    ₦{mockWalletData.availableBalance.toLocaleString()}
+                    ₦{wallet.availableBalance.toLocaleString()}
                   </p>
                 </div>
                 <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-4 md:p-6">
@@ -105,7 +66,7 @@ function VendorWalletContent() {
                     This Month
                   </h3>
                   <p className="text-2xl md:text-3xl font-bold">
-                    ₦{mockWalletData.thisMonth.toLocaleString()}
+                    ₦{typeof wallet.thisMonth === "number" ? wallet.thisMonth.toLocaleString() : "0"}
                   </p>
                 </div>
                 <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-4 md:p-6">
@@ -113,7 +74,7 @@ function VendorWalletContent() {
                     Total Earnings
                   </h3>
                   <p className="text-2xl md:text-3xl font-bold">
-                    ₦{mockWalletData.totalEarnings.toLocaleString()}
+                    ₦{wallet.totalEarnings.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -124,19 +85,17 @@ function VendorWalletContent() {
                     Recent Transactions
                   </h3>
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-500" />
-                      <select
-                        value={dateFilter}
-                        onChange={(e) => setDateFilter(e.target.value)}
-                        className="border border-gray-300 rounded-md px-3 py-1 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#D7195B] pr-8"
-                      >
-                        <option value="all">All Time</option>
-                        <option value="today">Today</option>
-                        <option value="week">This Week</option>
-                        <option value="month">This Month</option>
-                      </select>
-                    </div>
+                    <Calendar className="w-4 h-4 text-gray-500" />
+                    <select
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      className="border border-gray-300 rounded-md px-3 py-1 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#D7195B] pr-8"
+                    >
+                      <option value="all">All Time</option>
+                      <option value="today">Today</option>
+                      <option value="week">This Week</option>
+                      <option value="month">This Month</option>
+                    </select>
                   </div>
                 </div>
 
@@ -155,7 +114,7 @@ function VendorWalletContent() {
                     <div className="space-y-3 md:space-y-4">
                       {currentTransactions.map((transaction) => (
                         <div
-                          key={transaction.id}
+                          key={transaction._id}
                           className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 border-b border-gray-100 gap-2"
                         >
                           <div>
@@ -169,16 +128,16 @@ function VendorWalletContent() {
                           <div className="text-right">
                             <span
                               className={`font-medium text-sm md:text-base ${
-                                transaction.isPositive
+                                transaction.type === "credit"
                                   ? "text-green-600"
                                   : "text-red-600"
                               }`}
                             >
-                              {transaction.isPositive ? "+" : "-"}₦
+                              {transaction.type === "credit" ? "+" : "-"}₦
                               {transaction.amount.toLocaleString()}
                             </span>
                             <p className="text-xs text-gray-500">
-                              {transaction.timestamp}
+                              {new Date(transaction.createdAt).toLocaleString()}
                             </p>
                           </div>
                         </div>

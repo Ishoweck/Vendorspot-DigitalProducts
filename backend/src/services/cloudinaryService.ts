@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import { config } from "@/config/config";
+import { log } from "console";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -24,6 +25,7 @@ export const cloudinaryService = {
         publicId: result.public_id,
       };
     } catch (error) {
+      console.error(error)
       throw new Error("File upload failed");
     }
   },

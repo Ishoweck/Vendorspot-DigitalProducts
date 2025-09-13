@@ -377,6 +377,16 @@ export const useUserProfile = () => {
   return query;
 };
 
+export function useUploadAvatar() {
+  const queryClient = useQueryClient();
+
+  return useMutation(usersAPI.uploadAvatar, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["userProfile"]); 
+    },
+  });
+}
+
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
 
@@ -420,6 +430,14 @@ export const useUpdateVendorProfile = (config?: { showToast?: boolean }) => {
   );
 };
 
+export const useFeaturedVendors = (limit = 5) => {
+  return useQuery({
+    queryKey: ["featured-vendors", limit],
+    queryFn: () =>
+      vendorsAPI.getAll({ isSponsored: true, limit }).then((res) => res.data.data),
+  });
+};
+
 export const useDeleteAccount = () => {
   const queryClient = useQueryClient();
   const { generateNewSession } = useTempStore();
@@ -447,6 +465,21 @@ export const useDeleteAccount = () => {
     }
   );
 };
+
+// =====================================
+// WALLET HOOKS
+// =====================================
+
+export const useVendorWallet = () => {
+  return useQuery(["vendor-wallet"], async () => {
+    const res = await vendorsAPI.getWallet();
+    return res.data.data;
+  });
+};
+
+
+
+
 
 // =====================================
 // ADDRESS HOOKS

@@ -5,8 +5,8 @@ import * as Admincontrollers from "../controllers/AdminController";
 
 const router: Router = Router();
 
-router.use(authenticate);
-router.use(authorize("ADMIN"));
+// router.use(authenticate);
+// router.use(authorize("ADMIN"));
 
 // router.get("/dashboard", (req, res) => {
 //   res.status(200).json({
@@ -52,11 +52,11 @@ router.use(authorize("ADMIN"));
 
 
 router.get("/users", Admincontrollers.getAllUsers);
-router.get("/users/profile", Admincontrollers.getUserById); 
+router.get("/users/:id", Admincontrollers.getUserById); 
 
 // VENDORS
 router.get("/vendors", Admincontrollers.getAllVendors);
-router.get("/vendors/profile", Admincontrollers.getVendorById); 
+router.get("/vendors/:id", Admincontrollers.getVendorById); 
 router.patch("/vendors/:vendorId/verification", Admincontrollers.updateVendorVerification);
 
 // WALLET

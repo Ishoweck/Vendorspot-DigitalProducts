@@ -80,7 +80,8 @@ export const getAllUsers = asyncHandler(
 
 export const getUserById = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-   const userId = req.user._id;
+   const {id} = req.params;
+   const userId = id
 
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -175,8 +176,8 @@ export const getAllVendors = asyncHandler(
 
 export const getVendorById = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-   const userId = req.user._id;
-
+   const {id} = req.params
+  const userId = id
 
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -211,7 +212,7 @@ export const getVendorById = asyncHandler(
 
 export const getWalletByUserId = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.user._id;
+    const {userId} = req.params
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return next(createError("Invalid user ID", 400));
